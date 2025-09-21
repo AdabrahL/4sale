@@ -12,15 +12,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('properties', function (Blueprint $table) {
-            $table->id();
-$table->string('title');
-$table->string('type'); // sale, rent, car
-$table->string('category'); // house, land, car
-$table->decimal('price', 12, 2);
-$table->string('location');
-$table->text('description')->nullable();
-$table->string('image')->nullable();
-$table->timestamps();
+             $table->id();
+        $table->string('title');
+        $table->text('description');
+        $table->decimal('price', 12, 2);
+        $table->string('property_type'); // <-- make sure this exists
+        $table->string('status');
+        $table->string('location');
+        $table->integer('bedrooms')->nullable();
+        $table->integer('bathrooms')->nullable();
+        $table->json('images')->nullable();
+        $table->integer('size')->nullable();
+        $table->foreignId('user_id')->constrained()->onDelete('cascade');
+        $table->timestamps();
 
         });
     }
