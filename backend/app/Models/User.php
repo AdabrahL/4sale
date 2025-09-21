@@ -47,4 +47,11 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+   public function favorites()
+{
+    return $this->belongsToMany(\App\Models\Property::class, 'favorites')
+                ->withTimestamps();
+}
+ 
 }

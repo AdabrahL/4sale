@@ -35,6 +35,9 @@ class PropertyResource extends JsonResource
             'size' => $this->size,
             'images' => $imageUrls,
             'user_id' => $this->user_id,
+            'is_favorited' => $request->user()
+                ? $request->user()->favorites()->where('property_id', $this->id)->exists()
+                : false, // only true if logged in user has favorited this property
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
         ];

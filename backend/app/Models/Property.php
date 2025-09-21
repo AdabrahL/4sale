@@ -26,4 +26,11 @@ class Property extends Model
 protected $casts = [
     'images' => 'array', // auto-cast JSON to array
 ];
+
+public function favoritedBy()
+{
+    return $this->belongsToMany(\App\Models\User::class, 'favorites')
+                ->withTimestamps();
+}
+
 }
