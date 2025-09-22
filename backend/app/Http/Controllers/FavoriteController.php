@@ -8,37 +8,45 @@ use App\Http\Resources\PropertyResource;
 
 class FavoriteController extends Controller
 {
-    // Add to favorites
+    /**
+     * Add a property to favorites
+     */
     public function store(Request $request, Property $property)
     {
-        $request->user()->favorites()->firstOrCreate([
-            'property_id' => $property->id,
-        ]);
+        $request->user()->favorites()->syncWithoutDetaching([$property->id]);
 
-        return response()->json(['message' => 'Property added to favorites']);
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Property added to favorites',
+            'data'    => new PropertyResource($property),
+        ]);
     }
 
-    // Remove from favorites
+    /**
+     * Remove a property from favorites
+     */
     public function destroy(Request $request, Property $property)
     {
-        $request->user()->favorites()->where('property_id', $property->id)->delete();
+        $request->user()->favorites()->detach($property->id);
 
-        return response()->json(['message' => 'Property removed from favorites']);
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Property removed from favorites',
+            'data'    => new PropertyResource($property),
+        ]);
     }
 
-    // List user’s favorites
+    /**
+     * Get all user favorites
+     */
     public function index(Request $request)
     {
-        $favorites = $request->user()
-            ->favorites()
-            ->with('property')
-            ->get()
-            ->pluck('property'); // extract only the property objects
+        $favorites = $request->user()->favorites()->paginate(10);
 
         return PropertyResource::collection($favorites)
             ->additional([
-                'status' => 'success',
-                'message' => 'Favorites fetched successfully',
+                'status'  => 'success',
+                'message' => 'Favorite properties fetched successfully',
             ]);
     }
 }

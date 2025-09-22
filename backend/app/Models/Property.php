@@ -33,4 +33,9 @@ public function favoritedBy()
                 ->withTimestamps();
 }
 
+public function reviews()
+{
+    return $this->hasMany(Review::class);
+}
+
 }

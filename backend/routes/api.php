@@ -2,6 +2,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\PropertyController;
 
@@ -57,3 +58,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/favorites/{property}', [FavoriteController::class, 'destroy']);
     Route::get('/favorites', [FavoriteController::class, 'index']);
 });
+
+//Revievs
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/properties/{property}/reviews', [ReviewController::class, 'store']);
+});
+Route::get('/properties/{property}/reviews', [ReviewController::class, 'index']);

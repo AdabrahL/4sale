@@ -94,6 +94,7 @@ class PropertyController extends Controller
         ]));
 
         return response()->json([
+            'status' => 'success',
             'message' => 'Property created successfully',
             'property' => new PropertyResource($property),
         ], 201);
@@ -103,7 +104,10 @@ class PropertyController extends Controller
     public function update(Request $request, Property $property)
     {
         if ($property->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthorized'
+            ], 403);
         }
 
         $request->validate([
@@ -142,6 +146,7 @@ class PropertyController extends Controller
         $property->update($data);
 
         return response()->json([
+            'status' => 'success',
             'message' => 'Property updated successfully',
             'property' => new PropertyResource($property)
         ]);
@@ -151,7 +156,10 @@ class PropertyController extends Controller
     public function destroy(Request $request, Property $property)
     {
         if ($property->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthorized'
+            ], 403);
         }
 
         // Delete property images from storage
@@ -165,6 +173,7 @@ class PropertyController extends Controller
         $property->delete();
 
         return response()->json([
+            'status' => 'success',
             'message' => 'Property and its images deleted successfully'
         ]);
     }
