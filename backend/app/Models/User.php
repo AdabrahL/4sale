@@ -59,4 +59,16 @@ public function reviews()
     return $this->hasMany(Review::class);
 }
 
+// app/Models/User.php
+
+public function properties()
+{
+    return $this->hasMany(\App\Models\Property::class);
+}
+
+public function user()
+{
+    return $this->belongsTo(User::class);
+}
+
 }

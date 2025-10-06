@@ -17,9 +17,10 @@ class PropertyResource extends JsonResource
         $images = is_string($this->images) ? json_decode($this->images, true) : $this->images;
         $images = $images ?? [];
 
-        // Convert relative paths into full URLs
+        // Convert relative paths into FULL URLs
         $imageUrls = array_map(function ($path) {
-            return Storage::url($path); // gives /storage/properties/...
+            return asset(Storage::url($path)); 
+            // e.g. http://backend.test/storage/properties/filename.jpg
         }, $images);
 
         return [

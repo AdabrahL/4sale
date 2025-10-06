@@ -1,0 +1,197 @@
+/* === 2050 Futuristic Login/Register Styles === */
+
+body.auth-page {
+  margin: 0;
+  padding: 0;
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(135deg, #0f0f1e, #1a1a2e, #0a0a0f);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Animated gradient glow background */
+body.auth-page::before {
+  content: "";
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(0, 128, 255, 0.4), transparent 70%);
+  top: -200px;
+  left: -200px;
+  border-radius: 50%;
+  animation: float 10s infinite alternate ease-in-out;
+  z-index: 0;
+}
+body.auth-page::after {
+  content: "";
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(255, 0, 200, 0.4), transparent 70%);
+  bottom: -150px;
+  right: -150px;
+  border-radius: 50%;
+  animation: float 12s infinite alternate-reverse ease-in-out;
+  z-index: 0;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px) scale(1);
+  }
+  100% {
+    transform: translateY(40px) scale(1.1);
+  }
+}
+
+/* Auth container (Login/Register card) */
+.auth-container {
+  position: relative;
+  z-index: 1;
+  width: 380px;
+  padding: 40px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  animation: fadeInUp 1.2s ease;
+}
+
+/* Title */
+.auth-container h2 {
+  color: #fff;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 28px;
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(0, 128, 255, 0.7);
+}
+
+/* Input fields */
+.auth-container input {
+  width: 100%;
+  padding: 12px 16px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 12px;
+  outline: none;
+  font-size: 15px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
+}
+
+.auth-container input::placeholder {
+  color: #aaa;
+}
+
+.auth-container input:focus {
+  background: rgba(0, 128, 255, 0.15);
+  box-shadow: 0 0 10px #0080ff, 0 0 20px #0080ff;
+}
+
+/* Submit button */
+.auth-container button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 15px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(135deg, #0080ff, #6a00ff);
+  transition: all 0.3s ease;
+  box-shadow: 0 0 15px #0080ff80;
+}
+
+.auth-container button:hover {
+  transform: scale(1.05);
+  background: linear-gradient(135deg, #6a00ff, #0080ff);
+  box-shadow: 0 0 20px #6a00ff, 0 0 30px #0080ff;
+}
+
+/* Error / messages */
+.auth-container .error {
+  background: rgba(255, 0, 0, 0.2);
+  color: #ff8080;
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+/* Footer links */
+.auth-container p {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+  color: #bbb;
+}
+.auth-container p a {
+  color: #00aaff;
+  text-decoration: none;
+  transition: 0.3s;
+}
+.auth-container p a:hover {
+  color: #fff;
+  text-shadow: 0 0 10px #00aaff;
+}
+
+/* Social login buttons */
+.social-login {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+.social-login button {
+  flex: 1;
+  margin: 0 5px;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  color: #fff;
+  transition: all 0.3s ease;
+}
+.social-login .google {
+  background: #db4437;
+  box-shadow: 0 0 15px rgba(219, 68, 55, 0.6);
+}
+.social-login .google:hover {
+  box-shadow: 0 0 20px #db4437, 0 0 40px #db4437;
+}
+.social-login .facebook {
+  background: #1877f2;
+  box-shadow: 0 0 15px rgba(24, 119, 242, 0.6);
+}
+.social-login .facebook:hover {
+  box-shadow: 0 0 20px #1877f2, 0 0 40px #1877f2;
+}
+.social-login .linkedin {
+  background: #0a66c2;
+  box-shadow: 0 0 15px rgba(10, 102, 194, 0.6);
+}
+.social-login .linkedin:hover {
+  box-shadow: 0 0 20px #0a66c2, 0 0 40px #0a66c2;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

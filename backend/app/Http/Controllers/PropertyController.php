@@ -9,59 +9,56 @@ use Illuminate\Support\Facades\Storage;
 
 class PropertyController extends Controller
 {
-    // List all properties with filters, search, and pagination
-    public function index(Request $request)
-    {
-        $query = Property::query();
+    // List all properties with filters, search, pagination and user info
+public function index(Request $request)
+{
+    $query = Property::with('user');
 
-        // Filtering
-        if ($request->has('location')) {
-            $query->where('location', 'like', '%' . $request->location . '%');
-        }
-
-        if ($request->has('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->has('property_type')) {
-            $query->where('property_type', $request->property_type);
-        }
-
-        if ($request->has('min_price')) {
-            $query->where('price', '>=', $request->min_price);
-        }
-
-        if ($request->has('max_price')) {
-            $query->where('price', '<=', $request->max_price);
-        }
-
-        // Pagination (default 10 per page, can be changed with ?per_page=20)
-        $perPage = $request->get('per_page', 10);
-        $properties = $query->paginate($perPage);
-
-        return PropertyResource::collection($properties)
-            ->additional([
-                'status' => 'success',
-                'filters' => $request->all(),
-            ]);
+    if ($request->filled('location')) {
+        $query->where('location', 'like', "%{$request->location}%");
     }
+
+    if ($request->filled('property_type')) {
+        $query->where('property_type', $request->property_type);
+    }
+
+    if ($request->filled('min_price')) {
+        $query->where('price', '>=', (int) $request->min_price);
+    }
+
+    if ($request->filled('max_price')) {
+        $query->where('price', '<=', (int) $request->max_price);
+    }
+
+    // ✅ Use Resource Collection for consistent JSON
+    return PropertyResource::collection(
+        $query->paginate(10)
+    );
+}
+
 
     // Show a single property
     public function show(Property $property)
     {
-        return new PropertyResource($property);
+        return new PropertyResource($property->load('user')); // also load user
     }
 
-    // Show only logged-in user’s properties
+    // Show only logged-in user’s properties (with pagination + user)
     public function myProperties(Request $request)
     {
-        $properties = Property::where('user_id', $request->user()->id)->paginate(10);
+        $user = $request->user();
 
-        return PropertyResource::collection($properties)
-            ->additional([
-                'status' => 'success',
-                'message' => 'My Listings fetched successfully',
-            ]);
+        $perPage = $request->get('per_page', 10);
+        $properties = $user->properties()
+            ->with('user')
+            ->latest()
+            ->paginate($perPage);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'My Listings fetched successfully',
+            'data' => $properties
+        ]);
     }
 
     // Store a new property (auth required)
@@ -96,7 +93,7 @@ class PropertyController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Property created successfully',
-            'property' => new PropertyResource($property),
+            'property' => new PropertyResource($property->load('user')),
         ], 201);
     }
 
@@ -148,7 +145,7 @@ class PropertyController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Property updated successfully',
-            'property' => new PropertyResource($property)
+            'property' => new PropertyResource($property->load('user'))
         ]);
     }
 
