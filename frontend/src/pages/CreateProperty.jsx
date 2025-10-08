@@ -1,18 +1,22 @@
-// src/pages/CreateProperty.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
 import { useAuth } from "../contexts/AuthContext";
+
+const PROPER_GREEN = "#228B22"; // Forest Green
 
 export default function CreateProperty() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  // You can fetch categories from backend or hardcode them
+  const [categories, setCategories] = useState([]);
   const [form, setForm] = useState({
     title: "",
     description: "",
     price: "",
     property_type: "",
+    category_id: "",
     status: "available",
     location: "",
     bedrooms: "",
@@ -25,16 +29,32 @@ export default function CreateProperty() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Fetch categories from backend (recommended)
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const res = await API.get("/categories");
+        setCategories(res.data.data || []);
+      } catch (e) {
+        setCategories([
+          { id: 1, name: "Residential" },
+          { id: 2, name: "Commercial" },
+          { id: 3, name: "Land" },
+          { id: 4, name: "Others" },
+        ]); // fallback
+      }
+    }
+    fetchCategories();
+  }, []);
+
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-
     if (name === "images" && files) {
       const newFiles = Array.from(files);
       setForm((prev) => ({
         ...prev,
         images: [...prev.images, ...newFiles],
       }));
-
       const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
       setImagePreviews((prev) => [...prev, ...newPreviews]);
     } else {
@@ -76,7 +96,10 @@ export default function CreateProperty() {
 
       navigate("/properties");
     } catch (err) {
-      setError("Failed to create property. Try again.");
+      setError(
+        err.response?.data?.message ||
+          "Failed to create property. Please check your inputs and try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -84,26 +107,33 @@ export default function CreateProperty() {
 
   if (!user)
     return (
-      <p className="text-center text-red-600 font-semibold">
+      <p className="text-center text-red-600 font-semibold mt-12">
         You must be logged in to create a property.
       </p>
     );
 
   return (
-    <div className="max-w-3xl mx-auto bg-white p-8 shadow-lg rounded-xl mt-6">
-      <h1 className="text-3xl font-bold mb-6 text-center text-green-700">
+    <div
+      className="max-w-3xl mx-auto bg-white p-8 shadow-xl rounded-2xl mt-8"
+      style={{ border: `2px solid ${PROPER_GREEN}` }}
+    >
+      <h1
+        className="text-3xl font-bold mb-7 text-center"
+        style={{ color: PROPER_GREEN }}
+      >
         Create New Property
       </h1>
 
       {error && (
-        <p className="text-red-500 text-center mb-4 bg-red-100 p-2 rounded">
+        <div className="mb-5 p-3 bg-red-100 text-red-700 rounded text-center font-semibold">
           {error}
-        </p>
+        </div>
       )}
 
       <form
         onSubmit={handleSubmit}
-        className="grid grid-cols-1 md:grid-cols-2 gap-6"
+        className="grid grid-cols-1 md:grid-cols-2 gap-7"
+        autoComplete="off"
       >
         <input
           type="text"
@@ -111,7 +141,8 @@ export default function CreateProperty() {
           placeholder="Property Title"
           value={form.title}
           onChange={handleChange}
-          className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-green-600"
+          className="w-full border p-3 rounded-lg focus:ring-2"
+          style={{ borderColor: PROPER_GREEN }}
           required
         />
 
@@ -121,15 +152,33 @@ export default function CreateProperty() {
           placeholder="Price (USD)"
           value={form.price}
           onChange={handleChange}
-          className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-yellow-500"
+          className="w-full border p-3 rounded-lg focus:ring-2"
+          style={{ borderColor: "#FFD700" }}
           required
         />
+
+        <select
+          name="category_id"
+          value={form.category_id}
+          onChange={handleChange}
+          className="w-full border p-3 rounded-lg focus:ring-2"
+          style={{ borderColor: PROPER_GREEN }}
+          required
+        >
+          <option value="">Select Category</option>
+          {categories.map((cat) => (
+            <option key={cat.id} value={cat.id}>
+              {cat.name}
+            </option>
+          ))}
+        </select>
 
         <select
           name="property_type"
           value={form.property_type}
           onChange={handleChange}
-          className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-green-600"
+          className="w-full border p-3 rounded-lg focus:ring-2"
+          style={{ borderColor: "#FFD700" }}
           required
         >
           <option value="">Select Property Type</option>
@@ -143,7 +192,8 @@ export default function CreateProperty() {
           name="status"
           value={form.status}
           onChange={handleChange}
-          className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-yellow-500"
+          className="w-full border p-3 rounded-lg focus:ring-2"
+          style={{ borderColor: PROPER_GREEN }}
         >
           <option value="available">Available</option>
           <option value="sold">Sold</option>
@@ -156,7 +206,8 @@ export default function CreateProperty() {
           placeholder="Location"
           value={form.location}
           onChange={handleChange}
-          className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-green-600 col-span-2"
+          className="w-full border p-3 rounded-lg focus:ring-2 col-span-2"
+          style={{ borderColor: "#FFD700" }}
           required
         />
 
@@ -166,7 +217,8 @@ export default function CreateProperty() {
           placeholder="Bedrooms"
           value={form.bedrooms}
           onChange={handleChange}
-          className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-yellow-500"
+          className="w-full border p-3 rounded-lg focus:ring-2"
+          style={{ borderColor: PROPER_GREEN }}
         />
 
         <input
@@ -175,7 +227,8 @@ export default function CreateProperty() {
           placeholder="Bathrooms"
           value={form.bathrooms}
           onChange={handleChange}
-          className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-green-600"
+          className="w-full border p-3 rounded-lg focus:ring-2"
+          style={{ borderColor: "#FFD700" }}
         />
 
         <input
@@ -184,7 +237,8 @@ export default function CreateProperty() {
           placeholder="Size (sqft)"
           value={form.size}
           onChange={handleChange}
-          className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-yellow-500"
+          className="w-full border p-3 rounded-lg focus:ring-2"
+          style={{ borderColor: PROPER_GREEN }}
         />
 
         <textarea
@@ -192,7 +246,8 @@ export default function CreateProperty() {
           placeholder="Property Description"
           value={form.description}
           onChange={handleChange}
-          className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-green-600 col-span-2"
+          className="w-full border p-3 rounded-lg focus:ring-2 col-span-2"
+          style={{ borderColor: "#FFD700" }}
           rows="4"
           required
         />
@@ -203,11 +258,12 @@ export default function CreateProperty() {
             name="images"
             multiple
             onChange={handleChange}
-            className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-yellow-500"
+            className="w-full border p-3 rounded-lg focus:ring-2"
+            style={{ borderColor: PROPER_GREEN }}
           />
 
           {imagePreviews.length > 0 && (
-            <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-4">
               {imagePreviews.map((src, index) => (
                 <div
                   key={index}
@@ -221,7 +277,7 @@ export default function CreateProperty() {
                   <button
                     type="button"
                     onClick={() => removeImage(index)}
-                    className="absolute top-2 right-2 bg-red-600 text-white text-xs px-2 py-1 rounded opacity-80 group-hover:opacity-100"
+                    className="absolute top-2 right-2 bg-red-700 text-white text-xs px-2 py-1 rounded opacity-80 group-hover:opacity-100"
                   >
                     ✕
                   </button>
@@ -234,7 +290,17 @@ export default function CreateProperty() {
         <button
           type="submit"
           disabled={loading}
-          className="col-span-2 bg-green-700 text-white py-3 rounded-lg font-semibold hover:bg-green-800 transition"
+          className="col-span-2 py-3 rounded-lg font-bold transition"
+          style={{
+            background: PROPER_GREEN,
+            color: "#fff",
+            fontSize: "1.1rem",
+            marginTop: "10px",
+            boxShadow: loading
+              ? `0 0 0 2px #228B22`
+              : "0 2px 12px rgba(34,139,34,0.08)",
+            opacity: loading ? 0.7 : 1,
+          }}
         >
           {loading ? "Saving..." : "Create Property"}
         </button>

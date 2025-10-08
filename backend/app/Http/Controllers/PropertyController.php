@@ -66,6 +66,7 @@ public function index(Request $request)
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
+            'category_id' => 'required|exists:categories,id',
             'description' => 'nullable|string',
             'price' => 'required|numeric',
             'property_type' => 'required|string',
@@ -109,6 +110,7 @@ public function index(Request $request)
 
         $request->validate([
             'title' => 'sometimes|string|max:255',
+            'category_id' => 'required|exists:categories,id',
             'description' => 'sometimes|string',
             'price' => 'sometimes|numeric',
             'property_type' => 'sometimes|string',
@@ -174,4 +176,27 @@ public function index(Request $request)
             'message' => 'Property and its images deleted successfully'
         ]);
     }
+
+    
+
+   public function related(Property $property)
+{
+    $results = Property::where('id', '!=', $property->id)
+        ->get();
+
+    $related = $results->filter(function($item) use ($property) {
+        $score = 0;
+        if ($item->category_id == $property->category_id) $score++;
+        if ($item->location == $property->location) $score++;
+        if ($item->property_type == $property->property_type) $score++;
+        if ($item->bedrooms == $property->bedrooms) $score++;
+        // add other fields if desired
+        return $score >= 2;
+    })->take(4);
+
+    return PropertyResource::collection($related)->additional([
+        'status' => 'success',
+        'message' => 'Related properties fetched successfully',
+    ]);
+}
 }

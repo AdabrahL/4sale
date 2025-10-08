@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\PropertyController;
 
@@ -71,3 +72,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/properties/{property}/reviews', [ReviewController::class, 'store']);
 });
 Route::get('/properties/{property}/reviews', [ReviewController::class, 'index']);
+
+// ========================
+// 📝 Contact routes
+// ========================
+Route::post('/properties/{property}/contact', [ContactController::class, 'store'])->middleware('auth:sanctum');
+Route::get('/properties/related/{property}', [PropertyController::class, 'related']);

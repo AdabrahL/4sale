@@ -1,0 +1,239 @@
+/* Branding Colors */
+.text-green { color: #228B22 !important; }
+.text-yellow { color: #ffe600 !important; }
+.bg-green { background: #228B22 !important; }
+.bg-yellow { background: #ffe600 !important; }
+.btn-green {
+  background-color: #228B22;
+  color: #fff;
+  border-radius: 8px;
+  border: none;
+  padding: 0.6em 1.3em;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+.btn-green:hover, .btn-green:focus {
+  background-color: #1e7820;
+  color: #fff;
+}
+.btn-yellow {
+  background-color: #ffe600;
+  color: #252525;
+  border-radius: 8px;
+  border: none;
+  padding: 0.6em 1.3em;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+.btn-yellow:hover, .btn-yellow:focus {
+  background-color: #ffd100;
+  color: #252525;
+}
+
+/* Section Titles */
+.section-title h2 {
+  font-weight: 700;
+  color: #228B22;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title .fa-star {
+  color: #ffe600;
+  font-size: 1.3em;
+}
+
+/* Featured Properties */
+.featured {
+	padding-top: 80px;
+	padding-bottom: 40px;
+}
+.featured__item {
+	margin-bottom: 50px;
+	border-radius: 18px;
+	overflow: hidden;
+	background: #fff;
+	box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+	transition: box-shadow 0.2s;
+}
+.featured__item:hover {
+	box-shadow: 0 16px 40px rgba(34,139,34,0.18); /* Forest Green shadow */
+}
+.property-card .badge-yellow {
+  background: #ffe600;
+  color: #252525;
+  font-weight: bold;
+  padding: 0.3em 0.8em;
+  border-radius: 12px;
+  font-size: 0.95em;
+  margin-top: 6px;
+  display: inline-block;
+}
+.featured__item__pic {
+	height: 220px;
+	position: relative;
+	overflow: hidden;
+	background-position: center center;
+}
+.featured__item__pic__hover {
+	position: absolute;
+	left: 0;
+	bottom: -50px;
+	width: 100%;
+	text-align: center;
+	transition: all 0.5s;
+}
+.featured__item:hover .featured__item__pic .featured__item__pic__hover {
+	bottom: 20px;
+}
+.featured__item__pic__hover a {
+	font-size: 18px;
+	color: #228B22;
+	height: 40px;
+	width: 40px;
+	line-height: 40px;
+	text-align: center;
+	border: 1px solid #ebebeb;
+	background: #fff;
+	display: inline-block;
+	border-radius: 50%;
+	margin: 0 5px;
+	transition: all 0.3s;
+	box-shadow: 0 2px 8px rgba(34,139,34,0.08); /* Forest Green shadow */
+}
+.featured__item__pic__hover a:hover {
+	background: #228B22;
+	color: #fff;
+	border-color: #228B22;
+	transform: scale(1.08) rotate(-10deg);
+}
+.featured__item__text {
+	text-align: center;
+	padding-top: 15px;
+}
+.featured__item__text h6 a {
+	color: #228B22;
+	font-weight: 600;
+}
+.featured__item__text h5 {
+	color: #ffe600;
+	font-weight: 700;
+	font-size: 1.18em;
+}
+.featured__item__text .card-text {
+  color: #888;
+  font-size: 0.97em;
+}
+
+/* Categories */
+.categories__item {
+  border-radius: 18px;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  height: 180px;
+  display: flex;
+  align-items: flex-end;
+  padding: 1.4em;
+}
+.categories__item h5 a {
+  color: #fff;
+  background: #228B22;
+  padding: 0.5em 1.2em;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1.09em;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.18);
+  transition: background 0.2s;
+}
+.categories__item h5 a:hover {
+  background: #ffe600;
+  color: #252525;
+}
+
+/* Benefits (Why Choose Us) */
+.benefits__item {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 18px rgba(34,139,34,0.10); /* Forest Green shadow */
+  padding: 2em 1em;
+  text-align: center;
+  margin-bottom: 32px;
+  transition: box-shadow 0.2s;
+}
+.benefits__item:hover {
+  box-shadow: 0 8px 36px rgba(34,139,34,0.18); /* Forest Green shadow */
+}
+.benefits__item i {
+  font-size: 2.2em;
+  margin-bottom: 18px;
+}
+.benefits__item h6 {
+  color: #228B22;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.benefits__item p {
+  color: #888;
+  font-size: 0.97em;
+}
+
+/* Call to Action */
+.callto {
+  padding: 60px 0;
+  background-size: cover;
+  background-position: center;
+  border-radius: 20px;
+  margin: 48px 0;
+}
+.callto h2 {
+  color: #228B22;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.callto p {
+  color: #ffe600;
+  font-size: 1.05em;
+  font-weight: 500;
+}
+.callto .btn-green {
+  margin-top: 14px;
+  font-size: 1.07em;
+}
+
+.site-btn {
+  background: #228B22;
+  color: #fff;
+  border-radius: 6px;
+  border: none;
+  padding: 0.6em 1.3em;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+.site-btn:hover, .site-btn:focus {
+  background: #1e7820;
+  color: #fff;
+}
+
+/* Responsive improvements */
+@media (max-width: 991px) {
+  .featured__item,
+  .benefits__item,
+  .categories__item {
+    margin-bottom: 28px;
+  }
+  .categories__item {
+    height: 140px;
+  }
+}
+@media (max-width: 575px) {
+  .featured__item,
+  .benefits__item,
+  .categories__item {
+    margin-bottom: 18px;
+  }
+  .categories__item {
+    height: 90px;
+    padding: 0.7em;
+  }
+}

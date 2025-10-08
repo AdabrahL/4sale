@@ -1,0 +1,428 @@
+.property-details-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 0.5rem;
+}
+@media (min-width: 900px) {
+  .property-details-container {
+    flex-direction: row;
+    gap: 2.5rem;
+  }
+  .property-main-section {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  .property-agent-card {
+    width: 340px;
+    flex-shrink: 0;
+    margin-top: 0;
+  }
+}
+.property-main-section {
+  width: 100%;
+  min-width: 0;
+}
+.property-image-gallery {
+  margin-bottom: 2rem;
+}
+.property-main-image {
+  width: 100%;
+  height: 340px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 20px rgba(34,139,34,0.08);
+  margin-bottom: 10px;
+  background: #f7f7f7;
+}
+.property-main-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.property-thumbnails {
+  display: flex;
+  gap: 0.75rem;
+}
+.property-thumb-img {
+  height: 62px;
+  width: 95px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 2px solid #e5e7eb;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: border 0.2s, opacity 0.2s, transform 0.2s;
+}
+.property-thumb-img:hover {
+  opacity: 1;
+  border-color: #228B22;
+  transform: scale(1.08);
+}
+.property-thumb-active {
+  border-color: #228B22;
+  opacity: 1;
+  transform: scale(1.09);
+}
+.property-no-images {
+  padding: 2.5rem;
+  text-align: center;
+  color: #888;
+  background: #f8fafb;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+}
+
+.property-title-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+@media (min-width: 700px) {
+  .property-title-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+.property-title {
+  font-size: 2.1rem;
+  font-weight: bold;
+  color: #222;
+  margin-bottom: 0.2rem;
+}
+.property-price {
+  font-size: 2.1rem;
+  font-weight: bold;
+  color: #228B22;
+}
+
+.property-badges {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.7rem;
+}
+.property-badge {
+  border-radius: 8px;
+  padding: 0.3em 1.1em;
+  font-weight: 600;
+  font-size: 0.95em;
+  border: 1px solid #228B22;
+  letter-spacing: 0.01em;
+  background: #f5f5f5;
+  color: #228B22;
+}
+.property-badge-gray {
+  border-color: #ccc;
+  color: #444;
+  background: #e5e7eb;
+}
+.property-badge-featured {
+  background: #228B22;
+  color: #fff;
+  border: 1px solid #228B22;
+}
+.property-location {
+  font-size: 1.07em;
+  color: #444;
+  margin-bottom: 1.1rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+}
+
+.property-features-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.1rem;
+  margin-bottom: 2rem;
+}
+@media (min-width: 700px) {
+  .property-features-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+.property-feature {
+  background: #f4f8f5;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1.2em 0.7em;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(34,139,34,0.07);
+}
+.property-feature-value {
+  font-size: 1.18em;
+  font-weight: bold;
+  color: #228B22;
+}
+.property-feature-label {
+  font-size: 0.98em;
+  color: #555;
+  margin-top: 2px;
+}
+
+.property-description-section {
+  margin-bottom: 2rem;
+}
+.property-section-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #228B22;
+  margin-bottom: 0.7em;
+}
+.property-description {
+  padding: 1.1em;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #ededed;
+  color: #222;
+  box-shadow: 0 1px 12px rgba(34,139,34,0.06);
+  font-size: 1.06em;
+  line-height: 1.7;
+  white-space: pre-line;
+}
+
+.property-share-row {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  margin-bottom: 2rem;
+}
+.property-share-label {
+  font-size: 1em;
+  font-weight: 500;
+  color: #444;
+}
+.property-share-btn {
+  display: inline-block;
+  background: #f4f8f5;
+  border-radius: 8px;
+  padding: 0.5em 0.7em;
+  font-size: 1.2em;
+  color: #228B22;
+  border: 1px solid #e5e7eb;
+  transition: background 0.18s, color 0.18s;
+}
+.property-share-btn:hover {
+  background: #228B22;
+  color: #fff;
+  border-color: #228B22;
+}
+
+.property-map-section {
+  margin-bottom: 2.2rem;
+}
+
+.property-agent-card {
+  width: 100%;
+  max-width: 360px;
+  margin-top: 3rem;
+}
+.agent-card-inner {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(34,139,34,0.11);
+  border: 1px solid #e5e7eb;
+  padding: 2rem 1.2rem;
+  text-align: left;
+}
+.agent-card-title {
+  color: #228B22;
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-bottom: 1.1em;
+}
+.agent-card-row {
+  display: flex;
+  align-items: center;
+  gap: 1.1em;
+  margin-bottom: 1.1em;
+}
+.agent-avatar {
+  background: #e6f1e5;
+  color: #228B22;
+  border: 2px solid #228B22;
+  font-weight: 800;
+  font-size: 1.5em;
+  border-radius: 100%;
+  width: 3.2em;
+  height: 3.2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(34,139,34,0.15);
+}
+.agent-name {
+  font-size: 1.13em;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 2px;
+}
+.agent-email {
+  font-size: 0.99em;
+  color: #555;
+}
+.agent-contact-btn {
+  width: 100%;
+  margin-top: 0.7em;
+  padding: 0.8em 0;
+  background: #228B22;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1.08em;
+  box-shadow: 0 2px 10px rgba(34,139,34,0.10);
+  cursor: not-allowed;
+  transition: background 0.22s;
+}
+.agent-contact-btn:hover {
+  background: #1e7820;
+}
+
+/* Responsive fixes */
+@media (max-width: 900px) {
+  .property-details-container {
+    flex-direction: column;
+  }
+  .property-agent-card {
+    max-width: 100%;
+    margin-top: 2rem;
+  }
+}
+
+/* ... (use previous CSS from my last response and add these new styles below) ... */
+
+.property-fav-btn {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  background: rgba(255,255,255,0.92);
+  border-radius: 50%;
+  border: 1.5px solid #228B22;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #228B22;
+  font-size: 1.3em;
+  box-shadow: 0 1px 8px rgba(34,139,34,0.09);
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, border 0.18s;
+  z-index: 2;
+}
+.property-fav-btn.active {
+  background: #228B22;
+  color: #fff;
+  border-color: #228B22;
+}
+.property-fav-btn:hover {
+  background: #228B22;
+  color: #fff;
+  border-color: #228B22;
+}
+
+/* Related Properties */
+.property-related-section {
+  margin-top: 2.5rem;
+}
+.property-related-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1.3rem;
+}
+@media (max-width: 1000px) {
+  .property-related-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 650px) {
+  .property-related-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.property-related-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(34,139,34,0.08);
+  border: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-decoration: none;
+  padding: 1em;
+  transition: box-shadow 0.18s, border 0.18s;
+}
+.property-related-card:hover {
+  box-shadow: 0 8px 32px rgba(34,139,34,0.15);
+  border-color: #228B22;
+}
+.property-related-img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 0.7em;
+}
+.property-related-title {
+  font-weight: 600;
+  color: #222;
+  font-size: 1.07em;
+  margin-bottom: 2px;
+}
+.property-related-price {
+  color: #228B22;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+.property-related-location {
+  font-size: 0.97em;
+  color: #444;
+}
+
+/* Contact Form */
+.agent-contact-form {
+  margin-top: 1.3em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7em;
+}
+.agent-contact-form textarea {
+  border: 1px solid #228B22;
+  border-radius: 8px;
+  padding: 0.8em;
+  font-size: 1em;
+  min-height: 60px;
+  resize: vertical;
+  background: #f8fafb;
+}
+.agent-contact-btn {
+  width: 100%;
+  padding: 0.8em 0;
+  background: #228B22;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1.08em;
+  box-shadow: 0 2px 10px rgba(34,139,34,0.10);
+  cursor: pointer;
+  transition: background 0.22s;
+}
+.agent-contact-btn:disabled {
+  background: #a7d2b3;
+  cursor: not-allowed;
+}
+.agent-contact-status {
+  font-size: 0.97em;
+  color: #228B22;
+  margin-top: 0.3em;
+  text-align: center;
+}

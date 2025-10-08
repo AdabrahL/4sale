@@ -26,6 +26,8 @@ class PropertyResource extends JsonResource
         return [
             'id'            => $this->id,
             'title'         => $this->title,
+            'category_id'   => $this->category_id,
+            'category_name' => $this->category ? $this->category->name : null,
             'description'   => $this->description,
             'price'         => $this->price,
             'property_type' => $this->property_type,
