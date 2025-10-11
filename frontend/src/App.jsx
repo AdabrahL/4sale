@@ -11,6 +11,9 @@ import CreateProperty from "./pages/CreateProperty";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import Blog from "./pages/Blog";
+import PostBlog from "./pages/PostBlog";
+import Insights from "./pages/Insights";
+
 
 function App() {
   return (
@@ -30,6 +33,8 @@ function App() {
           <Route path="properties" element={<Properties />} />
           <Route path="properties/:id" element={<PropertyDetails />} />
           <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/post" element={<PostBlog />} />
+          <Route path="/insights" element={<Insights />} />
           {/* user pages */}
           <Route path="my-properties" element={<MyProperties />} />
 

@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\CategoryController;
@@ -92,9 +93,19 @@ Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories', [\App\Http\Controllers\CategoryController::class, 'index']);
 
 // ========================
+// Blogs Routes
+// ========================
+Route::get('/blogs', [BlogController::class, 'index']);
+Route::post('/blogs', [BlogController::class, 'store'])->middleware('auth:sanctum');
+Route::get('/blogs/{id}', [BlogController::class, 'show']);
+Route::put('/blogs/{id}', [BlogController::class, 'update'])->middleware('auth:sanctum');
+Route::delete('/blogs/{id}', [BlogController::class, 'destroy'])->middleware('auth:sanctum');
+
+// ========================
 // 🛠️ Test & Utility routes
 // ========================
 Route::get('/test', fn() => response()->json(['message' => 'Backend is working fine 🚀']));
 Route::get('/', fn() => response()->json(['message' => 'Welcome to the Backend API 🚀', 'status' => 'online']));
 Route::get('/ping', fn() => response()->json(['message' => 'pong']));
 Route::middleware('auth:sanctum')->get('/user', fn(Request $request) => $request->user());
+

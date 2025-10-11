@@ -71,4 +71,9 @@ public function user()
     return $this->belongsTo(User::class);
 }
 
+// Add to your User model
+public function isAdmin()
+{
+    return $this->is_admin; // Ensure your users table has 'is_admin' boolean column
+}
 }

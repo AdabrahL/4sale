@@ -1,36 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-
-const blogs = [
-  {
-    id: 1,
-    title: "The Future of Real Estate",
-    excerpt: "Discover trends shaping the property market in 2025 and beyond...",
-    author: "Jane Admin",
-    date: "2025-09-20",
-    image: "/img/blog1.jpg",
-  },
-  // ...more blogs
-];
-
-const books = [
-  {
-    id: 1,
-    title: "Real Estate Investing 101",
-    author: "John Doe",
-    cover: "/img/book1.jpg",
-    link: "https://amazon.com/example-book",
-  },
-  // ...more books
-];
 
 export default function Blog() {
   const { user } = useAuth();
   const [tab, setTab] = useState("blogs");
+  const [blogs, setBlogs] = useState([]);
+  const [books, setBooks] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Replace user.isAdmin with your actual admin check
   const isAdmin = user && user.isAdmin;
+
+  useEffect(() => {
+    fetch("/api/blogs")
+      .then(res => res.json())
+      .then(data => {
+        setBlogs(data.filter(b => b.type === "blog"));
+        setBooks(data.filter(b => b.type === "book"));
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
 
   return (
     <div className="blog-page container py-5">
@@ -38,7 +28,7 @@ export default function Blog() {
         <h2 className="blog-title">Resources</h2>
         {isAdmin && (
           <Link to="/blog/post" className="btn btn-green">
-            + Post Blog
+            + Post Blog/Book
           </Link>
         )}
       </div>
@@ -57,22 +47,28 @@ export default function Blog() {
         </button>
       </div>
       <div className="blog-content">
-        {tab === "blogs" ? (
+        {loading ? (
+          <div>Loading...</div>
+        ) : tab === "blogs" ? (
           <div className="blog-list row">
-            {blogs.map((blog) => (
+            {blogs.length === 0 ? (
+              <div className="col-12"><p>No blogs yet.</p></div>
+            ) : blogs.map((blog) => (
               <div key={blog.id} className="col-lg-4 col-md-6 mb-4">
                 <div className="blog-card card shadow-sm">
-                  <img
-                    src={blog.image}
-                    alt={blog.title}
-                    className="card-img-top"
-                    style={{ height: "180px", objectFit: "cover" }}
-                  />
+                  {blog.image && (
+                    <img
+                      src={blog.image.startsWith('http') ? blog.image : `/storage/${blog.image}`}
+                      alt={blog.title}
+                      className="card-img-top"
+                      style={{ height: "180px", objectFit: "cover" }}
+                    />
+                  )}
                   <div className="card-body">
                     <h5 className="card-title">{blog.title}</h5>
                     <p className="card-text">{blog.excerpt}</p>
                     <div className="text-muted small">
-                      {blog.author} &mdash; {blog.date}
+                      {blog.user?.name || blog.author} &mdash; {blog.created_at?.slice(0,10)}
                     </div>
                     <Link to={`/blog/${blog.id}`} className="btn btn-green btn-sm mt-2">
                       Read More
@@ -84,20 +80,24 @@ export default function Blog() {
           </div>
         ) : (
           <div className="book-list row">
-            {books.map((book) => (
+            {books.length === 0 ? (
+              <div className="col-12"><p>No books yet.</p></div>
+            ) : books.map((book) => (
               <div key={book.id} className="col-lg-3 col-md-4 mb-4">
                 <div className="book-card card shadow-sm">
-                  <img
-                    src={book.cover}
-                    alt={book.title}
-                    className="card-img-top"
-                    style={{ height: "160px", objectFit: "cover" }}
-                  />
+                  {book.image && (
+                    <img
+                      src={book.image.startsWith('http') ? book.image : `/storage/${book.image}`}
+                      alt={book.title}
+                      className="card-img-top"
+                      style={{ height: "160px", objectFit: "cover" }}
+                    />
+                  )}
                   <div className="card-body">
                     <h6 className="card-title">{book.title}</h6>
-                    <p className="card-text">{book.author}</p>
+                    <p className="card-text">{book.book_author}</p>
                     <a
-                      href={book.link}
+                      href={book.book_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="btn btn-green btn-sm mt-2"
