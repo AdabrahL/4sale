@@ -1,10 +1,11 @@
-// src/contexts/AuthContext.jsx
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import API from "../api/axios";
 
 const AuthContext = createContext();
 
-export function AuthProvider({ children }) {
+export const useAuth = () => useContext(AuthContext);
+
+export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -20,7 +21,6 @@ export function AuthProvider({ children }) {
         setLoading(false);
       }
     };
-
     checkUser();
   }, []);
 
@@ -58,8 +58,4 @@ export function AuthProvider({ children }) {
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  return useContext(AuthContext);
-}
+};

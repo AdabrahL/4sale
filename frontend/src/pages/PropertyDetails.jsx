@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useParams } from "react-router-dom";
 import API from "../api/axios";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-
+import MessageThread from "../components/MessageThread";
+// import { AuthContext } from "../context/AuthContext"; // Uncomment if you use context
 
 const PROPER_GREEN = "#228B22";
 const defaultCenter = [5.6037, -0.1870]; // Accra fallback
@@ -28,6 +29,10 @@ function formatPrice(price) {
 
 const PropertyDetails = () => {
   const { id } = useParams();
+  // const { user } = useContext(AuthContext); // If you use context
+  // const currentUserId = user?.id;
+  const currentUserId = 1; // Replace with your logic to get the logged-in user ID!
+
   const [property, setProperty] = useState(null);
   const [mainImg, setMainImg] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -44,7 +49,6 @@ const PropertyDetails = () => {
         setProperty(data.data);
         setMainImg(data.data.images?.[0]);
         setBookmarked(data.data.is_bookmarked || false);
-        // Geocode for map (simple approach, backend could store coords)
         if (data.data.location) {
           const geo = await fetch(
             `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
@@ -65,15 +69,17 @@ const PropertyDetails = () => {
     fetchProperty();
   }, [id]);
 
-  // Fetch related properties
-  useEffect(() => {
-    if (property?.category_id) {
-      API.get(`/properties/related/${property.id}`)
-        .then(({ data }) => setRelated(data.data || []));
-    }
-  }, [property, id]);
+ useEffect(() => {
+  console.log("Related effect running. property:", property);
+  if (property?.category_id) {
+    API.get(`/properties/related/${property.id}`)
+      .then(({ data }) => {
+        console.log("Related properties response:", data);
+        setRelated(data.data || []);
+      });
+  }
+}, [property, id]);
 
-  // Bookmark handler
   const handleBookmark = async () => {
     try {
       if (!bookmarked) {
@@ -88,7 +94,6 @@ const PropertyDetails = () => {
     }
   };
 
-  // Contact seller/agent
   const handleMessageSend = async (e) => {
     e.preventDefault();
     setMessageStatus("");
@@ -313,20 +318,11 @@ const PropertyDetails = () => {
         </div>
       </div>
 
-      {/* Contact/Agent UI */}
+       {/* Contact/Agent UI */}
       {property.user && (
         <aside className="property-agent-card">
           <div className="agent-card-inner">
             <h3 className="agent-card-title">Contact Agent/Seller</h3>
-            <div className="agent-card-row">
-              <div className="agent-avatar">
-                {property.user.name?.[0] || "?"}
-              </div>
-              <div>
-                <div className="agent-name">{property.user.name}</div>
-                <div className="agent-email">{property.user.email}</div>
-              </div>
-            </div>
             <form className="agent-contact-form" onSubmit={handleMessageSend}>
               <textarea
                 placeholder="Write a message to the seller/agent"
@@ -346,6 +342,8 @@ const PropertyDetails = () => {
                 <div className="agent-contact-status">{messageStatus}</div>
               )}
             </form>
+            {/* MessageThread: show messages between logged-in user and agent */}
+            <MessageThread propertyId={property.id} userId={currentUserId} />
           </div>
         </aside>
       )}

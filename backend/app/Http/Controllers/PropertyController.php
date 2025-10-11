@@ -21,6 +21,9 @@ public function index(Request $request)
     if ($request->filled('property_type')) {
         $query->where('property_type', $request->property_type);
     }
+if ($request->filled('status')) {
+    $query->where('status', $request->status);
+}
 
     if ($request->filled('min_price')) {
         $query->where('price', '>=', (int) $request->min_price);
@@ -30,13 +33,14 @@ public function index(Request $request)
         $query->where('price', '<=', (int) $request->max_price);
     }
 
-    // ✅ Use Resource Collection for consistent JSON
+    // Order by newest first
+    $query->orderBy('id', 'desc');
+
+    // Get all results (no pagination)
     return PropertyResource::collection(
-        $query->paginate(10)
+        $query->get()
     );
 }
-
-
     // Show a single property
     public function show(Property $property)
     {
@@ -67,10 +71,10 @@ public function index(Request $request)
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'category_id' => 'required|exists:categories,id',
-            'description' => 'nullable|string',
+            'description' => 'required|string',
             'price' => 'required|numeric',
             'property_type' => 'required|string',
-            'status' => 'required|string',
+            'status' => 'required|in:for_sale,for_rent,lease',
             'location' => 'required|string',
             'bedrooms' => 'nullable|integer',
             'bathrooms' => 'nullable|integer',

@@ -15,11 +15,12 @@ const Properties = () => {
 };
 
 const [filters, setFilters] = useState({
-  category: "",
+ category: "",
   type: "",
   location: "",
   minPrice: "",
   maxPrice: "",
+  status: "",
 });
   const [loading, setLoading] = useState(false);
 
@@ -58,82 +59,113 @@ const [filters, setFilters] = useState({
 
   return (
     <div>
-      {/* Hero Section */}
-      <section
-        className="hero set-bg"
-        style={{ backgroundImage: "url('/img/hero/estate-hero.jpg')" }}
-      >
-        <div className="container">
-          <div className="hero__text">
-            <h2 className="text-green">Find Your Dream Property Today</h2>
-            <p className="text-yellow">
-              Buy • Sell • Invest in Lands, Houses & Commercial Properties
-            </p>
-            {user && (
-              <div className="mb-3">
-                <Link to="/properties/create" className="btn btn-green">
-                  + Post a Property
-                </Link>
-              </div>
-            )}
-            {/* Search Form */}
-            <form
-  onSubmit={(e) => {
+    {/* Hero Section */}
+<section
+  className="hero-section set-bg"
+  style={{
+    backgroundImage:
+      "url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1500&q=80')",
+  }}
+>
+  <div className="hero-container">
+    <div className="hero-text">
+      <h1>Find Your Dream Property Today</h1>
+      <p>
+        Buy, Sell, or Invest in Lands, Houses &amp; Commercial Properties — All with Trusted Agents.
+      </p>
+      {user && (
+        <div className="hero-action">
+          <Link to="/properties/create" className="hero-btn">
+            + Post a Property
+          </Link>
+        </div>
+      )}
+      {/* Search Form */}
+<form
+  onSubmit={e => {
     e.preventDefault();
     fetchProperties();
   }}
-  className="hero__search"
+  className="hero-search hero-search--inline"
 >
-  <input
-    type="text"
-    name="location"
-    value={filters.location}
-    onChange={handleFilterChange}
-    placeholder="Search by location..."
-  />
-  <select
-    name="category"
-    value={filters.category}
-    onChange={handleFilterChange}
-  >
-    <option value="">All Categories</option>
-    {Object.keys(categories).map((cat) => (
-      <option key={cat} value={cat}>{cat}</option>
-    ))}
-  </select>
-  <select
-    name="type"
-    value={filters.type}
-    onChange={handleFilterChange}
-    disabled={!filters.category}
-  >
-    <option value="">All Types</option>
-    {filters.category &&
-      categories[filters.category].map((type) => (
-        <option key={type} value={type}>{type}</option>
+  <div className="form-field">
+    <i className="fa fa-map-marker"></i>
+    <input
+      type="text"
+      name="location"
+      value={filters.location}
+      onChange={handleFilterChange}
+      placeholder="Location"
+    />
+  </div>
+  <div className="form-field">
+    <i className="fa fa-list-alt"></i>
+    <select
+      name="category"
+      value={filters.category}
+      onChange={handleFilterChange}
+    >
+      <option value="">Category</option>
+      {Object.keys(categories).map(cat => (
+        <option key={cat} value={cat}>{cat}</option>
       ))}
-  </select>
-  <input
-    type="number"
-    name="minPrice"
-    placeholder="Min Price"
-    value={filters.minPrice}
-    onChange={handleFilterChange}
-  />
-  <input
-    type="number"
-    name="maxPrice"
-    placeholder="Max Price"
-    value={filters.maxPrice}
-    onChange={handleFilterChange}
-  />
-  <button type="submit" className="btn btn-yellow">
-    Search
+    </select>
+  </div>
+  <div className="form-field">
+    <i className="fa fa-building"></i>
+    <select
+      name="type"
+      value={filters.type}
+      onChange={handleFilterChange}
+      disabled={!filters.category}
+    >
+      <option value="">Type</option>
+      {filters.category &&
+        categories[filters.category].map(type => (
+          <option key={type} value={type}>{type}</option>
+        ))}
+    </select>
+  </div>
+  <div className="form-field">
+    <i className="fa fa-info-circle"></i>
+    <select
+      name="status"
+      value={filters.status}
+      onChange={handleFilterChange}
+    >
+      <option value="">Status</option>
+      <option value="for_sale">For Sale</option>
+      <option value="for_rent">For Rent</option>
+      <option value="lease">Lease</option>
+    </select>
+  </div>
+  <div className="form-field">
+    <i className="fa fa-money"></i>
+    <input
+      type="number"
+      name="minPrice"
+      placeholder="Min Price"
+      value={filters.minPrice}
+      onChange={handleFilterChange}
+    />
+  </div>
+  <div className="form-field">
+    <i className="fa fa-money"></i>
+    <input
+      type="number"
+      name="maxPrice"
+      placeholder="Max Price"
+      value={filters.maxPrice}
+      onChange={handleFilterChange}
+    />
+  </div>
+  <button type="submit" className="hero-btn hero-btn--search">
+    <i className="fa fa-search"></i> Search
   </button>
 </form>
-          </div>
-        </div>
-      </section>
+    </div>
+  </div>
+</section>
 
       {/* Featured Properties */}
       <section className="featured spad">

@@ -1,0 +1,30 @@
+.property-agent-card {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-top: 2rem;
+  box-shadow: 0 2px 8px rgba(34,139,34,0.08);
+}
+.agent-card-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.agent-card-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #228B22;
+}
+.agent-avatar {
+  width: 40px;
+  height: 40px;
+  background: #e6f4ea;
+  color: #228B22;
+  font-size: 1.5em;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1rem;
+}

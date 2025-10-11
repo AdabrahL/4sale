@@ -1,0 +1,103 @@
+.home-page {
+  min-height: 100vh;
+  background: #f7fff5;
+}
+
+.hero-section {
+  min-height: 430px;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+.hero-section::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(34,139,34,0.69) 0%, rgba(44,96,56,0.79) 100%);
+  z-index: 1;
+}
+.hero-container {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 20px 0 20px;
+  text-align: center;
+  color: #fff;
+}
+.hero-text h1 {
+  font-size: 2.6rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: #eafbe2;
+  text-shadow: 0 2px 12px rgba(34,139,34,0.2);
+  letter-spacing: 0.5px;
+}
+.hero-text p {
+  font-size: 1.3rem;
+  margin-bottom: 2rem;
+  color: #def5d6;
+  font-weight: 400;
+  text-shadow: 0 1px 8px rgba(34,139,34,0.18);
+  letter-spacing: 0.3px;
+}
+.hero-action {
+  margin-bottom: 2rem;
+}
+.hero-btn,
+.hero-btn--outline {
+  display: inline-block;
+  background: linear-gradient(90deg, #228B22 60%, #39a845 100%);
+  color: #fff;
+  font-weight: 600;
+  padding: 0.65rem 2.1rem;
+  border-radius: 100px;
+  box-shadow: 0 2px 8px rgba(34,139,34,0.10);
+  border: none;
+  text-decoration: none;
+  font-size: 1.07rem;
+  transition: background 0.2s, transform 0.16s;
+  margin-bottom: 8px;
+}
+.hero-btn--outline {
+  background: none;
+  border: 2px solid #fff;
+  color: #fff;
+  margin-left: 1rem;
+}
+.hero-btn:hover,
+.hero-btn--outline:hover {
+  background: linear-gradient(90deg, #39a845 60%, #228B22 100%);
+  color: #eaffea;
+  transform: scale(1.04);
+}
+
+/* Featured Section */
+.featured-section {
+  background: #f8fff7;
+  padding: 2.5rem 0 3rem;
+}
+.section-title {
+  color: #228B22;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+.featured-list {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 160px;
+}
+.featured-placeholder {
+  padding: 2rem 3rem;
+  background: #eafbe2;
+  border-radius: 14px;
+  color: #228B22;
+  font-size: 1.1rem;
+  box-shadow: 0 2px 14px rgba(34,139,34,0.08);
+}

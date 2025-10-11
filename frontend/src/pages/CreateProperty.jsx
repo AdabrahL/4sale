@@ -17,7 +17,7 @@ export default function CreateProperty() {
     price: "",
     property_type: "",
     category_id: "",
-    status: "available",
+    status: "for_sale",
     location: "",
     bedrooms: "",
     bathrooms: "",
@@ -189,16 +189,17 @@ export default function CreateProperty() {
         </select>
 
         <select
-          name="status"
-          value={form.status}
-          onChange={handleChange}
-          className="w-full border p-3 rounded-lg focus:ring-2"
-          style={{ borderColor: PROPER_GREEN }}
-        >
-          <option value="available">Available</option>
-          <option value="sold">Sold</option>
-          <option value="rented">Rented</option>
-        </select>
+  name="status"
+  value={form.status}
+  onChange={handleChange}
+  className="w-full border p-3 rounded-lg focus:ring-2"
+  style={{ borderColor: PROPER_GREEN }}
+>
+  <option value="for_sale">For Sale</option>
+  <option value="for_rent">For Rent</option>
+  <option value="lease">Lease</option>
+  
+</select>
 
         <input
           type="text"

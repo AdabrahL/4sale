@@ -1,0 +1,56 @@
+.message-thread {
+  background: #f7f7fc;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.msg-in, .msg-out {
+  padding: .5rem;
+  border-radius: 6px;
+  margin-bottom: .5rem;
+  max-width: 70%;
+}
+
+.msg-in {
+  background: #e6f4ea;
+  align-self: flex-start;
+}
+
+.msg-out {
+  background: #dbeafe;
+  align-self: flex-end;
+  margin-left: auto;
+}
+
+.msg-date {
+  font-size: 0.8em;
+  color: #888;
+  margin-top: 0.3em;
+}
+
+.message-thread textarea {
+  width: 100%;
+  min-height: 50px;
+  margin-top: .5rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  padding: .5rem;
+}
+
+.message-thread button {
+  margin-top: .5rem;
+  background: #228B22;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: .4rem 1.2rem;
+  cursor: pointer;
+  font-weight: bold;
+}
+.message-thread button:disabled {
+  background: #bbb;
+  cursor: not-allowed;
+}

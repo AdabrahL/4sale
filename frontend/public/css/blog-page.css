@@ -1,0 +1,41 @@
+.blog-title {
+  font-size: 2.1rem;
+  font-weight: 700;
+  color: #228B22;
+}
+.blog-tabs {
+  display: flex;
+  gap: 1.2rem;
+}
+.blog-tab-btn {
+  background: none;
+  border: 2px solid #eafbe2;
+  color: #228B22;
+  font-weight: 600;
+  font-size: 1.09rem;
+  padding: 0.5rem 1.4rem;
+  border-radius: 100px;
+  transition: background 0.18s, color 0.18s, border 0.18s;
+  cursor: pointer;
+}
+.blog-tab-btn.active {
+  background: #228B22;
+  color: #fff;
+  border: 2px solid #39a845;
+}
+.blog-card, .book-card {
+  border-radius: 13px;
+  overflow: hidden;
+}
+.btn-green {
+  background: linear-gradient(90deg, #228B22 60%, #39a845 100%);
+  color: #fff;
+  border-radius: 100px;
+  font-weight: 600;
+  border: none;
+  transition: background 0.18s, color 0.18s;
+}
+.btn-green:hover {
+  background: linear-gradient(90deg, #39a845 60%, #228B22 100%);
+  color: #eafbe2;
+}

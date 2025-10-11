@@ -20,6 +20,7 @@ class Property extends Model
     'bathrooms',
     'size',
     'user_id',
+    'category_id',
     'images'
 ];
 
