@@ -12,7 +12,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:5173')],
+    'allowed_origins' => ['http://localhost:5173', 'http://backend.test'],
 
     'allowed_origins_patterns' => [],
 

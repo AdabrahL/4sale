@@ -3,10 +3,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Message;
 use App\Models\Property;
+use App\Models\User;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 use App\Http\Resources\MessageResource;
-use App\Notifications\NewMessageNotification;
 
 class MessagesController extends Controller
 {
@@ -42,7 +41,7 @@ class MessagesController extends Controller
             'reply_to' => 'nullable|integer|exists:messages,id'
         ]);
         $user = $request->user();
-        $property = \App\Models\Property::findOrFail($property_id);
+        $property = Property::findOrFail($property_id);
         $receiver_id = $property->user_id;
 
         $msg = Message::create([
@@ -53,7 +52,7 @@ class MessagesController extends Controller
             'reply_to' => $validated['reply_to'] ?? null,
         ]);
 
-        // Optionally trigger notification/email here
+        // Optionally: $receiver = User::find($receiver_id); $receiver->notify(new NewMessageNotification($msg));
 
         return new MessageResource($msg);
     }
@@ -79,28 +78,26 @@ class MessagesController extends Controller
             'message' => $validated['message'],
             'reply_to' => $original->id,
         ]);
-// In store/reply methods after Message::create
-$receiver = User::find($receiver_id);
-$receiver->notify(new NewMessageNotification($msg));
-        // Optionally trigger notification/email here
+
+        // Optionally: $receiver = User::find($original->sender_id); $receiver->notify(new NewMessageNotification($msg));
 
         return new MessageResource($msg);
     }
 
+    // Threaded conversation between property owner and a user
     public function thread($property_id, $user_id)
-{
-    // Show all messages between property owner and a user for a property
-    $property = Property::findOrFail($property_id);
+    {
+        $property = Property::findOrFail($property_id);
 
-    $messages = Message::where('property_id', $property_id)
-        ->where(function ($q) use ($user_id, $property) {
-            $q->where('sender_id', $user_id)->where('receiver_id', $property->user_id)
-              ->orWhere('sender_id', $property->user_id)->where('receiver_id', $user_id);
-        })
-        ->orderBy('created_at')
-        ->with(['sender', 'receiver', 'property'])
-        ->get();
+        $messages = Message::where('property_id', $property_id)
+            ->where(function ($q) use ($user_id, $property) {
+                $q->where('sender_id', $user_id)->where('receiver_id', $property->user_id)
+                  ->orWhere('sender_id', $property->user_id)->where('receiver_id', $user_id);
+            })
+            ->orderBy('created_at')
+            ->with(['sender', 'receiver', 'property'])
+            ->get();
 
-    return MessageResource::collection($messages);
-}
+        return MessageResource::collection($messages);
+    }
 }

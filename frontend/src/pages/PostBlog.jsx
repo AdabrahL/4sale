@@ -6,7 +6,7 @@ export default function PostBlog() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  if (!user || !user.isAdmin) {
+  if (!user || !user.is_admin) {
     return (
       <div className="container py-5">
         <div className="alert alert-danger mt-4">
@@ -44,7 +44,7 @@ export default function PostBlog() {
       if (imageFile) formData.append("image", imageFile);
 
       // Assumes you have auth token in localStorage or context
-      const res = await fetch("/api/blogs", {
+      const res = await fetch("http://localhost:8000/api/blogs", {
         method: "POST",
         body: formData,
         headers: {

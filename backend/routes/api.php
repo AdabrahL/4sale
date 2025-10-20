@@ -4,13 +4,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlogController;
+use App\Http\Controllers\AgentController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\MessagesController;
 use App\Http\Controllers\PropertyController;
-
+use App\Http\Controllers\UserController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -47,6 +48,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/properties/{property}', [PropertyController::class, 'update']);
     Route::delete('/properties/{property}', [PropertyController::class, 'destroy']);
     Route::get('/my-properties', [PropertyController::class, 'myProperties']);
+    Route::post('/properties/{property}/update-with-images', [PropertyController::class, 'updateWithImages']);
 });
 
 // ========================
@@ -77,15 +79,10 @@ Route::post('/properties/{property}/contact', [ContactController::class, 'store'
 // ✉️ Messages routes
 // ========================
 Route::middleware('auth:sanctum')->group(function () {
-    // Inbox for authenticated user (agent/buyer)
     Route::get('/messages/inbox', [MessagesController::class, 'inbox']);
-    // Sent messages for authenticated user
     Route::get('/messages/sent', [MessagesController::class, 'sent']);
-    // Send a new message to property owner (buyer to agent)
     Route::post('/properties/{property}/contact', [MessagesController::class, 'store']);
-    // Agent reply to a message
     Route::post('/messages/{message}/reply', [MessagesController::class, 'reply']);
-    // Threaded conversation between property owner and a user
     Route::get('/properties/{property}/messages/{user}', [MessagesController::class, 'thread']);
 });
 
@@ -109,3 +106,17 @@ Route::get('/', fn() => response()->json(['message' => 'Welcome to the Backend A
 Route::get('/ping', fn() => response()->json(['message' => 'pong']));
 Route::middleware('auth:sanctum')->get('/user', fn(Request $request) => $request->user());
 
+// ========================
+// Agents Routes
+// ========================
+Route::get('/agents', [AgentController::class, 'index']);
+Route::get('/agents/{id}', [AgentController::class, 'show']);
+
+
+// ========================
+// User Profile Routes      
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/profile', [UserController::class, 'showProfile']);
+    Route::post('/profile/update', [UserController::class, 'updateProfile']);
+    Route::post('/profile/password', [UserController::class, 'updatePassword']);
+});

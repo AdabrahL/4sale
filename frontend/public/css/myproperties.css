@@ -1,0 +1,235 @@
+.my-properties-container {
+  padding: 2rem;
+  background: #f7f7f7;
+  min-height: 100vh;
+}
+.mp-title {
+  font-size: 2rem;
+  color: #228B22;
+  font-weight: bold;
+  margin-bottom: 2rem;
+}
+.mp-empty {
+  color: #888;
+  font-size: 1.1rem;
+  margin-top: 2rem;
+}
+.mp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+}
+.mp-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(34,139,34,0.09);
+  min-height: 340px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #eee;
+  transition: box-shadow 0.28s, transform 0.21s;
+  animation: fadeInUp 0.5s;
+}
+.mp-card:hover {
+  box-shadow: 0 8px 32px rgba(34,139,34,0.12);
+  transform: translateY(-6px) scale(1.03);
+}
+.mp-image {
+  height: 140px;
+  background: #e6f4ea;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid #eee;
+}
+.mp-no-image {
+  color: #228B22;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+.mp-content {
+  padding: 1.2rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.mp-card-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #228B22;
+  margin-bottom: 0.25em;
+  word-break: break-word;
+}
+.mp-location {
+  font-size: 0.98rem;
+  color: #888;
+  margin-bottom: 0.6em;
+}
+.mp-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5em;
+}
+.mp-price {
+  color: #228B22;
+  font-size: 1.08em;
+  font-weight: bold;
+}
+.mp-type {
+  font-size: 0.98em;
+  color: #555;
+  background: #e6f4ea;
+  border-radius: 9px;
+  padding: 0.2em 0.8em;
+}
+.mp-details {
+  font-size: 0.96em;
+  color: #666;
+  margin-bottom: 0.8em;
+  word-break: break-word;
+}
+.mp-actions {
+  margin-top: 1em;
+  display: flex;
+  gap: 0.6em;
+}
+.mp-btn {
+  background: #228B22;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  font-weight: 500;
+  padding: 0.35em 1.1em;
+  box-shadow: 0 2px 8px rgba(34,139,34,0.04);
+  transition: background 0.21s;
+  cursor: pointer;
+  font-size: 0.97em;
+}
+.mp-btn:hover {
+  background: #196f1a;
+}
+.mp-edit {
+  background: #228B22;
+}
+.mp-delete {
+  background: #c0392b;
+}
+.mp-delete:hover {
+  background: #a93226;
+}
+/* Modal styles */
+.mp-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(34,139,34,0.20);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.mp-modal {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(34,139,34,0.13);
+  max-width: 340px;
+  width: 100%;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.mp-modal-title {
+  font-size: 1.13rem;
+  color: #228B22;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+.mp-modal-btns {
+  display: flex;
+  gap: 1em;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+@keyframes fadeInUp {
+  0% { opacity:0; transform: translateY(30px);}
+  100% { opacity:1; transform: translateY(0);}
+}
+
+
+
+
+
+
+
+.mp-edit-form {
+  max-height: 65vh;
+  overflow-y: auto;
+  padding-right: 0.5em;
+}
+.mp-edit-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6em;
+  margin-bottom: 1em;
+}
+.mp-img-preview {
+  position: relative;
+  display: inline-block;
+}
+.mp-img-preview img {
+  width: 70px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #eee;
+  margin-right: 0.4em;
+}
+.mp-img-preview .mp-btn.mp-delete {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 0.9em;
+  padding: 0.15em 0.5em;
+  border-radius: 5px;
+}
+
+.mp-img-preview {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin: 0.4em;
+  background: #e6f4ea;
+  border: 1px solid #eee;
+}
+
+.mp-edit-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4em;
+  margin-bottom: 0.7em;
+  align-items: center;
+}
+
+.mp-img-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.mp-img-remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  padding: 0.11em 0.4em;
+  font-size: 0.89em;
+  border-radius: 6px;
+}
+
+.mp-modal-scroll {
+  max-height: 85vh;
+  overflow-y: auto;
+}

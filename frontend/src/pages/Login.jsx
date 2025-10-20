@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 
+// Make sure you have FontAwesome loaded in your HTML or in your main JS file
+// For example, in public/index.html: <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
 
 export default function Login() {
   const { login } = useAuth();
@@ -71,9 +73,15 @@ export default function Login() {
       </form>
 
       <div className="social-login">
-        <button className="google" type="button">Google</button>
-        <button className="facebook" type="button">Facebook</button>
-        <button className="linkedin" type="button">LinkedIn</button>
+        <button className="google" type="button">
+          <i className="fab fa-google"></i>
+        </button>
+        <button className="facebook" type="button">
+          <i className="fab fa-facebook-f"></i>
+        </button>
+        <button className="linkedin" type="button">
+          <i className="fab fa-linkedin-in"></i>
+        </button>
       </div>
 
       <p>

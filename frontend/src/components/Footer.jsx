@@ -73,12 +73,6 @@ export default function Footer() {
         <div className="row mt-4">
           <div className="col-lg-12">
             <div className="footer__widget text-center">
-              <h6>Join Our Newsletter</h6>
-              <p>Get updates about new listings, market trends, and real estate tips.</p>
-              <form className="d-inline-block" action="#">
-                <input type="text" placeholder="Enter your email" />
-                <button type="submit" className="site-btn">Subscribe</button>
-              </form>
               <div className="footer__widget__social mt-3">
                 <a href="#"><i className="fa fa-facebook"></i></a>
                 <a href="#"><i className="fa fa-instagram"></i></a>

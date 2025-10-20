@@ -2,13 +2,21 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useState, useEffect } from "react";
 
+// Use VITE_BACKEND_URL from .env or fallback to http://backend.test
+const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://backend.test";
+
+// Utility function to get the correct photo URL
+function getPhotoUrl(photo) {
+  if (!photo) return "/default-avatar.png";
+  return photo.startsWith("http") ? photo : `${backendUrl}/storage/${photo}`;
+}
+
 export default function Navbar() {
   const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
 
-  // Listen for scroll to show/hide top bar and change nav background
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 64);
@@ -17,7 +25,6 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Tabs: Replace "Home" and "Contact" with relevant ones for real estate
   const navTabs = [
     { to: "/home", label: "Home" },
     { to: "/properties", label: "Properties" },
@@ -28,7 +35,7 @@ export default function Navbar() {
 
   return (
     <header className={`header ${scrolled ? "nav-scrolled" : ""}`}>
-      {/* Top Bar - hidden on scroll */}
+      {/* Top Bar */}
       <div className={`header__top${scrolled ? " hide" : ""}`}>
         <div className="container">
           <div className="row align-items-center">
@@ -36,7 +43,7 @@ export default function Navbar() {
               <div className="header__top__left">
                 <ul>
                   <li>
-                    <i className="fa fa-envelope"></i> support@yourestate.com
+                    <i className="fa fa-envelope"></i> 4Sale@gmail.com
                   </li>
                   <li>Buy • Sell • Rent • Invest</li>
                 </ul>
@@ -111,7 +118,7 @@ export default function Navbar() {
             </nav>
           </div>
 
-          {/* Saved & My Properties (only logged in) */}
+          {/* Saved, My Properties, Profile (only logged in) */}
           {user && (
             <div className="col-lg-3 d-none d-lg-block">
               <div className="header__cart d-flex justify-content-end">
@@ -124,6 +131,21 @@ export default function Navbar() {
                   <li>
                     <Link to="/my-properties" title="My Properties">
                       <i className={`fa fa-home${scrolled ? " white-icon" : ""}`}></i>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/profile" className="profile-icon" title="Profile">
+                      <img
+                        src={getPhotoUrl(user.photo)}
+                        alt="Profile"
+                        style={{
+                          width: "36px",
+                          height: "36px",
+                          borderRadius: "50%",
+                          objectFit: "cover",
+                          border: "2px solid #228B22"
+                        }}
+                      />
                     </Link>
                   </li>
                 </ul>
@@ -168,6 +190,24 @@ export default function Navbar() {
                     <li>
                       <NavLink to="/my-properties" onClick={() => setMobileOpen(false)}>
                         My Properties
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink to="/profile" onClick={() => setMobileOpen(false)}>
+                        <span style={{display: "inline-flex", alignItems: "center"}}>
+                          <img
+                            src={getPhotoUrl(user.photo)}
+                            alt="Profile"
+                            style={{
+                              width: "28px",
+                              height: "28px",
+                              borderRadius: "50%",
+                              objectFit: "cover",
+                              border: "2px solid #228B22",
+                              marginRight: "0.5rem"
+                            }}
+                          /> Profile
+                        </span>
                       </NavLink>
                     </li>
                   </>

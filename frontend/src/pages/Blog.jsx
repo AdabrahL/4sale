@@ -9,7 +9,7 @@ export default function Blog() {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const isAdmin = user && user.isAdmin;
+ const isAdmin = user && user.is_admin;
 
   useEffect(() => {
     fetch("/api/blogs")

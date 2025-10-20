@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 
+// FontAwesome icons required (see Login.jsx for note)
 
 export default function Register() {
   const { register } = useAuth();
@@ -87,9 +88,15 @@ export default function Register() {
       </form>
 
       <div className="social-login">
-        <button className="google" type="button">Google</button>
-        <button className="facebook" type="button">Facebook</button>
-        <button className="linkedin" type="button">LinkedIn</button>
+        <button className="google" type="button">
+          <i className="fab fa-google"></i>
+        </button>
+        <button className="facebook" type="button">
+          <i className="fab fa-facebook-f"></i>
+        </button>
+        <button className="linkedin" type="button">
+          <i className="fab fa-linkedin-in"></i>
+        </button>
       </div>
 
       <p>

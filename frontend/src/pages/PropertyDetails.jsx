@@ -1,14 +1,11 @@
-import { useEffect, useState, useContext } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import API from "../api/axios";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import MessageThread from "../components/MessageThread";
-// import { AuthContext } from "../context/AuthContext"; // Uncomment if you use context
+import PropertyMessageSidebar from "../components/PropertyMessageSidebar";
 
-const PROPER_GREEN = "#228B22";
-const defaultCenter = [5.6037, -0.1870]; // Accra fallback
 
 // Fix Leaflet marker icon bug in React
 delete L.Icon.Default.prototype._getIconUrl;
@@ -21,24 +18,24 @@ L.Icon.Default.mergeOptions({
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
+const defaultCenter = [5.6037, -0.1870]; // Accra fallback
+
 function formatPrice(price) {
   return price
-    ? `$${Number(price).toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+    ? `₵${Number(price).toLocaleString(undefined, { maximumFractionDigits: 0 })}`
     : "N/A";
 }
 
 const PropertyDetails = () => {
   const { id } = useParams();
-  // const { user } = useContext(AuthContext); // If you use context
-  // const currentUserId = user?.id;
-  const currentUserId = 1; // Replace with your logic to get the logged-in user ID!
+  // You need your authenticated user object (from context/auth) for userId!
+  // For demo, we'll use a hardcoded currentUserId
+  const currentUserId = 1;
 
   const [property, setProperty] = useState(null);
-  const [mainImg, setMainImg] = useState(null);
+  const [mainImgIndex, setMainImgIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [bookmarked, setBookmarked] = useState(false);
-  const [message, setMessage] = useState("");
-  const [messageStatus, setMessageStatus] = useState("");
   const [related, setRelated] = useState([]);
   const [coords, setCoords] = useState(null);
 
@@ -47,7 +44,7 @@ const PropertyDetails = () => {
       try {
         const { data } = await API.get(`/properties/${id}`);
         setProperty(data.data);
-        setMainImg(data.data.images?.[0]);
+        setMainImgIndex(0);
         setBookmarked(data.data.is_bookmarked || false);
         if (data.data.location) {
           const geo = await fetch(
@@ -61,7 +58,7 @@ const PropertyDetails = () => {
           setCoords(defaultCenter);
         }
       } catch (err) {
-        console.error("Error fetching property:", err.response?.data || err);
+        setProperty(null);
       } finally {
         setLoading(false);
       }
@@ -69,16 +66,14 @@ const PropertyDetails = () => {
     fetchProperty();
   }, [id]);
 
- useEffect(() => {
-  console.log("Related effect running. property:", property);
-  if (property?.category_id) {
-    API.get(`/properties/related/${property.id}`)
-      .then(({ data }) => {
-        console.log("Related properties response:", data);
-        setRelated(data.data || []);
-      });
-  }
-}, [property, id]);
+  useEffect(() => {
+    if (property?.category_id) {
+      API.get(`/properties/related/${property.id}`)
+        .then(({ data }) => {
+          setRelated(data.data || []);
+        });
+    }
+  }, [property, id]);
 
   const handleBookmark = async () => {
     try {
@@ -94,151 +89,145 @@ const PropertyDetails = () => {
     }
   };
 
-  const handleMessageSend = async (e) => {
-    e.preventDefault();
-    setMessageStatus("");
-    try {
-      await API.post(`/properties/${id}/contact`, { message });
-      setMessageStatus("Message sent!");
-      setMessage("");
-    } catch (err) {
-      setMessageStatus("Failed to send. Try again.");
-    }
-  };
+  // Carousel controls
+  function prevImg() {
+    setMainImgIndex((prev) =>
+      prev === 0 ? (property.images.length - 1) : prev - 1
+    );
+  }
+  function nextImg() {
+    setMainImgIndex((prev) =>
+      prev === property.images.length - 1 ? 0 : prev + 1
+    );
+  }
 
   if (loading)
     return (
-      <div className="flex justify-center items-center h-64">
+      <div className="marketplace-details-loading">
         <span className="animate-spin mr-3">🔄</span> Loading property...
       </div>
     );
   if (!property)
     return (
-      <div className="p-6 text-center text-red-600 font-bold">
+      <div className="marketplace-details-error">
         Property not found.
       </div>
     );
 
+  const images =
+    property.images && property.images.length > 0
+      ? property.images
+      : ["/img/default.jpg"];
+
   return (
-    <div className="property-details-container">
-      {/* Main Section */}
-      <div className="property-main-section">
-        {/* Image Gallery */}
-        <div className="property-image-gallery">
-          {property.images && property.images.length > 0 ? (
-            <>
-              <div className="property-main-image">
-                <img
-                  src={mainImg}
-                  alt="Main property"
-                  className="property-main-img"
-                />
+    <div className="marketplace-details-layout">
+      {/* LEFT: Main gallery and info */}
+      <div className="marketplace-details-main">
+        {/* Carousel */}
+        <div className="marketplace-details-gallery">
+          <div className="marketplace-carousel-wrap">
+            <img
+              src={images[mainImgIndex]}
+              alt="Property"
+              className="marketplace-details-mainimg"
+            />
+            {images.length > 1 && (
+              <>
                 <button
-                  className={`property-fav-btn ${bookmarked ? "active" : ""}`}
-                  title={bookmarked ? "Bookmarked" : "Bookmark"}
-                  onClick={handleBookmark}
+                  className="marketplace-carousel-arrow left"
+                  onClick={prevImg}
+                  aria-label="Previous photo"
                 >
-                  <i className="fa fa-bookmark"></i>
+                  <i className="fa fa-chevron-left"></i>
                 </button>
-              </div>
-              {property.images.length > 1 && (
-                <div className="property-thumbnails">
-                  {property.images.map((img, i) => (
-                    <img
-                      key={i}
-                      src={img}
-                      alt={`Thumbnail ${i + 1}`}
-                      onClick={() => setMainImg(img)}
-                      className={`property-thumb-img ${
-                        img === mainImg
-                          ? "property-thumb-active"
-                          : ""
-                      }`}
-                    />
-                  ))}
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="property-no-images">
-              No images available
+                <button
+                  className="marketplace-carousel-arrow right"
+                  onClick={nextImg}
+                  aria-label="Next photo"
+                >
+                  <i className="fa fa-chevron-right"></i>
+                </button>
+              </>
+            )}
+            <button
+              className={`marketplace-fav-btn ${bookmarked ? "active" : ""}`}
+              title={bookmarked ? "Bookmarked" : "Bookmark"}
+              onClick={handleBookmark}
+            >
+              <i className="fa fa-bookmark"></i>
+            </button>
+          </div>
+          {images.length > 1 && (
+            <div className="marketplace-details-thumbs-list">
+              {images.map((img, i) => (
+                <img
+                  key={i}
+                  src={img}
+                  alt={`Thumbnail ${i + 1}`}
+                  onClick={() => setMainImgIndex(i)}
+                  className={`marketplace-details-thumb ${
+                    i === mainImgIndex ? "marketplace-thumb-active" : ""
+                  }`}
+                />
+              ))}
             </div>
           )}
         </div>
-
-        {/* Title, Price, Badges */}
-        <div className="property-title-row">
-          <h1 className="property-title">{property.title}</h1>
-          <div className="property-price">{formatPrice(property.price)}</div>
+        {/* Main Info */}
+        <div className="marketplace-details-title-row">
+          <h1 className="marketplace-details-title">{property.title}</h1>
+          <div className="marketplace-details-price">
+            {formatPrice(property.price)}
+          </div>
         </div>
-        <div className="property-badges">
+        <div className="marketplace-details-badges-row">
           {property.category_name && (
-            <span className="property-badge property-badge-green">
+            <span className="marketplace-details-badge marketplace-details-badge-green">
               {property.category_name}
             </span>
           )}
-          <span className="property-badge property-badge-green">
+          <span className="marketplace-details-badge marketplace-details-badge-green">
             {property.property_type}
           </span>
-          <span className="property-badge property-badge-gray">
+          <span className="marketplace-details-badge marketplace-details-badge-gray">
             {property.status}
           </span>
-          {property.is_featured && (
-            <span className="property-badge property-badge-featured">
-              Featured
-            </span>
-          )}
         </div>
-
-        {/* Location */}
-        <div className="property-location">
+        <div className="marketplace-details-location">
           <i className="fa fa-map-marker mr-1"></i>
           {property.location}
         </div>
-
-        {/* Features grid */}
-        <div className="property-features-grid">
-          <div className="property-feature">
-            <div className="property-feature-value">
-              {property.bedrooms ?? "N/A"}
-            </div>
-            <div className="property-feature-label">Bedrooms</div>
+        <div className="marketplace-details-features">
+          <div>
+            <i className="fa fa-bed"></i>
+            {property.bedrooms ?? "—"} <span>Bedrooms</span>
           </div>
-          <div className="property-feature">
-            <div className="property-feature-value">
-              {property.bathrooms ?? "N/A"}
-            </div>
-            <div className="property-feature-label">Bathrooms</div>
+          <div>
+            <i className="fa fa-bath"></i>
+            {property.bathrooms ?? "—"} <span>Bathrooms</span>
           </div>
-          <div className="property-feature">
-            <div className="property-feature-value">
-              {property.size ? `${property.size} sqm` : "N/A"}
-            </div>
-            <div className="property-feature-label">Size</div>
+          <div>
+            <i className="fa fa-expand"></i>
+            {property.size ? `${property.size} sqm` : "—"} <span>Area</span>
           </div>
-          <div className="property-feature">
-            <div className="property-feature-value">
-              {property.created_at
-                ? new Date(property.created_at).toLocaleDateString()
-                : "N/A"}
-            </div>
-            <div className="property-feature-label">Listed On</div>
+          <div>
+            <i className="fa fa-calendar"></i>
+            {property.created_at
+              ? new Date(property.created_at).toLocaleDateString()
+              : "—"}
+            <span>Listed</span>
           </div>
         </div>
-
-        {/* Description */}
-        <div className="property-description-section">
-          <h2 className="property-section-title">Description</h2>
-          <div className="property-description">
+        <div className="marketplace-details-desc-section">
+          <h2 className="marketplace-details-sectitle">Description</h2>
+          <div className="marketplace-details-desc">
             {property.description}
           </div>
         </div>
-
-        {/* Share buttons */}
-        <div className="property-share-row">
-          <span className="property-share-label">Share this property:</span>
+        <div className="marketplace-details-share-row">
+          <span className="marketplace-details-share-label">Share:</span>
           <a
-            className="property-share-btn"
+            className="marketplace-details-sharebtn"
             href={`https://www.facebook.com/sharer.php?u=${window.location.href}`}
             target="_blank"
             rel="noopener noreferrer"
@@ -247,7 +236,7 @@ const PropertyDetails = () => {
             <i className="fa fa-facebook"></i>
           </a>
           <a
-            className="property-share-btn"
+            className="marketplace-details-sharebtn"
             href={`https://wa.me/?text=${window.location.href}`}
             target="_blank"
             rel="noopener noreferrer"
@@ -256,7 +245,7 @@ const PropertyDetails = () => {
             <i className="fa fa-whatsapp"></i>
           </a>
           <a
-            className="property-share-btn"
+            className="marketplace-details-sharebtn"
             href={`https://twitter.com/intent/tweet?url=${window.location.href}`}
             target="_blank"
             rel="noopener noreferrer"
@@ -265,16 +254,14 @@ const PropertyDetails = () => {
             <i className="fa fa-twitter"></i>
           </a>
         </div>
-
-        {/* Dynamic Map */}
         {coords && (
-          <div className="property-map-section">
-            <h2 className="property-section-title">Location on Map</h2>
+          <div className="marketplace-details-map-section">
+            <h2 className="marketplace-details-sectitle">Location on Map</h2>
             <MapContainer
               center={coords}
               zoom={15}
               scrollWheelZoom={false}
-              style={{ width: "100%", height: "300px", borderRadius: "12px" }}
+              style={{ width: "100%", height: "260px", borderRadius: "12px" }}
             >
               <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -285,30 +272,32 @@ const PropertyDetails = () => {
             </MapContainer>
           </div>
         )}
-
-        {/* Related Properties UI */}
-        <div className="property-related-section">
-          <h2 className="property-section-title">Similar Properties</h2>
-          <div className="property-related-grid">
+        <div className="marketplace-details-related-section">
+          <h2 className="marketplace-details-sectitle">Similar Properties</h2>
+          <div className="marketplace-details-related-grid">
             {related.length === 0 ? (
-              <div className="property-no-images">No related properties found.</div>
+              <div className="marketplace-details-noimages">
+                No related properties found.
+              </div>
             ) : (
               related.map((p) => (
                 <a
                   href={`/properties/${p.id}`}
                   key={p.id}
-                  className="property-related-card"
+                  className="marketplace-details-related-card"
                 >
                   <img
                     src={p.images?.[0] || "/img/default.jpg"}
                     alt={p.title}
-                    className="property-related-img"
+                    className="marketplace-details-related-img"
                   />
-                  <div className="property-related-title">{p.title}</div>
-                  <div className="property-related-price">
+                  <div className="marketplace-details-related-title">
+                    {p.title}
+                  </div>
+                  <div className="marketplace-details-related-price">
                     {formatPrice(p.price)}
                   </div>
-                  <div className="property-related-location">
+                  <div className="marketplace-details-related-location">
                     <i className="fa fa-map-marker"></i> {p.location}
                   </div>
                 </a>
@@ -317,36 +306,12 @@ const PropertyDetails = () => {
           </div>
         </div>
       </div>
-
-       {/* Contact/Agent UI */}
-      {property.user && (
-        <aside className="property-agent-card">
-          <div className="agent-card-inner">
-            <h3 className="agent-card-title">Contact Agent/Seller</h3>
-            <form className="agent-contact-form" onSubmit={handleMessageSend}>
-              <textarea
-                placeholder="Write a message to the seller/agent"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                required
-                rows={3}
-              />
-              <button
-                type="submit"
-                className="agent-contact-btn"
-                disabled={!message}
-              >
-                Send Message
-              </button>
-              {messageStatus && (
-                <div className="agent-contact-status">{messageStatus}</div>
-              )}
-            </form>
-            {/* MessageThread: show messages between logged-in user and agent */}
-            <MessageThread propertyId={property.id} userId={currentUserId} />
-          </div>
-        </aside>
-      )}
+      {/* SIDEBAR: Message/chat */}
+      <PropertyMessageSidebar
+        propertyId={property.id}
+        seller={property.user || { name: "Seller" }}
+        userId={currentUserId}
+      />
     </div>
   );
 };

@@ -79,7 +79,7 @@ if ($request->filled('status')) {
             'bedrooms' => 'nullable|integer',
             'bathrooms' => 'nullable|integer',
             'size' => 'nullable|numeric',
-            'images.*' => 'image|mimes:jpeg,png,jpg|max:2048',
+            'images.*' => 'image|mimes:jpeg,png,jpg|max:5048',
         ]);
 
         $imagePaths = [];
@@ -201,6 +201,73 @@ if ($request->filled('status')) {
     return PropertyResource::collection($related)->additional([
         'status' => 'success',
         'message' => 'Related properties fetched successfully',
+    ]);
+}
+
+
+
+
+
+
+public function updateWithImages(Request $request, Property $property)
+{
+    if ($property->user_id !== $request->user()->id) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Unauthorized'
+        ], 403);
+    }
+
+    $validated = $request->validate([
+        'title' => 'sometimes|string|max:255',
+        'description' => 'sometimes|string',
+        'price' => 'sometimes|numeric',
+        'property_type' => 'sometimes|string',
+        'status' => 'sometimes|string',
+        'location' => 'sometimes|string',
+        'bedrooms' => 'nullable|integer',
+        'bathrooms' => 'nullable|integer',
+        'size' => 'nullable|numeric',
+        'images' => 'nullable', // images to keep (JSON array of filenames)
+        'new_images.*' => 'image|mimes:jpeg,png,jpg,webp|max:2048',
+    ]);
+
+    // 1. Handle images to keep (from 'images' field)
+    $imagesToKeep = [];
+    if ($request->filled('images')) {
+        $imagesToKeep = json_decode($request->input('images'), true) ?? [];
+    }
+
+    // 2. Handle new uploaded images
+    $newImagePaths = [];
+    if ($request->hasFile('new_images')) {
+        foreach ($request->file('new_images') as $image) {
+            $path = $image->store('properties', 'public');
+            $newImagePaths[] = $path;
+        }
+    }
+
+    // 3. Delete images that are not kept and not newly uploaded
+    $oldImages = is_string($property->images) ? json_decode($property->images, true) : ($property->images ?? []);
+    foreach ($oldImages as $img) {
+        if (!in_array($img, $imagesToKeep)) {
+            Storage::disk('public')->delete($img);
+        }
+    }
+
+    // 4. Merge kept and new images
+    $finalImages = array_merge($imagesToKeep, $newImagePaths);
+
+    // 5. Update property
+    $property->update(array_merge(
+        $validated,
+        ['images' => json_encode($finalImages)]
+    ));
+
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Property updated, images synced!',
+        'property' => new \App\Http\Resources\PropertyResource($property->fresh('user'))
     ]);
 }
 }

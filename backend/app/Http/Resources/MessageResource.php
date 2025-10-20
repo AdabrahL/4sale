@@ -9,23 +9,18 @@ class MessageResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'id' => $this->id,
-            'property' => new PropertyResource($this->property),
-            'sender' => [
-                'id' => $this->sender->id,
-                'name' => $this->sender->name,
-                'email' => $this->sender->email,
-            ],
-            'receiver' => [
-                'id' => $this->receiver->id,
-                'name' => $this->receiver->name,
-                'email' => $this->receiver->email,
-            ],
-            'message' => $this->message,
-            'is_read' => $this->is_read,
-            'reply_to' => $this->reply_to,
+            'id'         => $this->id,
+            'property_id'=> $this->property_id,
+            'sender_id'  => $this->sender_id,
+            'receiver_id'=> $this->receiver_id,
+            'message'    => $this->message,
+            'is_read'    => $this->is_read,
+            'reply_to'   => $this->reply_to,
             'created_at' => $this->created_at,
-            'replies' => MessageResource::collection($this->replies),
+            'updated_at' => $this->updated_at,
+            'property'   => new \App\Http\Resources\PropertyResource($this->whenLoaded('property')),
+            'sender'     => new \App\Http\Resources\UserResource($this->whenLoaded('sender')),
+            'receiver'   => new \App\Http\Resources\UserResource($this->whenLoaded('receiver'))
         ];
     }
 }

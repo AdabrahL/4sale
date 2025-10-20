@@ -1,6 +1,33 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import SearchFilter from "../components/SearchFilter"; // <-- import your filter component
 
 export default function Home() {
+  // Local state for filters (if you want to do search/filter on home page)
+  const [filters, setFilters] = useState({
+    category: "",
+    type: "",
+    location: "",
+    minPrice: "",
+    maxPrice: "",
+    status: "",
+  });
+
+  // Dummy search handler (redirect or fetch as needed)
+  const handleSearch = () => {
+    // You might want to redirect to /properties with filters as query params,
+    // or trigger property fetching here.
+    // Example: navigate(`/properties?${new URLSearchParams(filters)}`)
+    // For now, leave as a stub.
+  };
+
+  const handleFilterChange = (e) => {
+    setFilters({
+      ...filters,
+      [e.target.name]: e.target.value,
+    });
+  };
+
   return (
     <div className="home-page">
       {/* Hero Section */}
@@ -24,6 +51,15 @@ export default function Home() {
               <Link to="/blog" className="hero-btn hero-btn--outline ms-3">
                 Read Blog
               </Link>
+            </div>
+            {/* --- Add the SearchFilter component here --- */}
+            <div className="home-search-filter mt-4">
+              <SearchFilter
+                filters={filters}
+                onChange={handleFilterChange}
+                onSearch={handleSearch}
+                showStatus={true}
+              />
             </div>
           </div>
         </div>

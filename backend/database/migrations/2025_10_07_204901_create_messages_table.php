@@ -11,11 +11,11 @@ class CreateMessagesTable extends Migration
         Schema::create('messages', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('property_id');
-            $table->unsignedBigInteger('sender_id'); // who sent
-            $table->unsignedBigInteger('receiver_id'); // who receives
+            $table->unsignedBigInteger('sender_id');
+            $table->unsignedBigInteger('receiver_id');
             $table->text('message');
             $table->boolean('is_read')->default(false);
-            $table->unsignedBigInteger('reply_to')->nullable(); // for threading
+            $table->unsignedBigInteger('reply_to')->nullable();
             $table->timestamps();
 
             $table->foreign('property_id')->references('id')->on('properties')->onDelete('cascade');

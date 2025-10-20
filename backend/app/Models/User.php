@@ -23,6 +23,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone',
+         'photo',
+          'bio', 
+          'socials',
     ];
 
     /**
@@ -76,4 +80,8 @@ public function isAdmin()
 {
     return $this->is_admin; // Ensure your users table has 'is_admin' boolean column
 }
+
+protected $casts = [
+    'socials' => 'array',
+];
 }

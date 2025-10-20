@@ -13,6 +13,10 @@ import Home from "./pages/Home";
 import Blog from "./pages/Blog";
 import PostBlog from "./pages/PostBlog";
 import Insights from "./pages/Insights";
+import Agents from "./pages/Agents";
+import AgentProfile from "./pages/AgentProfile";
+import Profile from "./pages/Profile";
+
 
 
 function App() {
@@ -35,8 +39,15 @@ function App() {
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/post" element={<PostBlog />} />
           <Route path="/insights" element={<Insights />} />
+          <Route path="/profile" element={<Profile />} />
           {/* user pages */}
           <Route path="my-properties" element={<MyProperties />} />
+          <Route path="my-properties/:id" element={<PropertyDetails />} />
+          {/* agent pages */}
+          <Route path="agents/:id" element={<AgentProfile />} />
+          <Route path="agents" element={<Agents />} />
+
+
 
           {/* Protected page (wrap with your ProtectedRoute) */}
           <Route
