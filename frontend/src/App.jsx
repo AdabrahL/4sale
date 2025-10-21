@@ -16,6 +16,7 @@ import Insights from "./pages/Insights";
 import Agents from "./pages/Agents";
 import AgentProfile from "./pages/AgentProfile";
 import Profile from "./pages/Profile";
+import Messenger from "./pages/Messenger";
 
 
 
@@ -46,6 +47,9 @@ function App() {
           {/* agent pages */}
           <Route path="agents/:id" element={<AgentProfile />} />
           <Route path="agents" element={<Agents />} />
+
+          {/* Messages pages */}
+          <Route path="/messenger" element={<Messenger />} />
 
 
 

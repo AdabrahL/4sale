@@ -11,16 +11,18 @@ export default function Blog() {
 
  const isAdmin = user && user.is_admin;
 
-  useEffect(() => {
-    fetch("/api/blogs")
-      .then(res => res.json())
-      .then(data => {
-        setBlogs(data.filter(b => b.type === "blog"));
-        setBooks(data.filter(b => b.type === "book"));
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
+useEffect(() => {
+  fetch("http://localhost:8000/api/blogs")
+    .then(res => res.json())
+    .then(data => {
+      console.log("Blog API response:", data);
+      const blogsArr = Array.isArray(data) ? data : data.data;
+      setBlogs((blogsArr || []).filter(b => b.type === "blog"));
+      setBooks((blogsArr || []).filter(b => b.type === "book"));
+      setLoading(false);
+    })
+    .catch(() => setLoading(false));
+}, []);
 
   return (
     <div className="blog-page container py-5">

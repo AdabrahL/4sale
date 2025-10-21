@@ -124,6 +124,13 @@ export default function Navbar() {
               <div className="header__cart d-flex justify-content-end">
                 <ul className="d-flex align-items-center gap-4">
                   <li>
+                    <Link to="/messenger" className="nav-messages-link" title="Messenger">
+                    <i className="fa fa-envelope nav-messages-icon"></i>
+                    </Link>
+                  </li>
+
+
+                  <li>
                     <Link to="/saved" title="Saved">
                       <i className={`fa fa-bookmark${scrolled ? " white-icon" : ""}`}></i>
                     </Link>
@@ -182,6 +189,12 @@ export default function Navbar() {
                 ))}
                 {user && (
                   <>
+                  <li>
+                      <NavLink to="/mymessages" className="nav-messages-link" title="My Messages">
+          <i className="fa fa-envelope nav-messages-icon"></i>
+                      </NavLink>
+                    </li>
+
                     <li>
                       <NavLink to="/saved" onClick={() => setMobileOpen(false)}>
                         Saved

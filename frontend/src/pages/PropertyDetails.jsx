@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import PropertyMessageSidebar from "../components/PropertyMessageSidebar";
-
+import { useAuth } from "../contexts/AuthContext"; // <-- import useAuth
 
 // Fix Leaflet marker icon bug in React
 delete L.Icon.Default.prototype._getIconUrl;
@@ -28,9 +28,8 @@ function formatPrice(price) {
 
 const PropertyDetails = () => {
   const { id } = useParams();
-  // You need your authenticated user object (from context/auth) for userId!
-  // For demo, we'll use a hardcoded currentUserId
-  const currentUserId = 1;
+  const { user } = useAuth(); // <-- get user from context
+  const currentUserId = user?.id; // <-- use real logged-in user id
 
   const [property, setProperty] = useState(null);
   const [mainImgIndex, setMainImgIndex] = useState(0);
@@ -311,6 +310,7 @@ const PropertyDetails = () => {
         propertyId={property.id}
         seller={property.user || { name: "Seller" }}
         userId={currentUserId}
+        isOwner={currentUserId === property.user_id} // <-- pass isOwner prop
       />
     </div>
   );

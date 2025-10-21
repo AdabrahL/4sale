@@ -6,16 +6,7 @@ export default function PostBlog() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  if (!user || !user.is_admin) {
-    return (
-      <div className="container py-5">
-        <div className="alert alert-danger mt-4">
-          Access Denied. Only admins can post blogs/books.
-        </div>
-      </div>
-    );
-  }
-
+  // 🟢 Always define hooks before any return!
   const [type, setType] = useState("blog");
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
@@ -25,6 +16,17 @@ export default function PostBlog() {
   const [imageFile, setImageFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // 🔴 Move the admin-check after hooks
+  if (!user || !user.is_admin) {
+    return (
+      <div className="container py-5">
+        <div className="alert alert-danger mt-4">
+          Access Denied. Only admins can post blogs/books.
+        </div>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,16 +45,25 @@ export default function PostBlog() {
       }
       if (imageFile) formData.append("image", imageFile);
 
-      // Assumes you have auth token in localStorage or context
+      // Get token from localStorage or context—adjust as needed
+      const token = localStorage.getItem("AUTH_TOKEN") || (user && user.token);
+
       const res = await fetch("http://localhost:8000/api/blogs", {
         method: "POST",
         body: formData,
         headers: {
-          Authorization: `Bearer ${user.token}`, // Adjust per your auth system
+          Authorization: `Bearer ${token}`,
         },
       });
 
-      if (!res.ok) throw new Error("Failed to post blog/book");
+      if (!res.ok) {
+        let errMsg = "Failed to post blog/book";
+        try {
+          const errJson = await res.json();
+          errMsg = errJson.message || errMsg;
+        } catch {}
+        throw new Error(errMsg);
+      }
       setLoading(false);
       navigate("/blog");
     } catch (err) {

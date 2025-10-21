@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import API from "../api/axios";
+import { getPhotoUrl } from "../utils/getPhotoUrl"; // <-- Use your utility!
 
 // Helper for user initials/avatar fallback
 function getInitials(name) {
@@ -13,20 +14,27 @@ function getInitials(name) {
     : "AG";
 }
 
-export default function PropertyMessageSidebar({ propertyId, seller, userId }) {
+export default function PropertyMessageSidebar({
+  propertyId,
+  seller,
+  userId,
+  isOwner // <-- new prop
+}) {
   const [message, setMessage] = useState("");
   const [messageStatus, setMessageStatus] = useState("");
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showContact, setShowContact] = useState(false); // For phone number
 
   // Fetch message thread between current user and seller for this property
   useEffect(() => {
+    if (!propertyId || !userId || isOwner) return;
     setLoading(true);
     API.get(`/properties/${propertyId}/messages/${userId}`)
       .then(({ data }) => setMessages(data.data || []))
       .catch(() => setMessages([]))
       .finally(() => setLoading(false));
-  }, [propertyId, userId]);
+  }, [propertyId, userId, isOwner]);
 
   // Send message
   const handleSend = async (e) => {
@@ -45,25 +53,84 @@ export default function PropertyMessageSidebar({ propertyId, seller, userId }) {
     }
   };
 
+  // --- Agent Info Card (ALWAYS SHOW) ---
+  const agentInfo = (
+    <div className="marketplace-details-agentinfo" style={{marginBottom: 16}}>
+      {seller?.photo ? (
+        <img
+          src={getPhotoUrl(seller.photo)}
+          alt={seller.name}
+          className="marketplace-details-agentavatar"
+          style={{width: 56, height: 56, borderRadius: "50%", objectFit: "cover", border: "2px solid #228B22"}}
+        />
+      ) : (
+        <div className="marketplace-details-agentavatar-fallback" style={{
+          width: 56, height: 56, fontSize: 30, display: "flex", alignItems: "center", justifyContent: "center",
+          background: "#e2efe4", color: "#228B22", borderRadius: "50%", border: "2px solid #228B22"
+        }}>
+          {getInitials(seller?.name)}
+        </div>
+      )}
+      <div className="marketplace-details-agentname" style={{marginTop: 8, fontWeight: 600, color: "#228B22", fontSize: "1.13em"}}>
+        {seller?.name || "Agent"}
+      </div>
+      {/* Show contact button */}
+      {seller?.phone && (
+        <div style={{marginTop: 10}}>
+          {!showContact ? (
+            <button
+              className="btn btn-green btn-sm"
+              style={{margin: "0 auto", display: "block"}}
+              onClick={() => setShowContact(true)}
+              type="button"
+            >
+              <i className="fa fa-phone"></i> Show contact
+            </button>
+          ) : (
+            <div
+              className="marketplace-details-agent-contact"
+              style={{
+                marginTop: 5,
+                color: "#228B22",
+                fontWeight: "bold",
+                fontSize: "1.05em",
+                background: "#e2efe4",
+                padding: "6px 18px",
+                borderRadius: "8px",
+                display: "inline-block"
+              }}
+            >
+              <i className="fa fa-phone" style={{marginRight: 6}}></i>
+              {seller.phone}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
+  // --- Owner notice ---
+  if (isOwner) {
+    return (
+      <div className="marketplace-details-agent">
+        <div className="marketplace-details-agentwrap">
+          {agentInfo}
+          <div className="marketplace-details-owner-msg" style={{marginTop: 14}}>
+            <i className="fa fa-info-circle" style={{ color: "#228B22", marginRight: 6 }}></i>
+            <span>
+              This is your property listing. You cannot send messages to yourself.
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- Regular user view: message form and chat history ---
   return (
     <div className="marketplace-details-agent">
       <div className="marketplace-details-agentwrap">
-        <div className="marketplace-details-agentinfo">
-          {seller?.photo ? (
-            <img
-              src={seller.photo}
-              alt={seller.name}
-              className="marketplace-details-agentavatar"
-            />
-          ) : (
-            <div className="marketplace-details-agentavatar-fallback">
-              {getInitials(seller?.name)}
-            </div>
-          )}
-          <div className="marketplace-details-agentname">
-            {seller?.name || "Agent"}
-          </div>
-        </div>
+        {agentInfo}
         <h3 className="marketplace-details-agenttitle">Send message to the seller</h3>
         <form className="marketplace-details-agentform" onSubmit={handleSend}>
           <textarea

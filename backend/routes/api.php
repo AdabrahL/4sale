@@ -84,6 +84,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/properties/{property}/contact', [MessagesController::class, 'store']);
     Route::post('/messages/{message}/reply', [MessagesController::class, 'reply']);
     Route::get('/properties/{property}/messages/{user}', [MessagesController::class, 'thread']);
+    
 });
 
 Route::get('/categories', [CategoryController::class, 'index']);
@@ -119,4 +120,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', [UserController::class, 'showProfile']);
     Route::post('/profile/update', [UserController::class, 'updateProfile']);
     Route::post('/profile/password', [UserController::class, 'updatePassword']);
+
+    Route::middleware('auth:sanctum')->get('/properties/{property}/messages/{user}', [MessagesController::class, 'thread']);
 });

@@ -1,5 +1,11 @@
 import { useEffect, useState, useRef } from "react";
-import axios from "axios";
+import API from "../api/axios";
+
+const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://backend.test";
+function getImageUrl(img) {
+  if (!img) return "/img/default.jpg";
+  return img.startsWith("http") ? img : `${backendUrl}/storage/${img}`;
+}
 
 const DEFAULT_FORM = {
   title: "",
@@ -27,39 +33,29 @@ const MyProperties = () => {
     fetchProperties();
   }, []);
 
- const fetchProperties = async () => {
-  try {
-    const token = localStorage.getItem("token"); // Get token from localStorage
-    if (!token) {
-      alert("You are not logged in. Please log in first.");
-      return;
-    }
-    const response = await axios.get("http://backend.test/api/my-properties", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
+  const fetchProperties = async () => {
+    try {
+      const response = await API.get("/my-properties");
+      setProperties(response.data.data.data || response.data.data || []);
+    } catch (error) {
+      console.error("Error fetching my properties:", error);
+      if (error.response && error.response.status === 401) {
+        alert("Your session has expired or you are not logged in. Please log in again.");
       }
-    });
-    setProperties(response.data.data.data || []);
-  } catch (error) {
-    console.error("Error fetching my properties:", error);
-    if (error.response && error.response.status === 401) {
-      alert("Your session has expired or you are not logged in. Please log in again.");
-      // Optionally, redirect to login page
     }
-  }
-};
+  };
 
   const openModal = (property, edit = false) => {
     setSelectedProperty(property);
     setShowModal(true);
     setEditMode(edit);
 
-    // Parse existing images
     let images = [];
     if (property.images) {
       try {
-        images = JSON.parse(property.images);
+        images = Array.isArray(property.images)
+          ? property.images
+          : JSON.parse(property.images);
       } catch {
         images = [];
       }
@@ -87,13 +83,11 @@ const MyProperties = () => {
     if (fileInputRef.current) fileInputRef.current.value = null;
   };
 
-  // Handle form input change
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
-  // Handle new image files
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     setForm(prev => ({
@@ -102,7 +96,6 @@ const MyProperties = () => {
     }));
   };
 
-  // Remove image (existing or new)
   const handleRemoveImage = (img, type = "existing") => {
     if (type === "existing") {
       setForm(prev => ({
@@ -117,12 +110,10 @@ const MyProperties = () => {
     }
   };
 
-  // Handle Edit submit (with images)
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
       const formData = new FormData();
       formData.append("title", form.title);
       formData.append("location", form.location);
@@ -132,20 +123,16 @@ const MyProperties = () => {
       formData.append("bathrooms", form.bathrooms);
       formData.append("size", form.size);
       formData.append("description", form.description);
-      // Keep existing images
       formData.append("images", JSON.stringify(form.images));
-      // Add new images
       form.newImages.forEach((file, idx) => {
         formData.append(`new_images[${idx}]`, file);
       });
 
-      await axios.post(
-        `http://backend.test/api/properties/${selectedProperty.id}/update-with-images`,
+      await API.post(
+        `/properties/${selectedProperty.id}/update-with-images`,
         formData,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
             "Content-Type": "multipart/form-data"
           },
           withCredentials: true,
@@ -160,18 +147,12 @@ const MyProperties = () => {
     }
   };
 
-  // Handle Delete
   const handleDelete = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      await axios.delete(
-        `http://backend.test/api/properties/${selectedProperty.id}`,
+      await API.delete(
+        `/properties/${selectedProperty.id}`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
           withCredentials: true,
         }
       );
@@ -192,16 +173,23 @@ const MyProperties = () => {
       ) : (
         <div className="mp-grid">
           {properties.map((property) => {
-            // First image preview (if any)
             let images = [];
             if (property.images) {
-              try { images = JSON.parse(property.images); } catch { images = []; }
+              try {
+                images = Array.isArray(property.images)
+                  ? property.images
+                  : JSON.parse(property.images);
+              } catch { images = []; }
             }
             return (
               <div key={property.id} className="mp-card">
                 <div className="mp-image">
                   {images.length > 0 ? (
-                    <img src={`/storage/${images[0]}`} alt="Property" className="mp-img-preview" />
+                    <img
+                      src={getImageUrl(images[0])}
+                      alt="Property"
+                      className="mp-img-preview"
+                    />
                   ) : (
                     <span className="mp-no-image">No Image</span>
                   )}
@@ -210,7 +198,7 @@ const MyProperties = () => {
                   <h2 className="mp-card-title">{property.title}</h2>
                   <p className="mp-location">{property.location}</p>
                   <div className="mp-row">
-                    <span className="mp-price">${property.price}</span>
+                    <span className="mp-price">₵{property.price}</span>
                     <span className="mp-type">{property.property_type}</span>
                   </div>
                   <div className="mp-details">
@@ -251,8 +239,16 @@ const MyProperties = () => {
                       {form.images.length === 0 && <span className="mp-no-image">No Image</span>}
                       {form.images.map((img, idx) => (
                         <div key={img} className="mp-img-wrap">
-                          <img src={`/storage/${img}`} alt={`property-img-${idx}`} className="mp-img-preview" />
-                          <button type="button" className="mp-btn mp-delete mp-img-remove" onClick={() => handleRemoveImage(img, "existing")}>Remove</button>
+                          <img
+                            src={getImageUrl(img)}
+                            alt={`property-img-${idx}`}
+                            className="mp-img-preview"
+                          />
+                          <button
+                            type="button"
+                            className="mp-btn mp-delete mp-img-remove"
+                            onClick={() => handleRemoveImage(img, "existing")}
+                          >Remove</button>
                         </div>
                       ))}
                     </div>
