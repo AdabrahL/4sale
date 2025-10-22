@@ -1,70 +1,142 @@
-.blog-title {
-  font-size: 2.1rem;
-  font-weight: 700;
-  color: #228B22;
+.blog-main-page {
+  max-width: 1200px;
+  margin: 0 auto;
 }
-.blog-tabs {
+.blog-main-title {
+  font-size: 2.1em;
+  color: #228B22;
+  font-weight: bold;
+  margin-bottom: 0;
+}
+.blog-main-tabs {
   display: flex;
-  gap: 1.2rem;
+  gap: 1em;
+  margin-bottom: 1.5em;
 }
-.blog-tab-btn {
-  background: none;
-  border: 2px solid #eafbe2;
-  color: #228B22;
+.blog-main-tab-btn {
+  background: #f6fbf4;
+  border: none;
+  color: #3c463f;
   font-weight: 600;
-  font-size: 1.09rem;
-  padding: 0.5rem 1.4rem;
-  border-radius: 100px;
-  transition: background 0.18s, color 0.18s, border 0.18s;
+  font-size: 1.1em;
+  border-radius: 7px;
+  padding: 8px 28px;
   cursor: pointer;
+  transition: background 0.15s, color 0.15s;
 }
-.blog-tab-btn.active {
+.blog-main-tab-btn.active,
+.blog-main-tab-btn:hover {
   background: #228B22;
   color: #fff;
-  border: 2px solid #39a845;
 }
-.blog-card, .book-card {
-  border-radius: 13px;
+.blog-main-content-row, .blog-main-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2.5em;
+}
+.blog-main-stack-col {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.blog-main-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5em;
+}
+.blog-main-card {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 11px;
+  box-shadow: 0 2px 16px #228b2220;
   overflow: hidden;
+  transition: box-shadow 0.18s, transform 0.18s;
+  position: relative;
 }
-.btn-green {
-  background: linear-gradient(90deg, #228B22 60%, #39a845 100%);
-  color: #fff;
-  border-radius: 100px;
-  font-weight: 600;
-  border: none;
-  transition: background 0.18s, color 0.18s;
+.blog-main-card:hover {
+  box-shadow: 0 4px 32px #228b2233;
+  transform: translateY(-2px) scale(1.01);
 }
-.btn-green:hover {
-  background: linear-gradient(90deg, #39a845 60%, #228B22 100%);
-  color: #eafbe2;
+.blog-main-card-img {
+  width: 100%;
+  height: 270px;
+  object-fit: cover;
+  display: block;
+  border-top-left-radius: 11px;
+  border-top-right-radius: 11px;
 }
-
-/*------------------------------------------------------------------
-Blog Post Page Form Styles
--------------------------------------------------------------------*/
-.blog-post-form {
-  max-width: 540px;
-  margin: 0 auto;
-  background: #f8fff7;
-  padding: 2rem 2.2rem;
-  border-radius: 14px;
-  box-shadow: 0 1px 14px rgba(34,139,34,0.07);
+.blog-main-card-content {
+  padding: 1.3em 1.5em 1.1em 1.5em;
 }
-.blog-post-form .form-label {
+.blog-main-card-title {
+  color: #228B22;
+  font-size: 1.26em;
+  font-weight: 700;
+  text-decoration: none;
+  transition: color 0.13s;
+  display: block;
+  margin-bottom: 0.5em;
+}
+.blog-main-card-title:hover {
+  color: #196f1a;
+  text-decoration: underline;
+}
+.blog-main-card-excerpt {
+  color: #4d594e;
+  font-size: 1.07em;
+  margin-bottom: 1.2em;
+}
+.blog-main-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #f0f5f2;
+  padding-top: 0.95em;
+  margin-top: 0.5em;
+  background: #f6fbf4;
+  border-bottom-left-radius: 11px;
+  border-bottom-right-radius: 11px;
+  min-height: 52px;
+}
+.blog-main-card-author {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   color: #228B22;
   font-weight: 600;
+  font-size: 1.01em;
 }
-.btn-green {
-  background: linear-gradient(90deg, #228B22 60%, #39a845 100%);
-  color: #fff;
-  font-weight: 600;
-  border-radius: 100px;
-  border: none;
-  padding: 0.6rem 2rem;
-  transition: background 0.18s, color 0.18s;
+.blog-main-card-author-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #cdebc4;
+  background: #fff;
 }
-.btn-green:hover {
-  background: linear-gradient(90deg, #39a845 60%, #228B22 100%);
-  color: #eafbe2;
+.blog-main-card-date {
+  color: #859387;
+  font-size: 1em;
+}
+.blog-main-sidebar {
+  flex: 0 0 330px;
+  min-width: 270px;
+  max-width: 370px;
+}
+@media (max-width: 1100px) {
+  .blog-main-page { max-width: 100vw; }
+  .blog-main-sidebar { flex: 1 1 100%; max-width: 100vw; margin-top: 2em; }
+  .blog-main-content-row, .blog-main-row { flex-direction: column; gap: 0; }
+}
+@media (max-width: 600px) {
+  .blog-main-card-content { padding: 1em; }
+  .blog-main-card-img { height: 120px; }
+  .blog-main-title { font-size: 1.2em; }
+}
+/* ...your existing styles... */
+.tts-highlight {
+  background: #fff2a8;
+  color: #222;
+  border-radius: 4px;
+  transition: background 0.07s;
 }

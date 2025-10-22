@@ -307,11 +307,11 @@ const PropertyDetails = () => {
       </div>
       {/* SIDEBAR: Message/chat */}
       <PropertyMessageSidebar
-        propertyId={property.id}
-        seller={property.user || { name: "Seller" }}
-        userId={currentUserId}
-        isOwner={currentUserId === property.user_id} // <-- pass isOwner prop
-      />
+  propertyId={property.id}
+  seller={property.user || { id: property.user_id }} // pass user or fallback to id
+  userId={currentUserId}
+  isOwner={currentUserId === property.user_id}
+/>
     </div>
   );
 };

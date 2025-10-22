@@ -123,3 +123,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::middleware('auth:sanctum')->get('/properties/{property}/messages/{user}', [MessagesController::class, 'thread']);
 });
+Route::get('/users/{id}', function($id) {
+    return response()->json(['user' => \App\Models\User::findOrFail($id)]);
+});

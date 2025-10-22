@@ -17,6 +17,7 @@ import Agents from "./pages/Agents";
 import AgentProfile from "./pages/AgentProfile";
 import Profile from "./pages/Profile";
 import Messenger from "./pages/Messenger";
+import BlogDetail from "./pages/BlogDetail";
 
 
 
@@ -31,7 +32,7 @@ function App() {
         {/* All other pages use MainLayout (Navbar + Footer) */}
         <Route element={<MainLayout />}>
           {/* index = /  */}
-          <Route index element={<Properties />} />
+          <Route index element={<Home />} />
 
           {/* other public pages */}
           <Route path="/home" element={<Home />} />
@@ -41,6 +42,10 @@ function App() {
           <Route path="/blog/post" element={<PostBlog />} />
           <Route path="/insights" element={<Insights />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/blog/:id" element={<BlogDetail />} />
+
+
+
           {/* user pages */}
           <Route path="my-properties" element={<MyProperties />} />
           <Route path="my-properties/:id" element={<PropertyDetails />} />
@@ -63,6 +68,7 @@ function App() {
             }
           />
         </Route>
+
 
         {/* Optional: 404 fallback (keeps layout) */}
         {/* <Route path="*" element={<MainLayout><NotFound /></MainLayout>} /> */}

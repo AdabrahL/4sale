@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import API from "../api/axios";
-import { getPhotoUrl } from "../utils/getPhotoUrl"; // <-- Use your utility!
+import { getPhotoUrl } from "../utils/getPhotoUrl";
 
 // Helper for user initials/avatar fallback
 function getInitials(name) {
@@ -16,15 +16,27 @@ function getInitials(name) {
 
 export default function PropertyMessageSidebar({
   propertyId,
-  seller,
+  seller,        // can be undefined or only {id}
   userId,
-  isOwner // <-- new prop
+  isOwner
 }) {
   const [message, setMessage] = useState("");
   const [messageStatus, setMessageStatus] = useState("");
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [showContact, setShowContact] = useState(false); // For phone number
+  const [showContact, setShowContact] = useState(false);
+  const [sellerProfile, setSellerProfile] = useState(seller);
+
+  // Fetch seller's full profile if not fully provided
+  useEffect(() => {
+    if (seller && seller.id && (!seller.photo || !seller.name || !seller.phone)) {
+      API.get(`/users/${seller.id}`)
+        .then(({ data }) => setSellerProfile(data.user || data.data || data))
+        .catch(() => setSellerProfile(seller));
+    } else if (seller) {
+      setSellerProfile(seller);
+    }
+  }, [seller]);
 
   // Fetch message thread between current user and seller for this property
   useEffect(() => {
@@ -45,7 +57,6 @@ export default function PropertyMessageSidebar({
       await API.post(`/properties/${propertyId}/contact`, { message });
       setMessageStatus("Message sent!");
       setMessage("");
-      // Refresh message thread
       const { data } = await API.get(`/properties/${propertyId}/messages/${userId}`);
       setMessages(data.data || []);
     } catch (err) {
@@ -55,27 +66,35 @@ export default function PropertyMessageSidebar({
 
   // --- Agent Info Card (ALWAYS SHOW) ---
   const agentInfo = (
-    <div className="marketplace-details-agentinfo" style={{marginBottom: 16}}>
-      {seller?.photo ? (
+    <div className="marketplace-details-agentinfo" style={{marginBottom: 16, textAlign: "center"}}>
+      {sellerProfile?.photo ? (
         <img
-          src={getPhotoUrl(seller.photo)}
-          alt={seller.name}
+          src={getPhotoUrl(sellerProfile.photo)}
+          alt={sellerProfile.name}
           className="marketplace-details-agentavatar"
-          style={{width: 56, height: 56, borderRadius: "50%", objectFit: "cover", border: "2px solid #228B22"}}
+          style={{
+            width: 56,
+            height: 56,
+            borderRadius: "50%",
+            objectFit: "cover",
+            border: "2px solid #228B22",
+            background: "#fff"
+          }}
         />
       ) : (
-        <div className="marketplace-details-agentavatar-fallback" style={{
-          width: 56, height: 56, fontSize: 30, display: "flex", alignItems: "center", justifyContent: "center",
-          background: "#e2efe4", color: "#228B22", borderRadius: "50%", border: "2px solid #228B22"
-        }}>
-          {getInitials(seller?.name)}
+        <div className="marketplace-details-agentavatar-fallback"
+          style={{
+            width: 56, height: 56, fontSize: 30, display: "flex", alignItems: "center", justifyContent: "center",
+            background: "#e2efe4", color: "#228B22", borderRadius: "50%", border: "2px solid #228B22"
+          }}>
+          {getInitials(sellerProfile?.name)}
         </div>
       )}
       <div className="marketplace-details-agentname" style={{marginTop: 8, fontWeight: 600, color: "#228B22", fontSize: "1.13em"}}>
-        {seller?.name || "Agent"}
+        {sellerProfile?.name || "Agent"}
       </div>
       {/* Show contact button */}
-      {seller?.phone && (
+      {sellerProfile?.phone && (
         <div style={{marginTop: 10}}>
           {!showContact ? (
             <button
@@ -101,7 +120,7 @@ export default function PropertyMessageSidebar({
               }}
             >
               <i className="fa fa-phone" style={{marginRight: 6}}></i>
-              {seller.phone}
+              {sellerProfile.phone}
             </div>
           )}
         </div>
