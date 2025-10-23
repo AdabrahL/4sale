@@ -29,7 +29,7 @@ class BlogController extends Controller
             'content' => 'nullable|string',
             'book_author' => 'nullable|string|max:120',
             'book_url' => 'nullable|url',
-            'image' => 'nullable|image|max:2048', // For upload
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048', // For upload
         ]);
 
         // Handle image upload
@@ -56,6 +56,7 @@ class BlogController extends Controller
     public function show($id)
     {
         $blog = Blog::with('user')->findOrFail($id);
+           $blog->increment('views'); // <-- Add this line
         return response()->json($blog);
     }
 

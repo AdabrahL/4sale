@@ -142,6 +142,9 @@ export default function BlogDetail() {
               <span className="blog-detail-date">{blog.created_at?.slice(0, 10)}</span>
               <span className="blog-detail-dot">•</span>
               <span className="blog-detail-readtime">{getReadingTime(blog.content)} min read</span>
+              <span className="blog-detail-views">
+  <i className="fa fa-eye"></i> {blog.views || 0} views
+</span>
             </div>
             {/* Listen (Read Aloud) */}
             <div className="blog-detail-listen">

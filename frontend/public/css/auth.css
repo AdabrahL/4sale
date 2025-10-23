@@ -208,11 +208,11 @@ body.auth-page::after {
   color: #fff;
 }
 
-/* Animations */
+/* Animations 
 @keyframes fadeInUp {
-  0% { opacity: 0; transform: translateY(40px);}
+  0% { opacity: 0; transform: translateY(0px);}
   100% { opacity: 1; transform: translateY(0);}
-}
+}*/
 
 /* Responsive */
 @media (max-width: 480px) {

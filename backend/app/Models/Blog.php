@@ -18,6 +18,7 @@ class Blog extends Model
         'book_url',
         'image',
         'user_id',
+        'views',
     ];
 
     public function user()

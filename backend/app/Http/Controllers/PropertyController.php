@@ -43,9 +43,10 @@ if ($request->filled('status')) {
 }
     // Show a single property
     public function show(Property $property)
-    {
-        return new PropertyResource($property->load('user')); // also load user
-    }
+{
+    $property->increment('views');
+    return new PropertyResource($property->load('user'));
+}
 
     // Show only logged-in user’s properties (with pagination + user)
     public function myProperties(Request $request)
@@ -270,4 +271,16 @@ public function updateWithImages(Request $request, Property $property)
         'property' => new \App\Http\Resources\PropertyResource($property->fresh('user'))
     ]);
 }
+
+// Return trending properties by views (top 5 or 10)
+public function trending()
+{
+    $properties = \App\Models\Property::with('user')
+        ->orderByDesc('views')
+        ->take(5) // or whatever number you want
+        ->get();
+
+    return \App\Http\Resources\PropertyResource::collection($properties);
 }
+}
+

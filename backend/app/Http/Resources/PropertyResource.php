@@ -38,6 +38,7 @@ class PropertyResource extends JsonResource
             'size'          => $this->size,
             'images'        => $imageUrls,
             'user_id'       => $this->user_id,
+            'views'         => $this->views,
 
             // Favorites check
             'is_favorited'  => $request->user()

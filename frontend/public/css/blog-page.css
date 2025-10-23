@@ -133,10 +133,3 @@
   .blog-main-card-img { height: 120px; }
   .blog-main-title { font-size: 1.2em; }
 }
-/* ...your existing styles... */
-.tts-highlight {
-  background: #fff2a8;
-  color: #222;
-  border-radius: 4px;
-  transition: background 0.07s;
-}

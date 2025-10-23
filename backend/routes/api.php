@@ -12,6 +12,7 @@ use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\MessagesController;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\UserController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -36,7 +37,7 @@ Route::middleware('auth:sanctum')->get('/profile', function (Request $request) {
 // ========================
 // 🏡 Property routes
 // ========================
-
+Route::get('/properties/trending', [PropertyController::class, 'trending']);
 // Public (browse & view)
 Route::get('/properties', [PropertyController::class, 'index']);
 Route::get('/properties/{property}', [PropertyController::class, 'show']);
@@ -126,3 +127,4 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::get('/users/{id}', function($id) {
     return response()->json(['user' => \App\Models\User::findOrFail($id)]);
 });
+

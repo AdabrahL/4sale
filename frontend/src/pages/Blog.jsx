@@ -93,6 +93,10 @@ export default function Blog() {
                         <div className="blog-main-card-date">
                           {blog.created_at?.slice(0, 10)}
                         </div>
+                        <div className="blog-main-card-views">
+    <i className="fa fa-eye"></i> {blog.views || 0} views
+  </div>
+
                       </div>
                     </div>
                   </div>

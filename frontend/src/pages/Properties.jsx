@@ -163,7 +163,6 @@ const Properties = () => {
       <aside className="props-sidebar">
         <div className="props-sidebar-inner">
           <h2 className="props-sidebar-title">Filter &amp; Search</h2>
-          {/* Filter placed in sidebar */}
           <SearchFilter
             filters={filters}
             onChange={handleFilterChange}
@@ -238,6 +237,10 @@ const Properties = () => {
                           <i className="fa fa-expand meta-icon-gray"></i> {property.size} sqft
                         </span>
                       )}
+                    </div>
+                    {/* Views at the bottom right */}
+                    <div className="props-card-views">
+                      <i className="fa fa-eye"></i> {property.views || 0}
                     </div>
                   </div>
                 </div>
