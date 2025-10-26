@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import API from "../api/axios";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -16,12 +16,7 @@ const categories = {
   Others: ["Industrial", "Short Let", "Estate"]
 };
 
-function SearchFilter({
-  filters,
-  onChange,
-  onSearch,
-  showStatus = true
-}) {
+function SearchFilter({ filters, onChange, onSearch, showStatus = true }) {
   return (
     <form
       onSubmit={e => {
@@ -124,7 +119,23 @@ const Properties = () => {
     status: "",
   });
   const [loading, setLoading] = useState(false);
+  const [favorites, setFavorites] = useState([]); // Array of favorite property IDs
+  const navigate = useNavigate();
 
+  // Fetch all favorite property IDs for the current user (for fast checking)
+  const fetchFavorites = async () => {
+    if (!user) return;
+    try {
+      const response = await API.get("/favorites");
+      // Extract favorite IDs
+      const favIDs = (response.data.data || []).map(p => p.id);
+      setFavorites(favIDs);
+    } catch (error) {
+      setFavorites([]);
+    }
+  };
+
+  // Fetch properties using filters
   const fetchProperties = async () => {
     setLoading(true);
     try {
@@ -151,11 +162,34 @@ const Properties = () => {
     // eslint-disable-next-line
   }, [filters]);
 
+  useEffect(() => {
+    fetchFavorites();
+    // eslint-disable-next-line
+  }, [user]);
+
   const handleFilterChange = (e) => {
     setFilters({
       ...filters,
       [e.target.name]: e.target.value,
     });
+  };
+
+  const handleToggleFavorite = async (propertyId, isFavorite) => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    try {
+      if (isFavorite) {
+        await API.delete(`/favorites/${propertyId}`);
+        setFavorites(favorites.filter(id => id !== propertyId));
+      } else {
+        await API.post(`/favorites/${propertyId}`);
+        setFavorites([...favorites, propertyId]);
+      }
+    } catch (error) {
+      // Optionally show error feedback
+    }
   };
 
   return (
@@ -193,58 +227,73 @@ const Properties = () => {
             <div className="props-empty">No properties found.</div>
           ) : (
             <div className="props-grid">
-              {properties.map((property) => (
-                <div key={property.id} className="props-card">
-                  <div
-                    className="props-card-img"
-                    style={{
-                      backgroundImage: `url(${
-                        property.images && property.images.length > 0
-                          ? getImageUrl(property.images[0])
-                          : "/img/default.jpg"
-                      })`,
-                    }}
-                  >
-                    <Link to="/saved" className="props-card-bookmark" title="Save">
-                      <i className="fa fa-bookmark"></i>
-                    </Link>
+              {properties.map((property) => {
+                const isFavorite = favorites.includes(property.id);
+                return (
+                  <div key={property.id} className="props-card">
+                    <div
+                      className="props-card-img"
+                      style={{
+                        backgroundImage: `url(${
+                          property.images && property.images.length > 0
+                            ? getImageUrl(property.images[0])
+                            : "/img/default.jpg"
+                        })`,
+                      }}
+                    >
+                      <button
+                        className={`props-card-bookmark${isFavorite ? " active" : ""}`}
+                        title={isFavorite ? "Remove from Saved" : "Save"}
+                        onClick={() => handleToggleFavorite(property.id, isFavorite)}
+                        style={{
+                          border: "none",
+                          background: "transparent",
+                          cursor: "pointer",
+                          position: "absolute",
+                          top: "13px",
+                          right: "18px",
+                        }}
+                      >
+                        <i className={`fa ${isFavorite ? "fa-bookmark" : "fa-bookmark-o"}`}></i>
+                      </button>
+                    </div>
+                    <div className="props-card-body">
+                      <h2 className="props-card-title">
+                        <Link to={`/properties/${property.id}`}>{property.title}</Link>
+                      </h2>
+                      <div className="props-card-price">
+                        ₵{Number(property.price).toLocaleString()}
+                      </div>
+                      <div className="props-card-detail">
+                        <span>
+                          <i className="fa fa-map-marker map-icon-green"></i> {property.location}
+                        </span>
+                      </div>
+                      <div className="props-card-meta">
+                        {property.bedrooms && (
+                          <span title="Bedrooms">
+                            <i className="fa fa-bed meta-icon-gray"></i> {property.bedrooms}
+                          </span>
+                        )}
+                        {property.bathrooms && (
+                          <span title="Bathrooms">
+                            <i className="fa fa-bath meta-icon-gray"></i> {property.bathrooms}
+                          </span>
+                        )}
+                        {property.size && (
+                          <span title="Size">
+                            <i className="fa fa-expand meta-icon-gray"></i> {property.size} sqft
+                          </span>
+                        )}
+                      </div>
+                      {/* Views at the bottom right */}
+                      <div className="props-card-views">
+                        <i className="fa fa-eye"></i> {property.views || 0}
+                      </div>
+                    </div>
                   </div>
-                  <div className="props-card-body">
-                    <h2 className="props-card-title">
-                      <Link to={`/properties/${property.id}`}>{property.title}</Link>
-                    </h2>
-                    <div className="props-card-price">
-                      ₵{Number(property.price).toLocaleString()}
-                    </div>
-                    <div className="props-card-detail">
-                      <span>
-                        <i className="fa fa-map-marker map-icon-green"></i> {property.location}
-                      </span>
-                    </div>
-                    <div className="props-card-meta">
-                      {property.bedrooms && (
-                        <span title="Bedrooms">
-                          <i className="fa fa-bed meta-icon-gray"></i> {property.bedrooms}
-                        </span>
-                      )}
-                      {property.bathrooms && (
-                        <span title="Bathrooms">
-                          <i className="fa fa-bath meta-icon-gray"></i> {property.bathrooms}
-                        </span>
-                      )}
-                      {property.size && (
-                        <span title="Size">
-                          <i className="fa fa-expand meta-icon-gray"></i> {property.size} sqft
-                        </span>
-                      )}
-                    </div>
-                    {/* Views at the bottom right */}
-                    <div className="props-card-views">
-                      <i className="fa fa-eye"></i> {property.views || 0}
-                    </div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

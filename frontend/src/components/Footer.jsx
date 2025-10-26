@@ -74,10 +74,11 @@ export default function Footer() {
           <div className="col-lg-12">
             <div className="footer__widget text-center">
               <div className="footer__widget__social mt-3">
-                <a href="#"><i className="fa fa-facebook"></i></a>
-                <a href="#"><i className="fa fa-instagram"></i></a>
-                <a href="#"><i className="fa fa-twitter"></i></a>
-                <a href="#"><i className="fa fa-linkedin"></i></a>
+               
+  <a href="#"><i className="fab fa-facebook"></i></a>
+  <a href="#"><i className="fab fa-twitter"></i></a>
+  <a href="#"><i className="fab fa-linkedin"></i></a>
+  <a href="#"><i className="fab fa-instagram"></i></a>
               </div>
             </div>
           </div>

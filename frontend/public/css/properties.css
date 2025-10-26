@@ -273,3 +273,9 @@
 @media (max-width: 660px) {
   .props-card-views { bottom: 16px; right: 12px; font-size: 0.95em; }
 }
+
+
+.props-card-bookmark.active {
+  background: #ffd700;
+  color: #228B22;
+}

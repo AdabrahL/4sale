@@ -18,8 +18,7 @@ import AgentProfile from "./pages/AgentProfile";
 import Profile from "./pages/Profile";
 import Messenger from "./pages/Messenger";
 import BlogDetail from "./pages/BlogDetail";
-
-
+import Favorites from "./pages/Favorites";
 
 function App() {
   return (
@@ -55,6 +54,7 @@ function App() {
 
           {/* Messages pages */}
           <Route path="/messenger" element={<Messenger />} />
+          <Route path="/saved" element={<Favorites />} />
 
 
 

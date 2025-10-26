@@ -1,0 +1,146 @@
+.favorites-container {
+  min-height: 75vh;
+}
+.favorites-header {
+  text-align: left;
+  margin-bottom: 2em;
+}
+.favorites-title {
+  font-size: 2.1em;
+  font-weight: bold;
+  color: #228B22;
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+}
+.favorites-title i {
+  color: #228B22;
+  font-size: 1.1em;
+}
+.favorites-subtitle {
+  color: #3c463f;
+  font-size: 1.15em;
+  margin-top: 0.3em;
+}
+.favorites-loading {
+  color: #228B22;
+  font-size: 1.2em;
+  text-align: center;
+  padding: 3em 1em;
+}
+.favorites-empty {
+  text-align: center;
+  color: #228B22;
+  font-size: 1.22em;
+  padding: 2.8em 1em 2em 1em;
+}
+.favorites-empty i {
+  color: #e9f7ef;
+}
+.favorites-back-btn {
+  display: inline-block;
+  margin-top: 1.6em;
+  background: #228B22;
+  color: #fff;
+  padding: 0.7em 2em;
+  border-radius: 8px;
+  font-size: 1.1em;
+  font-weight: 500;
+  text-decoration: none;
+  box-shadow: 0 2px 12px #228b2212;
+  transition: background 0.18s;
+}
+.favorites-back-btn:hover {
+  background: #196f1a;
+  color: #fff;
+}
+.favorites-grid {
+  margin-top: 1em;
+}
+.favorites-card {
+  position: relative;
+  transition: box-shadow 0.21s;
+}
+.favorites-card:hover {
+  box-shadow: 0 12px 38px #228b2218;
+}
+.favorites-card-img {
+  position: relative;
+  height: 190px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 16px 16px 0 0;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+.favorites-card-bookmark {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: #228B22;
+  color: #fff;
+  border-radius: 50%;
+  width: 39px;
+  height: 39px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35em;
+  box-shadow: 0 3px 16px #228b2230;
+  z-index: 2;
+}
+.favorites-card-body {
+  padding: 1.1em 1em 1em 1em;
+}
+.favorites-card-title a {
+  color: #228B22;
+  text-decoration: none;
+  font-size: 1.09em;
+  font-weight: 700;
+}
+.favorites-card-title a:hover {
+  text-decoration: underline;
+  color: #196f1a;
+}
+.favorites-card-price {
+  color: #228B22;
+  font-size: 1.1em;
+  font-weight: bold;
+}
+.favorites-card-detail {
+  color: #3c463f;
+  font-size: 1.04em;
+  margin-bottom: 0.4em;
+}
+.favorites-card-meta {
+  display: flex;
+  gap: 1.1em;
+  color: #828282;
+  font-size: 1.03em;
+  align-items: center;
+}
+.favorites-card-views {
+  position: absolute;
+  bottom: 18px;
+  right: 20px;
+  background: #e9f7ef;
+  color: #228B22;
+  border-radius: 22px;
+  padding: 0.23em 0.8em;
+  font-weight: 600;
+  font-size: 0.98em;
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+  z-index: 2;
+}
+@media (max-width: 900px) {
+  .favorites-title { font-size: 1.5em; }
+  .favorites-card-img { height: 130px; }
+}
+@media (max-width: 600px) {
+  .favorites-card-img { height: 95px; }
+  .favorites-card-body { padding: 0.8em 0.5em; }
+  .favorites-title { font-size: 1.2em; }
+}

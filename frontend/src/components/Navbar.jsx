@@ -51,12 +51,12 @@ export default function Navbar() {
             </div>
             <div className="col-lg-6 col-md-6">
               <div className="header__top__right d-flex justify-content-end align-items-center">
-                <div className="header__top__right__social">
-                  <a href="#"><i className="fa fa-facebook"></i></a>
-                  <a href="#"><i className="fa fa-twitter"></i></a>
-                  <a href="#"><i className="fa fa-linkedin"></i></a>
-                  <a href="#"><i className="fa fa-instagram"></i></a>
-                </div>
+               <div className="header__top__right__social">
+  <a href="#"><i className="fab fa-facebook"></i></a>
+  <a href="#"><i className="fab fa-twitter"></i></a>
+  <a href="#"><i className="fab fa-linkedin"></i></a>
+  <a href="#"><i className="fab fa-instagram"></i></a>
+</div>
                 <div className="header__top__right__auth ms-3">
                   {user ? (
                     <button
