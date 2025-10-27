@@ -21,11 +21,18 @@ class Property extends Model
     'size',
     'user_id',
     'category_id',
-    'images'
+    'images',
+    // approval fields so update([...]) can set them
+        'is_approved',
+        'approved_at',
+        'approved_by',
+        'rejection_reason'
 ];
 
 protected $casts = [
     'images' => 'array', // auto-cast JSON to array
+    'is_approved' => 'boolean',
+        'approved_at' => 'datetime',
 ];
 
 public function favoritedBy()

@@ -17,11 +17,33 @@ class PropertyResource extends JsonResource
         $images = is_string($this->images) ? json_decode($this->images, true) : $this->images;
         $images = $images ?? [];
 
-        // Convert relative paths into FULL URLs
+        // Convert relative storage paths into full URLs (safe)
         $imageUrls = array_map(function ($path) {
-            return asset(Storage::url($path)); 
-            // e.g. http://backend.test/storage/properties/filename.jpg
+            if (! $path) {
+                return null;
+            }
+
+            // Storage::url returns e.g. /storage/properties/xxx.jpg or a full URL depending on driver
+            $storageUrl = Storage::url($path);
+
+            // Use asset(...) to ensure full absolute URL is returned
+            return asset($storageUrl);
         }, $images);
+
+        // Compute review aggregates safely
+        $average = (float) ($this->reviews()->avg('rating') ?? 0);
+        $average = $average ? round($average, 1) : 0.0;
+        $reviewCount = (int) $this->reviews()->count();
+
+        // Determine favorite status (if user provided)
+        $isFavorited = false;
+        if ($request->user()) {
+            try {
+                $isFavorited = (bool) $request->user()->favorites()->where('property_id', $this->id)->exists();
+            } catch (\Throwable $e) {
+                $isFavorited = false;
+            }
+        }
 
         return [
             'id'            => $this->id,
@@ -36,21 +58,30 @@ class PropertyResource extends JsonResource
             'bedrooms'      => $this->bedrooms,
             'bathrooms'     => $this->bathrooms,
             'size'          => $this->size,
-            'images'        => $imageUrls,
+            'images'        => array_values(array_filter($imageUrls)), // remove nulls and reindex
             'user_id'       => $this->user_id,
-            'views'         => $this->views,
+            'views'         => (int) $this->views,
 
             // Favorites check
-            'is_favorited'  => $request->user()
-                ? $request->user()->favorites()->where('property_id', $this->id)->exists()
-                : false,
+            'is_favorited'  => $isFavorited,
 
             // Reviews summary
-            'average_rating'=> round($this->reviews()->avg('rating'), 1) ?? 0,
-            'review_count'  => $this->reviews()->count(),
+            'average_rating'=> $average,
+            'review_count'  => $reviewCount,
 
-            'created_at'    => $this->created_at->toDateTimeString(),
-            'updated_at'    => $this->updated_at->toDateTimeString(),
+            // Timestamps
+            'created_at'    => $this->created_at ? $this->created_at->toDateTimeString() : null,
+            'updated_at'    => $this->updated_at ? $this->updated_at->toDateTimeString() : null,
+
+            // approval info (expects properties table to have these columns)
+            'is_approved'   => (bool) $this->is_approved,
+            'approved_at'   => $this->approved_at ? $this->approved_at->toDateTimeString() : null,
+            'approved_by'   => $this->approved_by ? $this->approved_by : null,
+
+            // Include owner info when loaded
+            'user' => $this->whenLoaded('user', function () {
+                return new \App\Http\Resources\UserResource($this->user);
+            }),
         ];
     }
 

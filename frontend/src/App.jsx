@@ -19,6 +19,7 @@ import Profile from "./pages/Profile";
 import Messenger from "./pages/Messenger";
 import BlogDetail from "./pages/BlogDetail";
 import Favorites from "./pages/Favorites";
+import AdminPendingProperties from "./pages/AdminPendingProperties";
 
 function App() {
   return (
@@ -42,7 +43,7 @@ function App() {
           <Route path="/insights" element={<Insights />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/blog/:id" element={<BlogDetail />} />
-
+<Route path="/admin/pending" element={<AdminPendingProperties />} />
 
 
           {/* user pages */}

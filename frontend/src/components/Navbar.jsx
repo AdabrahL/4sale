@@ -1,6 +1,8 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useState, useEffect } from "react";
+import API from "../api/axios";
+
 
 // Use VITE_BACKEND_URL from .env or fallback to http://backend.test
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://backend.test";
@@ -15,6 +17,7 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
   const location = useLocation();
 
   useEffect(() => {
@@ -24,6 +27,34 @@ export default function Navbar() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // If the logged-in user is an admin, fetch pending count for approvals
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchPendingCount = async () => {
+      if (!user || !user.is_admin) {
+        setPendingCount(0);
+        return;
+      }
+      try {
+        const res = await API.get("/admin/properties/pending");
+        const list = res.data?.data ?? res.data ?? [];
+        if (!cancelled) setPendingCount(Array.isArray(list) ? list.length : 0);
+      } catch (err) {
+        // Fail silently; don't block the navbar
+        if (!cancelled) setPendingCount(0);
+      }
+    };
+
+    fetchPendingCount();
+
+    // Optionally poll every 60s for updates (uncomment if desired)
+    // const timer = setInterval(fetchPendingCount, 60000);
+    // return () => { cancelled = true; clearInterval(timer); };
+
+    return () => { cancelled = true; };
+  }, [user]);
 
   const navTabs = [
     { to: "/home", label: "Home" },
@@ -51,12 +82,12 @@ export default function Navbar() {
             </div>
             <div className="col-lg-6 col-md-6">
               <div className="header__top__right d-flex justify-content-end align-items-center">
-               <div className="header__top__right__social">
-  <a href="#"><i className="fab fa-facebook"></i></a>
-  <a href="#"><i className="fab fa-twitter"></i></a>
-  <a href="#"><i className="fab fa-linkedin"></i></a>
-  <a href="#"><i className="fab fa-instagram"></i></a>
-</div>
+                <div className="header__top__right__social">
+                  <a href="#"><i className="fab fa-facebook"></i></a>
+                  <a href="#"><i className="fab fa-twitter"></i></a>
+                  <a href="#"><i className="fab fa-linkedin"></i></a>
+                  <a href="#"><i className="fab fa-instagram"></i></a>
+                </div>
                 <div className="header__top__right__auth ms-3">
                   {user ? (
                     <button
@@ -118,28 +149,39 @@ export default function Navbar() {
             </nav>
           </div>
 
-          {/* Saved, My Properties, Profile (only logged in) */}
+          {/* Saved, My Properties, Admin (only for admins), Profile (only logged in) */}
           {user && (
             <div className="col-lg-3 d-none d-lg-block">
               <div className="header__cart d-flex justify-content-end">
                 <ul className="d-flex align-items-center gap-4">
                   <li>
                     <Link to="/messenger" className="nav-messages-link" title="Messenger">
-                    <i className="fa fa-envelope nav-messages-icon"></i>
+                      <i className="fa fa-envelope nav-messages-icon"></i>
                     </Link>
                   </li>
-
 
                   <li>
                     <Link to="/saved" title="Saved">
                       <i className={`fa fa-bookmark${scrolled ? " white-icon" : ""}`}></i>
                     </Link>
                   </li>
+
                   <li>
                     <Link to="/my-properties" title="My Properties">
                       <i className={`fa fa-home${scrolled ? " white-icon" : ""}`}></i>
                     </Link>
                   </li>
+
+                  {/* Admin approvals link (visible only to admins) */}
+                  {user.is_admin && (
+                    <li>
+                      <Link to="/admin/pending" title="Approvals" className="admin-approvals-link">
+                        <i className={`fa fa-gavel${scrolled ? " white-icon" : ""}`}></i>
+                        {pendingCount > 0 && <span className="admin-badge">{pendingCount}</span>}
+                      </Link>
+                    </li>
+                  )}
+
                   <li>
                     <Link to="/profile" className="profile-icon" title="Profile">
                       <img
@@ -187,11 +229,12 @@ export default function Navbar() {
                     </NavLink>
                   </li>
                 ))}
+
                 {user && (
                   <>
-                  <li>
+                    <li>
                       <NavLink to="/mymessages" className="nav-messages-link" title="My Messages">
-          <i className="fa fa-envelope nav-messages-icon"></i>
+                        <i className="fa fa-envelope nav-messages-icon"></i>
                       </NavLink>
                     </li>
 
@@ -200,11 +243,23 @@ export default function Navbar() {
                         Saved
                       </NavLink>
                     </li>
+
                     <li>
                       <NavLink to="/my-properties" onClick={() => setMobileOpen(false)}>
                         My Properties
                       </NavLink>
                     </li>
+
+                    {/* Admin link in mobile drawer */}
+                    {user.is_admin && (
+                      <li>
+                        <NavLink to="/admin/pending" onClick={() => setMobileOpen(false)}>
+                          Approvals
+                          {pendingCount > 0 && <span className="mobile-admin-badge">{pendingCount}</span>}
+                        </NavLink>
+                      </li>
+                    )}
+
                     <li>
                       <NavLink to="/profile" onClick={() => setMobileOpen(false)}>
                         <span style={{display: "inline-flex", alignItems: "center"}}>
