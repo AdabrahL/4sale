@@ -91,7 +91,7 @@ export default function Footer() {
               <div className="footer__copyright__text">
                 <p>
                   &copy; {new Date().getFullYear()} 4Sale Real Estate.  
-                  Built with <i className="fa fa-heart" aria-hidden="true"></i> for property buyers & sellers.
+                  Built with React (Frontend) and Laravel (Backend)<i className="fa fa-heart" aria-hidden="true"></i> for property buyers & sellers.
                 </p>
               </div>
               <div className="footer__copyright__payment">

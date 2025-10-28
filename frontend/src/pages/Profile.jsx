@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import API from "../api/axios";
+import MyProperties from "../components/MyProperties";
 
 
 // Helper: get backend url from .env (VITE_BACKEND_URL), fallback to http://backend.test
@@ -321,6 +322,7 @@ export default function Profile() {
           </form>
         </div>
       )}
+      <MyProperties/>
     </div>
   );
 }

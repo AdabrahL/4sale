@@ -6,7 +6,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Properties from "./pages/Properties";
 import PropertyDetails from "./pages/PropertyDetails";
-import MyProperties from "./pages/MyProperties";
+import MyProperties from "./components/MyProperties";
 import CreateProperty from "./pages/CreateProperty";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
@@ -20,6 +20,7 @@ import Messenger from "./pages/Messenger";
 import BlogDetail from "./pages/BlogDetail";
 import Favorites from "./pages/Favorites";
 import AdminPendingProperties from "./pages/AdminPendingProperties";
+
 
 function App() {
   return (

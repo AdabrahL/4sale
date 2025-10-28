@@ -15,7 +15,7 @@
 .profile-hero-bg {
   position: absolute;
   inset: 0;
-  height: 220px;
+  height: 265px;
   background: linear-gradient(135deg, rgba(34,139,34,0.12), rgba(34,139,34,0.03));
   top: 0;
   z-index: 0;

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getPhotoUrl } from "../utils/getPhotoUrl";
-import BlogSidebar from "../components/BlogSidebar ";
+import BlogSidebar from "../components/BlogSidebar";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://backend.test";
 function getBlogImage(image) {

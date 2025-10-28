@@ -49,10 +49,6 @@ export default function Navbar() {
 
     fetchPendingCount();
 
-    // Optionally poll every 60s for updates (uncomment if desired)
-    // const timer = setInterval(fetchPendingCount, 60000);
-    // return () => { cancelled = true; clearInterval(timer); };
-
     return () => { cancelled = true; };
   }, [user]);
 
@@ -149,7 +145,7 @@ export default function Navbar() {
             </nav>
           </div>
 
-          {/* Saved, My Properties, Admin (only for admins), Profile (only logged in) */}
+          {/* Saved, Admin (only for admins), Profile (only logged in) */}
           {user && (
             <div className="col-lg-3 d-none d-lg-block">
               <div className="header__cart d-flex justify-content-end">
@@ -163,12 +159,6 @@ export default function Navbar() {
                   <li>
                     <Link to="/saved" title="Saved">
                       <i className={`fa fa-bookmark${scrolled ? " white-icon" : ""}`}></i>
-                    </Link>
-                  </li>
-
-                  <li>
-                    <Link to="/my-properties" title="My Properties">
-                      <i className={`fa fa-home${scrolled ? " white-icon" : ""}`}></i>
                     </Link>
                   </li>
 
@@ -241,12 +231,6 @@ export default function Navbar() {
                     <li>
                       <NavLink to="/saved" onClick={() => setMobileOpen(false)}>
                         Saved
-                      </NavLink>
-                    </li>
-
-                    <li>
-                      <NavLink to="/my-properties" onClick={() => setMobileOpen(false)}>
-                        My Properties
                       </NavLink>
                     </li>
 
