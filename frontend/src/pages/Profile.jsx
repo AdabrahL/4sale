@@ -6,7 +6,6 @@ import MyProperties from "../components/MyProperties";
 
 // Helper: get backend url from .env (VITE_BACKEND_URL), fallback to http://backend.test
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://backend.test";
-
 function getPhotoUrl(photo) {
   if (!photo) return "/default-avatar.png";
   return photo.startsWith("http") ? photo : `${backendUrl}/storage/${photo}`;
@@ -23,14 +22,16 @@ export default function Profile() {
     bio: user?.bio || "",
     socials: user?.socials || { facebook: "", whatsapp: "", linkedin: "", instagram: "" },
   });
+
   const [previewUrl, setPreviewUrl] = useState(getPhotoUrl(user?.photo));
   const [imageFile, setImageFile] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [removePhoto, setRemovePhoto] = useState(false); // if user wants to remove existing photo
   const [saving, setSaving] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [editMode, setEditMode] = useState(false);
-  const fileRef = useRef();
+  const fileRef = useRef(null); // single shared ref used by all file inputs
 
   useEffect(() => {
     setLocalUser(user);
@@ -42,17 +43,17 @@ export default function Profile() {
       socials: user?.socials || { facebook: "", whatsapp: "", linkedin: "", instagram: "" },
     });
     setPreviewUrl(getPhotoUrl(user?.photo));
+    setImageFile(null);
+    setRemovePhoto(false);
     fetchStats();
     // eslint-disable-next-line
   }, [user]);
 
   async function fetchStats() {
     try {
-      // fetch my-properties (paginated) to get total
       const res = await API.get("/my-properties", { params: { page: 1, per_page: 1 } });
       const payload = res.data?.data || res.data;
       const total = payload?.total ?? (Array.isArray(payload) ? payload.length : 0);
-      // favorites
       let favCount = 0;
       try {
         const favRes = await API.get("/favorites");
@@ -89,23 +90,33 @@ export default function Profile() {
     setErrorMsg("");
   };
 
+  // SINGLE handler used by every file input in the UI
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!["image/jpeg", "image/png", "image/jpg", "image/webp"].includes(file.type)) {
+    const allowed = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
+    if (!allowed.includes(file.type)) {
       setErrorMsg("Only JPG, PNG or WEBP images are allowed.");
       return;
     }
+    // optional size limit (e.g., 5MB)
+    const maxBytes = 5 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      setErrorMsg("Image too large. Maximum 5MB allowed.");
+      return;
+    }
     setImageFile(file);
+    setRemovePhoto(false); // if selecting a file, we aren't removing
     setPreviewUrl(URL.createObjectURL(file));
     setErrorMsg("");
   };
 
   const handleRemovePhoto = async () => {
-    // optional: call API to remove photo, here we just clear preview and mark for save
+    // Clear file input UI and set a flag to remove existing photo on save
     setImageFile(null);
     setPreviewUrl("/default-avatar.png");
-    // you can also set form.photo = "" and submit to backend to remove stored photo
+    setRemovePhoto(true);
+    if (fileRef.current) fileRef.current.value = null;
   };
 
   const handleSave = async (e) => {
@@ -113,6 +124,8 @@ export default function Profile() {
     setSaving(true);
     setErrorMsg("");
     setSuccessMsg("");
+    setUploadProgress(0);
+
     try {
       const formData = new FormData();
       formData.append("name", form.name);
@@ -120,28 +133,53 @@ export default function Profile() {
       formData.append("phone", form.phone);
       formData.append("bio", form.bio);
       formData.append("socials", JSON.stringify(form.socials || {}));
-      if (imageFile) formData.append("photo", imageFile);
 
-      const { data } = await API.post("/profile/update", formData, {
+      // If removing the current photo, tell the server
+      if (removePhoto) {
+        formData.append("remove_photo", "1");
+      }
+
+      if (imageFile) {
+        formData.append("photo", imageFile);
+      }
+
+      // If your backend expects PUT/PATCH uncomment and adapt (some setups require _method)
+      // formData.append('_method','PUT');
+
+      const res = await API.post("/profile/update", formData, {
         headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(percentCompleted);
+          }
+        },
       });
 
-      // update auth context user
+      const data = res.data;
       if (data?.user) {
+        // Update auth context
         setUser(data.user);
         setLocalUser(data.user);
+
+        // Cache-bust the image url so the new image loads immediately
+        const newPhotoUrl = data.user.photo ? `${getPhotoUrl(data.user.photo)}?t=${Date.now()}` : "/default-avatar.png";
+        setPreviewUrl(newPhotoUrl);
       }
+
       setSuccessMsg("Your profile was updated successfully.");
       setEditMode(false);
       setImageFile(null);
-      setPreviewUrl(getPhotoUrl(data?.user?.photo ?? localUser?.photo));
-      // Refresh stats if needed
+      setRemovePhoto(false);
+      // Refresh stats
       fetchStats();
     } catch (err) {
       console.error("Profile save error:", err.response?.data || err.message);
       setErrorMsg(err.response?.data?.message || "Failed to save profile. Try again.");
     } finally {
       setSaving(false);
+      setUploadProgress(0);
+      if (fileRef.current) fileRef.current.value = null;
     }
   };
 
@@ -155,9 +193,11 @@ export default function Profile() {
     });
     setPreviewUrl(getPhotoUrl(localUser?.photo));
     setImageFile(null);
+    setRemovePhoto(false);
     setErrorMsg("");
     setSuccessMsg("");
     setEditMode(false);
+    if (fileRef.current) fileRef.current.value = null;
   };
 
   return (
@@ -168,15 +208,7 @@ export default function Profile() {
           <div className="profile-avatar-col">
             <div className="avatar-stack">
               <img src={previewUrl} alt="avatar" className="profile-avatar-large" />
-              <div className="avatar-actions">
-                <label className="avatar-upload">
-                  <input ref={fileRef} type="file" accept="image/*" onChange={handleImageChange} hidden />
-                  <i className="fa fa-camera"></i>
-                </label>
-                <button className="avatar-remove" onClick={handleRemovePhoto} title="Remove photo">
-                  <i className="fa fa-trash"></i>
-                </button>
-              </div>
+             
             </div>
             <div className="profile-basic">
               <h2 className="profile-name">{localUser?.name}</h2>
@@ -283,7 +315,7 @@ export default function Profile() {
 
               <div className="edit-actions">
                 <button type="submit" className="profile-btn profile-btn-green" disabled={saving}>
-                  {saving ? "Saving..." : "Save profile"}
+                  {saving ? `Saving...${uploadProgress ? ` (${uploadProgress}%)` : ""}` : "Save profile"}
                 </button>
                 <button type="button" className="profile-btn profile-btn-gray" onClick={handleCancel} disabled={saving}>
                   Cancel
@@ -300,11 +332,13 @@ export default function Profile() {
                 <div className="preview-name">{form.name || localUser?.name}</div>
                 <div className="preview-role">{localUser?.is_admin ? "Administrator" : "Agent / User"}</div>
                 <div className="preview-actions">
-                  <label className="upload-btn">
-                    <input type="file" accept="image/*" onChange={handleImageChange} hidden />
+                  {/* This upload uses the same shared ref + handler so both upload buttons work */}
+                  <label className="upload-btn" title="Upload photo">
+                    <input ref={fileRef} type="file" accept="image/*" onChange={handleImageChange} hidden />
                     <i className="fa fa-upload" /> Upload photo
                   </label>
-                  <button type="button" className="profile-btn profile-btn-outline" onClick={() => { setImageFile(null); setPreviewUrl(getPhotoUrl(localUser?.photo)); fileRef.current && (fileRef.current.value = null); }}>
+
+                  <button type="button" className="profile-btn profile-btn-outline" onClick={() => { handleRemovePhoto(); }}>
                     Reset
                   </button>
                 </div>
@@ -322,7 +356,8 @@ export default function Profile() {
           </form>
         </div>
       )}
-      <MyProperties/>
+
+      <MyProperties />
     </div>
   );
 }

@@ -1,10 +1,22 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Link } from "react-router-dom";
+import API from "../api/axios";
 import SearchFilter from "../components/SearchFilter";
 import HomeSidebar from "../components/HomeSidebar";
-
+import TextType from "../components/TextType";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://backend.test";
+
+function parseImages(images) {
+  if (!images) return [];
+  if (Array.isArray(images)) return images;
+  try {
+    return JSON.parse(images);
+  } catch {
+    return [];
+  }
+}
+
 function getImageUrl(img) {
   if (!img) return "/img/default.jpg";
   return img.startsWith("http") ? img : `${backendUrl}/storage/${img}`;
@@ -36,58 +48,115 @@ export default function Home() {
   const [blogs, setBlogs] = useState([]);
   const [loadingBlogs, setLoadingBlogs] = useState(true);
 
-  // Sidebar stats and agent (mock for demo, replace with real API)
+  const pageContainerRef = useRef(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    // Trending properties (keep fetch approach but normalize)
+    (async () => {
+      try {
+        const res = await API.get("/properties/trending");
+        const payload = res.data?.data ?? res.data ?? [];
+        const dataArr = Array.isArray(payload) ? payload : payload.data ?? [];
+        if (!mounted) return;
+        setTrending(dataArr);
+      } catch (err) {
+        console.error("Failed to load trending properties:", err?.response?.data ?? err.message);
+        setTrending([]);
+      } finally {
+        if (mounted) setLoadingTrending(false);
+      }
+    })();
+
+    // Featured properties
+    (async () => {
+      try {
+        const res = await API.get("/properties", { params: { per_page: 6 } });
+        const payload = res.data?.data ?? res.data ?? [];
+        const dataArr = Array.isArray(payload) ? payload : payload.data ?? [];
+        if (!mounted) return;
+        setFeatured(dataArr.slice(0, 6));
+      } catch (err) {
+        console.error("Failed to load featured properties:", err?.response?.data ?? err.message);
+        setFeatured([]);
+      } finally {
+        if (mounted) setLoadingFeatured(false);
+      }
+    })();
+
+    // Agents
+    (async () => {
+      try {
+        const res = await API.get("/agents", { params: { per_page: 12 } });
+        const payload = res.data?.data ?? res.data ?? [];
+        const dataArr = Array.isArray(payload) ? payload : payload.data ?? [];
+        if (!mounted) return;
+        setAgents(dataArr.slice(0, 12));
+      } catch (err) {
+        console.error("Failed to load agents:", err?.response?.data ?? err.message);
+        setAgents([]);
+      } finally {
+        if (mounted) setLoadingAgents(false);
+      }
+    })();
+
+    // Blogs — use same normalization as Blog.jsx
+    (async () => {
+      try {
+        const res = await API.get("/blogs", { params: { per_page: 10 } });
+        const payload = res.data?.data ?? res.data ?? [];
+        const dataArr = Array.isArray(payload) ? payload : payload.data ?? [];
+        if (!mounted) return;
+        // keep up to 10 latest blogs
+        setBlogs(dataArr.slice(0, 10));
+        console.debug("Home: loaded blogs payload:", { payload, dataArr });
+      } catch (err) {
+        console.error("Failed to load blogs for Home:", err?.response?.data ?? err.message);
+        setBlogs([]);
+      } finally {
+        if (mounted) setLoadingBlogs(false);
+      }
+    })();
+
+    return () => { mounted = false; };
+  }, []);
+
+  const handleSearch = () => {
+    // navigate to /properties with filters as query params or trigger search
+    // e.g. navigate(`/properties?${new URLSearchParams(filters)}`)
+  };
+
+  const handleFilterChange = (e) => {
+    setFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  // Sidebar stats (derived)
   const stats = {
     today: trending.length,
     popular: trending[0]?.location || "N/A",
     avgPrice: trending.length
-      ? Math.round(
-          trending.reduce((sum, p) => sum + Number(p.price || 0), 0) /
-            trending.length
-        )
+      ? Math.round(trending.reduce((sum, p) => sum + Number(p.price || 0), 0) / trending.length)
       : "N/A",
   };
   const featuredAgent = agents[0] || null;
 
-  useEffect(() => {
-    fetch(`${backendUrl}/api/properties/trending`)
-      .then(res => res.json())
-      .then(data => setTrending(data.data || []))
-      .finally(() => setLoadingTrending(false));
-
-    fetch(`${backendUrl}/api/properties`)
-      .then(res => res.json())
-      .then(data => setFeatured((data.data || []).slice(0, 4)))
-      .finally(() => setLoadingFeatured(false));
-
-    fetch(`${backendUrl}/api/agents`)
-      .then(res => res.json())
-      .then(data => setAgents((data.data || []).slice(0, 4)))
-      .finally(() => setLoadingAgents(false));
-
-    fetch(`${backendUrl}/api/blogs`)
-      .then(res => res.json())
-      .then(data => setBlogs((data.data || []).slice(0, 3)))
-      .finally(() => setLoadingBlogs(false));
-  }, []);
-
-  const handleSearch = () => {
-    // Redirect to /properties with filters as query params, or trigger property fetching here
-    // Example: navigate(`/properties?${new URLSearchParams(filters)}`)
-  };
-
-  const handleFilterChange = (e) => {
-    setFilters({
-      ...filters,
-      [e.target.name]: e.target.value,
-    });
-  };
+  // Top read blogs (or random fallback)
+  const topReadBlogs = useMemo(() => {
+    if (!blogs || blogs.length === 0) return [];
+    const sorted = [...blogs].sort((a, b) => (b.views || 0) - (a.views || 0));
+    const anyViews = sorted.some((b) => (b.views || 0) > 0);
+    if (anyViews) return sorted.slice(0, 3);
+    // fallback to random picks
+    const shuffled = [...blogs].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, 3);
+  }, [blogs]);
 
   return (
-    <div className="home-page" style={{minHeight:"100vh", background:"#f7fff5"}}>
-      {/* Hero Section */}
+    <div className="home-page" style={{ background: "#f7fff5" }}>
+      {/* Hero */}
       <section
-        className="hero-section set-bg"
+        className="hero-section"
         style={{
           backgroundImage:
             "url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1500&q=80')",
@@ -95,286 +164,225 @@ export default function Home() {
       >
         <div className="hero-container">
           <div className="hero-text">
-            <h1>Find Your Dream Property Today</h1>
+            <TextType
+              text={["Find Your Dream Property Today", "Find Your Dream Property Today"]}
+              typingSpeed={100}
+              pauseDuration={1500}
+              showCursor={true}
+              cursorCharacter=""
+              className="hero-title"
+              element="h1"
+            />
             <p>
-              Buy, Sell, or Invest in Lands, Houses &amp; Commercial Properties — All with Trusted Agents.
+              Buy, sell or invest — browse trusted listings and find a local agent to help.
             </p>
+
             <div className="hero-action">
               <Link to="/properties" className="hero-btn">
                 Browse Properties
               </Link>
-              <Link to="/blog" className="hero-btn hero-btn--outline ms-3">
+              <Link to="/blog" className="hero-btn hero-btn--outline">
                 Read Blog
               </Link>
             </div>
-            <div className="home-search-filter mt-4">
-              <SearchFilter
-                filters={filters}
-                onChange={handleFilterChange}
-                onSearch={handleSearch}
-                showStatus={true}
-              />
+
+            <div className="home-search-filter" style={{ marginTop: 22 }}>
+              <SearchFilter filters={filters} onChange={handleFilterChange} onSearch={handleSearch} showStatus />
             </div>
           </div>
         </div>
       </section>
 
-      <div className="container" style={{display:"flex", gap:"3.5em", alignItems:"flex-start", marginTop:"-45px", paddingBottom:"2em"}}>
-        <div style={{flex:1}}>
-          {/* Trending Properties Section */}
-          <section className="trending-section py-5">
-            <h2 className="section-title">🔥 Trending Properties</h2>
-            {loadingTrending ? (
-              <div className="trending-loading">Loading trending properties...</div>
-            ) : trending.length === 0 ? (
-              <div className="trending-empty">No trending properties found.</div>
-            ) : (
-              <div className="trending-list" style={{display: "flex", gap: "2em", flexWrap: "wrap", justifyContent:"flex-start"}}>
-                {trending.map(property => (
-                  <div key={property.id} className="trending-card" style={{
-                    background: "#fff",
-                    borderRadius: "14px",
-                    boxShadow: "0 4px 16px #228b2220",
-                    width: "320px",
-                    overflow: "hidden",
-                    display: "flex",
-                    flexDirection: "column",
-                    position: "relative"
-                  }}>
-                    <Link to={`/properties/${property.id}`}>
-                      <img
-                        src={
-                          property.images && property.images.length > 0
-                            ? getImageUrl(
-                                typeof property.images === "string"
-                                  ? JSON.parse(property.images)[0]
-                                  : property.images[0]
-                              )
-                            : "/img/default.jpg"
-                        }
-                        alt={property.title}
-                        style={{
-                          width: "100%",
-                          height: "170px",
-                          objectFit: "cover",
-                          borderTopLeftRadius: "14px",
-                          borderTopRightRadius: "14px",
-                        }}
-                      />
-                    </Link>
-                    <div style={{padding: "1.1em 1em 1.3em 1em", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between"}}>
-                      <h3 style={{fontSize: "1.13em", fontWeight: 700, marginBottom: "0.4em"}}>
-                        <Link to={`/properties/${property.id}`} style={{color: "#228B22", textDecoration: "none"}}>
-                          {property.title}
-                        </Link>
-                      </h3>
-                      <div style={{fontWeight: 600, color: "#228B22", marginBottom: "0.3em"}}>
-                        ₵{Number(property.price).toLocaleString()}
-                      </div>
-                      <div style={{color: "#477144", fontSize: "1.04em", marginBottom: "0.5em"}}>
-                        <i className="fa fa-map-marker map-icon-green"></i> {property.location}
-                      </div>
-                      <div style={{display: "flex", gap: "1em", color: "#888", fontSize: "1em", marginTop: "auto"}}>
-                        {property.bedrooms && (
-                          <span><i className="fa fa-bed meta-icon-gray"></i> {property.bedrooms}</span>
-                        )}
-                        {property.bathrooms && (
-                          <span><i className="fa fa-bath meta-icon-gray"></i> {property.bathrooms}</span>
-                        )}
-                        {property.size && (
-                          <span><i className="fa fa-expand meta-icon-gray"></i> {property.size} sqft</span>
-                        )}
-                      </div>
-                      <div style={{position:"absolute", bottom: "16px", right: "18px", background: "#e9f7ef", color: "#228B22", borderRadius: "22px", padding: "0.23em 0.8em", fontWeight: 600, fontSize: "0.98em", display: "flex", alignItems: "center", gap: "0.3em"}}>
-                        <i className="fa fa-eye"></i> {property.views || 0}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-
-          {/* Featured Properties Section */}
-          <section className="featured-section" style={{marginTop:"2em"}}>
-            <h2 className="section-title">🌟 Featured Properties</h2>
-            {loadingFeatured ? (
-              <div className="featured-loading">Loading featured properties...</div>
-            ) : featured.length === 0 ? (
-              <div className="featured-empty">No featured properties found.</div>
-            ) : (
-              <div className="featured-list" style={{display: "flex", gap: "2em", flexWrap: "wrap", justifyContent:"flex-start"}}>
-                {featured.map(property => (
-                  <div key={property.id} className="featured-card" style={{
-                    background: "#fff",
-                    borderRadius: "14px",
-                    boxShadow: "0 4px 16px #228b2220",
-                    width: "320px",
-                    overflow: "hidden",
-                    display: "flex",
-                    flexDirection: "column",
-                    position: "relative"
-                  }}>
-                    <Link to={`/properties/${property.id}`}>
-                      <img
-                        src={
-                          property.images && property.images.length > 0
-                            ? getImageUrl(
-                                typeof property.images === "string"
-                                  ? JSON.parse(property.images)[0]
-                                  : property.images[0]
-                              )
-                            : "/img/default.jpg"
-                        }
-                        alt={property.title}
-                        style={{
-                          width: "100%",
-                          height: "170px",
-                          objectFit: "cover",
-                          borderTopLeftRadius: "14px",
-                          borderTopRightRadius: "14px",
-                        }}
-                      />
-                    </Link>
-                    <div style={{padding: "1.1em 1em 1.3em 1em"}}>
-                      <h3 style={{fontSize: "1.13em", fontWeight: 700, marginBottom: "0.4em"}}>
-                        <Link to={`/properties/${property.id}`} style={{color: "#228B22", textDecoration: "none"}}>
-                          {property.title}
-                        </Link>
-                      </h3>
-                      <div style={{fontWeight: 600, color: "#228B22", marginBottom: "0.3em"}}>
-                        ₵{Number(property.price).toLocaleString()}
-                      </div>
-                      <div style={{color: "#477144", fontSize: "1.04em", marginBottom: "0.5em"}}>
-                        <i className="fa fa-map-marker map-icon-green"></i> {property.location}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-
-          {/* Top Agents Section */}
-          <section className="agents-section py-4" style={{marginTop:"2em"}}>
-            <h2 className="section-title">🏆 Top Agents</h2>
-            {loadingAgents ? (
-              <div className="agents-loading">Loading agents...</div>
-            ) : agents.length === 0 ? (
-              <div className="agents-empty">No agents found.</div>
-            ) : (
-              <div className="agents-list" style={{display: "flex", gap: "2em", flexWrap: "wrap", justifyContent:"flex-start"}}>
-                {agents.map(agent => (
-                  <div key={agent.id} className="agent-card" style={{
-                    background: "#fff",
-                    borderRadius: "14px",
-                    boxShadow: "0 4px 16px #228b2220",
-                    width: "260px",
-                    padding: "1.2em 0.7em 1em 0.7em",
-                    textAlign: "center",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center"
-                  }}>
-                    <img
-                      src={
-                        agent.photo
-                          ? getImageUrl(agent.photo)
-                          : "/img/agent-default.jpg"
-                      }
-                      alt={agent.name}
-                      style={{
-                        width: "62px",
-                        height: "62px",
-                        borderRadius: "50%",
-                        objectFit: "cover",
-                        border: "2.5px solid #228B22",
-                        marginBottom: "0.8em"
-                      }}
-                    />
-                    <div style={{fontWeight: 700, fontSize: "1.07em", color: "#228B22", marginBottom: "0.2em"}}>{agent.name}</div>
-                    <div style={{color: "#3c463f", fontSize: "1.01em", marginBottom: "0.8em"}}>{agent.agency || agent.role || "Agent"}</div>
-                    <Link to={`/agents/${agent.id}`} className="agent-card-link" style={{
-                      background: "#228B22",
-                      color: "#fff",
-                      padding: "0.5em 1.2em",
-                      borderRadius: "7px",
-                      fontWeight: 500,
-                      textDecoration: "none",
-                      fontSize: "0.98em"
-                    }}>View Profile</Link>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-
-          {/* Latest Blog Posts */}
-          <section className="blog-section py-4" style={{marginTop:"2em"}}>
-            <h2 className="section-title">📰 Latest Blog Posts</h2>
-            {loadingBlogs ? (
-              <div className="blog-loading">Loading blog posts...</div>
-            ) : blogs.length === 0 ? (
-              <div className="blog-empty">No blog posts found.</div>
-            ) : (
-              <div className="blog-list" style={{display: "flex", gap: "2em", flexWrap: "wrap", justifyContent:"flex-start"}}>
-                {blogs.map(blog => (
-                  <div key={blog.id} className="blog-card" style={{
-                    background: "#fff",
-                    borderRadius: "14px",
-                    boxShadow: "0 4px 16px #228b2220",
-                    width: "320px",
-                    overflow: "hidden",
-                    display: "flex",
-                    flexDirection: "column",
-                    position: "relative"
-                  }}>
-                    <Link to={`/blog/${blog.id}`}>
-                      <img
-                        src={
-                          blog.image
-                            ? getImageUrl(blog.image)
-                            : "/img/blog-default.jpg"
-                        }
-                        alt={blog.title}
-                        style={{
-                          width: "100%",
-                          height: "120px",
-                          objectFit: "cover",
-                          borderTopLeftRadius: "14px",
-                          borderTopRightRadius: "14px",
-                        }}
-                      />
-                    </Link>
-                    <div style={{padding: "1em 1em 1.2em 1em", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between"}}>
-                      <h3 style={{fontSize: "1.06em", fontWeight: 700, marginBottom: "0.4em"}}>
-                        <Link to={`/blog/${blog.id}`} style={{color: "#228B22", textDecoration: "none"}}>
-                          {blog.title}
-                        </Link>
-                      </h3>
-                      <div style={{color: "#3c463f", fontSize: "0.99em", marginBottom: "0.5em"}}>
-                        {blog.excerpt?.slice(0, 100)}{blog.excerpt?.length > 100 && "..."}
-                      </div>
-                      <div style={{color: "#859387", fontSize: "0.95em"}}>
-                        {blog.created_at?.slice(0,10)}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-
-          {/* Call to Action */}
-          <section className="cta-section py-5" style={{marginTop:"2em"}}>
-            <div style={{textAlign:"center"}}>
-              <h2 style={{color:"#228B22", fontWeight:700, fontSize:"2rem", marginBottom:"1.1em"}}>Ready to List Your Property?</h2>
-              <Link to="/properties/create" className="hero-btn" style={{fontSize:"1.15em", padding:"0.8em 3em", borderRadius:"100px"}}>
-                Post Your Listing
-              </Link>
+      {/* Main layout: left content + sticky sidebar (sidebar is sticky via CSS) */}
+      <div className="container home-row-wrapper" ref={pageContainerRef}>
+        <div className="home-main-col">
+          {/* Trending */}
+          <section className="section">
+            <div className="section-header">
+              <h2>🔥 Trending Properties</h2>
+              <Link to="/properties" className="small-link">View all</Link>
             </div>
+
+            {loadingTrending ? (
+              <div className="cards-row">
+                {[1,2,3].map(i => <div className="card-skeleton" key={i} />)}
+              </div>
+            ) : trending.length === 0 ? (
+              <div className="empty">No trending properties found.</div>
+            ) : (
+              <div className="cards-row">
+                {trending.map((property) => {
+                  const images = parseImages(property.images);
+                  return (
+                    <article key={property.id} className="card property-card">
+                      <Link to={`/properties/${property.id}`} className="card-media">
+                        <img src={ images[0] ? getImageUrl(images[0]) : "/img/default.jpg" } alt={property.title} loading="lazy" />
+                      </Link>
+                      <div className="card-body">
+                        <Link to={`/properties/${property.id}`} className="card-title">{property.title}</Link>
+                        <div className="card-price">₵{Number(property.price).toLocaleString()}</div>
+                        <div className="card-meta">
+                          <span className="meta-location"><i className="fa fa-map-marker"></i> {property.location}</span>
+                          <div className="meta-stats">
+                            {property.bedrooms && <span><i className="fa fa-bed"></i> {property.bedrooms}</span>}
+                            {property.bathrooms && <span><i className="fa fa-bath"></i> {property.bathrooms}</span>}
+                            {property.size && <span><i className="fa fa-expand"></i> {property.size} sqft</span>}
+                          </div>
+                        </div>
+
+                        {/* Inline agent (if property has user/agent) */}
+                        {property.user && (
+                          <div className="property-agent-inline" style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 10 }}>
+                            <img src={property.user.photo ? (property.user.photo.startsWith("http") ? property.user.photo : `${backendUrl}/storage/${property.user.photo}`) : "/img/agent-default.jpg"} alt={property.user.name} style={{ width:40, height:40, borderRadius: "50%", objectFit: "cover" }} />
+                            <div style={{ fontSize: 14 }}>
+                              <div style={{ fontWeight: 700 }}>{property.user.name}</div>
+                              <Link to={`/agents/${property.user.id}`} className="small-link">Contact agent</Link>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+
+          {/* Featured */}
+          <section className="section">
+            <div className="section-header">
+              <h2>🌟 Featured Properties</h2>
+              <Link to="/properties?featured=1" className="small-link">See featured</Link>
+            </div>
+
+            {loadingFeatured ? (
+              <div className="cards-row">
+                {[1,2,3].map(i => <div className="card-skeleton" key={i} />)}
+              </div>
+            ) : featured.length === 0 ? (
+              <div className="featured-placeholder">No featured properties yet.</div>
+            ) : (
+              <div className="cards-row">
+                {featured.map((property) => {
+                  const images = parseImages(property.images);
+                  return (
+                    <article key={property.id} className="card property-card small">
+                      <Link to={`/properties/${property.id}`} className="card-media">
+                        <img src={ images[0] ? getImageUrl(images[0]) : "/img/default.jpg" } alt={property.title} loading="lazy" />
+                      </Link>
+                      <div className="card-body">
+                        <Link to={`/properties/${property.id}`} className="card-title">{property.title}</Link>
+                        <div className="card-price">₵{Number(property.price).toLocaleString()}</div>
+                        <div className="card-meta small">{property.location}</div>
+
+                        {property.user ? (
+                          <div className="property-agent-inline" style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 10 }}>
+                            <img src={property.user.photo ? (property.user.photo.startsWith("http") ? property.user.photo : `${backendUrl}/storage/${property.user.photo}`) : "/img/agent-default.jpg"} alt={property.user.name} style={{ width:36, height:36, borderRadius: "50%", objectFit: "cover" }} />
+                            <div style={{ fontSize: 13 }}>
+                              <div style={{ fontWeight: 700 }}>{property.user.name}</div>
+                              <Link to={`/agents/${property.user.id}`} className="small-link">View profile</Link>
+                            </div>
+                          </div>
+                        ) : (
+                          <div style={{ marginTop: 10 }}>
+                            <Link to="/agents" className="small-link">Find agents for this listing</Link>
+                          </div>
+                        )}
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+
+          {/* Available Agents */}
+          <section className="section">
+            <div className="section-header">
+              <h2>🧑‍💼 Available Agents</h2>
+              <Link to="/agents" className="small-link">Browse all agents</Link>
+            </div>
+
+            {loadingAgents ? (
+              <div className="agents-row">
+                {[1,2,3,4].map(i => <div key={i} className="agent-skeleton" />)}
+              </div>
+            ) : agents.length === 0 ? (
+              <div className="empty">No agents found.</div>
+            ) : (
+              <div className="agents-row">
+                {agents.slice(0,6).map((agent) => (
+                  <div key={agent.id} className="agent-card">
+                    <img src={agent.photo ? getImageUrl(agent.photo) : "/img/agent-default.jpg"} alt={agent.name} />
+                    <div className="agent-info">
+                      <div className="agent-name">{agent.name}</div>
+                      <div className="agent-role">{agent.agency || agent.role || "Agent"}</div>
+                    </div>
+                    <Link to={`/agents/${agent.id}`} className="agent-btn">View</Link>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Latest Blogs */}
+          <section className="section">
+            <div className="section-header">
+              <h2>📰 Latest Blog Posts</h2>
+              <Link to="/blog" className="small-link">Explore blog</Link>
+            </div>
+
+            {/* Top Reads mini-row */}
+            {loadingBlogs ? null : topReadBlogs.length > 0 && (
+              <div style={{ marginBottom: 12 }}>
+                <h4 style={{ margin: "6px 0 8px", color: "#15521a" }}>Top reads</h4>
+                <div className="cards-row" style={{ gap: 12 }}>
+                  {topReadBlogs.map((b) => (
+                    <article key={`top-${b.id}`} className="card blog-card" style={{ width: 260 }}>
+                      <Link to={`/blog/${b.id}`} className="card-media">
+                        <img src={b.image ? getImageUrl(b.image) : "/img/blog-default.jpg"} alt={b.title} loading="lazy" />
+                      </Link>
+                      <div className="card-body">
+                        <Link to={`/blog/${b.id}`} className="card-title">{b.title}</Link>
+                        <div className="card-meta small">{b.created_at?.slice(0,10)} • <span style={{ fontWeight:700 }}>{b.views || 0} views</span></div>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {loadingBlogs ? (
+              <div className="cards-row">
+                {[1,2,3].map(i => <div className="card-skeleton" key={i} />)}
+              </div>
+            ) : blogs.length === 0 ? (
+              <div className="empty">No blog posts found.</div>
+            ) : (
+              <div className="cards-row">
+                {blogs.map(blog => (
+                  <article key={blog.id} className="card blog-card">
+                    <Link to={`/blog/${blog.id}`} className="card-media">
+                      <img src={blog.image ? getImageUrl(blog.image) : "/img/blog-default.jpg"} alt={blog.title} loading="lazy" />
+                    </Link>
+                    <div className="card-body">
+                      <Link to={`/blog/${blog.id}`} className="card-title">{blog.title}</Link>
+                      <div className="card-excerpt">{(blog.excerpt || blog.description || "").slice(0, 100)}{(blog.excerpt || blog.description || "").length > 100 ? "..." : ""}</div>
+                      <div className="card-meta small">{blog.created_at?.slice(0,10)}</div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* CTA */}
+          <section className="cta">
+            <h3>Ready to list your property?</h3>
+            <Link to="/properties/create" className="hero-btn cta-btn">Post Your Listing</Link>
           </section>
         </div>
+
         {/* Sidebar */}
         <HomeSidebar stats={stats} featuredAgent={featuredAgent} trending={trending} />
       </div>

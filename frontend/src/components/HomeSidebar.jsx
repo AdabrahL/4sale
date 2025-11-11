@@ -1,12 +1,36 @@
 import { Link } from "react-router-dom";
+import { useEffect, useRef } from "react";
 
-export default function HomeSidebar({ stats, featuredAgent, trending }) {
+const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://backend.test";
+
+function parseImages(images) {
+  if (!images) return [];
+  if (Array.isArray(images)) return images;
+  try {
+    return JSON.parse(images);
+  } catch {
+    return [];
+  }
+}
+
+export default function HomeSidebar({ stats = {}, featuredAgent = null, trending = [] }) {
+  const sidebarRef = useRef(null);
+
+  useEffect(() => {
+    const onResize = () => {
+      if (!sidebarRef.current) return;
+      sidebarRef.current.style.willChange = "transform";
+      setTimeout(() => { sidebarRef.current && (sidebarRef.current.style.willChange = ""); }, 250);
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
   return (
-    <aside className="home-sidebar">
-      {/* Quick Links */}
-      <div className="sidebar-section">
+    <aside className="home-sidebar sticky" ref={sidebarRef} aria-label="Sidebar">
+      <div className="sidebar-block">
         <h5>Quick Links</h5>
-        <ul>
+        <ul className="sidebar-links">
           <li><Link to="/properties">Browse Properties</Link></li>
           <li><Link to="/saved">Saved Properties</Link></li>
           <li><Link to="/agents">Find an Agent</Link></li>
@@ -16,54 +40,62 @@ export default function HomeSidebar({ stats, featuredAgent, trending }) {
         </ul>
       </div>
 
-      {/* Tip of the Day */}
-      <div className="sidebar-section sidebar-tip">
-        <strong>Tip:</strong> Always verify land titles before making payments.
+      <div className="sidebar-block tip">
+        <div className="tip-label">Tip of the Day</div>
+        <div className="tip-body">Always verify land titles and use a local surveyor before making payments.</div>
       </div>
 
-      {/* Mini Market Stats */}
-      <div className="sidebar-section">
+      <div className="sidebar-block">
         <h5>Market Summary</h5>
-        <div className="sidebar-stats">
-          <div><b>Listings today:</b> {stats?.today || 0}</div>
-          <div><b>Popular area:</b> {stats?.popular || "N/A"}</div>
-          <div><b>Avg. price:</b> ₵{stats?.avgPrice || "N/A"}</div>
+        <div className="market-grid">
+          <div>
+            <div className="stat">{stats.today ?? 0}</div>
+            <div className="stat-label">Listings today</div>
+          </div>
+          <div>
+            <div className="stat">{stats.popular ?? "N/A"}</div>
+            <div className="stat-label">Popular area</div>
+          </div>
+          <div>
+            <div className="stat">₵{stats.avgPrice ?? "N/A"}</div>
+            <div className="stat-label">Avg. price</div>
+          </div>
         </div>
       </div>
 
-      {/* Featured Agent */}
       {featuredAgent && (
-        <div className="sidebar-section sidebar-agent">
+        <div className="sidebar-block agent">
           <h5>Featured Agent</h5>
-          <div>
-            <img src={featuredAgent.photo} alt={featuredAgent.name} className="sidebar-agent-img" />
-            <div>{featuredAgent.name}</div>
-            <Link to={`/agents/${featuredAgent.id}`}>Profile</Link>
+          <div className="agent-mini">
+            <img src={featuredAgent.photo ? (featuredAgent.photo.startsWith("http") ? featuredAgent.photo : `${backendUrl}/storage/${featuredAgent.photo}`) : "/img/agent-default.jpg"} alt={featuredAgent.name} />
+            <div>
+              <div className="agent-mini-name">{featuredAgent.name}</div>
+              <div className="agent-mini-role">{featuredAgent.agency || "Agent"}</div>
+              <Link to={`/agents/${featuredAgent.id}`} className="agent-mini-link">View profile</Link>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Trending Properties Mini */}
       {trending?.length > 0 && (
-        <div className="sidebar-section">
+        <div className="sidebar-block">
           <h5>Trending Properties</h5>
           <ul className="sidebar-trending-list">
-            {trending.slice(0, 2).map((p) => (
-              <li key={p.id} style={{display:"flex", alignItems:"center", marginBottom:"1em"}}>
-                <Link to={`/properties/${p.id}`} style={{display:"flex", alignItems:"center", gap:"0.7em", textDecoration:"none"}}>
-                  <img src={
-                    p.images && p.images.length > 0
-                      ? (typeof p.images === "string" ? JSON.parse(p.images)[0] : p.images[0])
-                      : "/img/default.jpg"
-                  } alt={p.title} className="sidebar-trending-img" />
-                  <div style={{color:"#228B22", fontWeight:"600"}}>
-                    {p.title}
-                    <div style={{fontSize:"0.97em", color:"#196f1a"}}>₵{Number(p.price).toLocaleString()}</div>
-                    <div style={{fontSize:"0.96em", color:"#3c463f"}}>{p.location}</div>
-                  </div>
-                </Link>
-              </li>
-            ))}
+            {trending.slice(0, 3).map((p) => {
+              const images = parseImages(p.images);
+              const image = images[0] || null;
+              return (
+                <li key={p.id}>
+                  <Link to={`/properties/${p.id}`} className="trend-link" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <img src={image ? (image.startsWith("http") ? image : `${backendUrl}/storage/${image}`) : "/img/default.jpg"} alt={p.title} style={{ width: 64, height: 46, objectFit: "cover", borderRadius: 8 }} />
+                    <div className="trend-meta" style={{ fontSize: 13 }}>
+                      <div className="trend-title" style={{ fontWeight: 700 }}>{p.title}</div>
+                      <div className="trend-sub">₵{Number(p.price || 0).toLocaleString()}</div>
+                    </div>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}

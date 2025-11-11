@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import API from "../api/axios";
 import BlogSidebar from "../components/BlogSidebar";
-
+import { useAuth } from "../contexts/AuthContext"; // <-- added import
 
 /**
  * Enhanced Blog page
@@ -27,6 +27,9 @@ function estimateReadTime(text = "") {
 }
 
 export default function Blog() {
+  const { user } = useAuth(); // <-- get auth user
+  const isAdmin = !!(user && user.is_admin); // determine admin status
+
   const [tab, setTab] = useState("blogs"); // blogs | books
   const [items, setItems] = useState([]); // current list (blogs or books)
   const [loading, setLoading] = useState(true);
@@ -120,6 +123,13 @@ export default function Blog() {
               Books
             </button>
           </div>
+
+          {/* Admin-only Post button */}
+          {isAdmin && (
+            <Link to="/blog/post" className="btn btn-green ms-3">
+              + Post Blog/Book
+            </Link>
+          )}
         </div>
       </div>
 

@@ -305,3 +305,56 @@
 @media (max-width: 480px) {
   .admin-badge { font-size: 0.6rem; top: -5px; right: -6px; padding: 0.12rem 0.35rem; }
 }
+
+/* Merge these into your existing navbar CSS or import this file */
+
+/* 1) Make admin/pending badge turn red when header is scrolled */
+.header.nav-scrolled .admin-badge,
+.admin-badge.scrolled {
+  background: #c62828; /* red */
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(198,40,40,0.14);
+  transition: background-color 180ms ease, transform 200ms ease;
+}
+
+/* Also style the mobile badge when it has the scrolled flag */
+.mobile-admin-badge.scrolled {
+  background: #c62828;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(198,40,40,0.14);
+}
+
+/* 2) Ensure the profile image is not visually altered by the nav-scrolled filter.
+   The header adds a filter to many elements when scrolled; override the filter for avatars */
+.header.nav-scrolled .profile-icon img,
+.header.nav-scrolled .header__cart img,
+.profile-avatar,
+.mobile-profile-avatar,
+.mobile__menu__content .mobile-profile-avatar {
+  filter: none !important;
+  -webkit-filter: none !important;
+  opacity: 1 !important;
+}
+
+/* 3) keep avatar border readable on dark background (optional tweak) */
+.header.nav-scrolled .profile-avatar {
+  border-color: #fff !important; /* change to desired color when header is dark */
+}
+
+/* 4) Small transition for the badge so color change is smoother */
+.admin-badge,
+.mobile-admin-badge {
+  transition: background-color 160ms ease, transform 160ms ease;
+}
+
+/* 5) If you want a subtle pulse when count appears or turns red, uncomment below */
+/*
+.admin-badge.scrolled {
+  animation: pulse 1.4s infinite;
+}
+@keyframes pulse {
+  0% { transform: scale(1); box-shadow: 0 2px 10px rgba(198,40,40,0.10); }
+  50% { transform: scale(1.05); box-shadow: 0 6px 18px rgba(198,40,40,0.12); }
+  100% { transform: scale(1); box-shadow: 0 2px 10px rgba(198,40,40,0.10); }
+}
+*/

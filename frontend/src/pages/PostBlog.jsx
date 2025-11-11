@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import API from "../api/axios"; // use axios instance so baseURL and auth are consistent
+
 
 export default function PostBlog() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
 
-  // 🟢 Always define hooks before any return!
   const [type, setType] = useState("blog");
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
@@ -14,24 +16,38 @@ export default function PostBlog() {
   const [bookAuthor, setBookAuthor] = useState("");
   const [bookUrl, setBookUrl] = useState("");
   const [imageFile, setImageFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState("");
   const [loading, setLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState("");
 
-  // 🔴 Move the admin-check after hooks
+  // Admin guard (hooks must be defined before returns)
   if (!user || !user.is_admin) {
     return (
       <div className="container py-5">
-        <div className="alert alert-danger mt-4">
-          Access Denied. Only admins can post blogs/books.
-        </div>
+        <div className="alert alert-danger mt-4">Access Denied. Only admins can post blogs/books.</div>
       </div>
     );
   }
+
+  const handleImageChange = (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const allowed = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
+    if (!allowed.includes(f.type)) {
+      setError("Only JPG, PNG or WEBP images are allowed.");
+      return;
+    }
+    setImageFile(f);
+    setPreviewUrl(URL.createObjectURL(f));
+    setError("");
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setUploadProgress(0);
 
     try {
       const formData = new FormData();
@@ -45,125 +61,92 @@ export default function PostBlog() {
       }
       if (imageFile) formData.append("image", imageFile);
 
-      // Get token from localStorage or context—adjust as needed
-      const token = localStorage.getItem("AUTH_TOKEN") || (user && user.token);
-
-      const res = await fetch("http://localhost:8000/api/blogs", {
-        method: "POST",
-        body: formData,
-        headers: {
-          Authorization: `Bearer ${token}`,
+      // Use your axios instance so baseURL and Authorization header are consistent
+      await API.post("/blogs", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress: (ev) => {
+          if (ev.total) {
+            setUploadProgress(Math.round((ev.loaded * 100) / ev.total));
+          }
         },
       });
 
-      if (!res.ok) {
-        let errMsg = "Failed to post blog/book";
-        try {
-          const errJson = await res.json();
-          errMsg = errJson.message || errMsg;
-        } catch {}
-        throw new Error(errMsg);
-      }
       setLoading(false);
       navigate("/blog");
     } catch (err) {
+      console.error("Post blog error:", err);
+      // try to show helpful message
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to post blog/book. Check console or backend logs.";
+      setError(msg);
       setLoading(false);
-      setError(err.message || "Failed to post blog/book. Try again.");
+      setUploadProgress(0);
     }
   };
 
   return (
     <div className="container py-5">
       <h2 className="mb-4" style={{ color: "#228B22" }}>Post a Blog/Book</h2>
+
+      {error && <div className="alert alert-danger">{error}</div>}
+
       <form className="blog-post-form" onSubmit={handleSubmit} encType="multipart/form-data">
-        {error && <div className="alert alert-danger">{error}</div>}
         <div className="mb-3">
           <label className="form-label">Type</label>
-          <select className="form-control" value={type} onChange={e => setType(e.target.value)}>
+          <select className="form-control" value={type} onChange={(e) => setType(e.target.value)}>
             <option value="blog">Blog</option>
             <option value="book">Book</option>
           </select>
         </div>
+
         <div className="mb-3">
           <label className="form-label">Title</label>
-          <input
-            type="text"
-            className="form-control"
-            placeholder={type === "blog" ? "Blog Title" : "Book Title"}
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-            required
-            maxLength={120}
-          />
+          <input type="text" className="form-control" placeholder={type === "blog" ? "Blog Title" : "Book Title"}
+            value={title} onChange={(e) => setTitle(e.target.value)} required maxLength={120} />
         </div>
+
         <div className="mb-3">
           <label className="form-label">Excerpt (Short Intro)</label>
-          <textarea
-            className="form-control"
-            placeholder="Short summary or intro"
-            value={excerpt}
-            onChange={e => setExcerpt(e.target.value)}
-            rows={2}
-            required
-            maxLength={200}
-          />
+          <textarea className="form-control" placeholder="Short summary or intro" value={excerpt}
+            onChange={(e) => setExcerpt(e.target.value)} rows={2} required maxLength={200} />
         </div>
+
         {type === "blog" && (
           <div className="mb-3">
             <label className="form-label">Content</label>
-            <textarea
-              className="form-control"
-              placeholder="Blog content"
-              value={content}
-              onChange={e => setContent(e.target.value)}
-              rows={8}
-              required
-            />
+            <textarea className="form-control" placeholder="Blog content" value={content}
+              onChange={(e) => setContent(e.target.value)} rows={8} required />
           </div>
         )}
+
         {type === "book" && (
           <>
             <div className="mb-3">
               <label className="form-label">Book Author</label>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Author"
-                value={bookAuthor}
-                onChange={e => setBookAuthor(e.target.value)}
-                required
-              />
+              <input type="text" className="form-control" placeholder="Author"
+                value={bookAuthor} onChange={(e) => setBookAuthor(e.target.value)} required />
             </div>
             <div className="mb-3">
               <label className="form-label">Book Link (URL)</label>
-              <input
-                type="url"
-                className="form-control"
-                placeholder="https://example.com/book"
-                value={bookUrl}
-                onChange={e => setBookUrl(e.target.value)}
-                required
-              />
+              <input type="url" className="form-control" placeholder="https://example.com/book"
+                value={bookUrl} onChange={(e) => setBookUrl(e.target.value)} required />
             </div>
           </>
         )}
+
         <div className="mb-3">
           <label className="form-label">Image (cover or blog image)</label>
-          <input
-            type="file"
-            className="form-control"
-            accept="image/*"
-            onChange={e => setImageFile(e.target.files[0])}
-          />
+          <input ref={fileInputRef} type="file" className="form-control" accept="image/*" onChange={handleImageChange} />
+          {previewUrl && <img src={previewUrl} alt="preview" style={{ marginTop: 8, maxWidth: 220, borderRadius: 6 }} />}
+          {uploadProgress > 0 && <div style={{ marginTop: 8 }}>Uploading: {uploadProgress}%</div>}
         </div>
-        <button
-          className="btn btn-green"
-          disabled={loading}
-          type="submit"
-        >
-          {loading ? "Posting..." : `Post ${type === "blog" ? "Blog" : "Book"}`}
+
+        <button className="btn btn-green" disabled={loading} type="submit">
+          {loading ? `Posting...${uploadProgress ? ` (${uploadProgress}%)` : ""}` : `Post ${type === "blog" ? "Blog" : "Book"}`}
         </button>
       </form>
     </div>
   );
-} 
+}

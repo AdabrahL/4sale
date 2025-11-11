@@ -1,0 +1,27 @@
+.text-type {
+  display: inline-block;
+  white-space: pre-wrap;
+}
+
+/* Cursor (visible) */
+.text-type__cursor,
+.text-type-cursor {
+  margin-left: 0.25rem;
+  display: inline-block;
+  opacity: 1;
+  /* blinking animation */
+  animation: text-type-blink 1s steps(1, end) infinite;
+}
+
+/* Hidden cursor helper */
+.text-type__cursor--hidden,
+.text-type-cursor--hidden {
+  display: none;
+}
+
+/* Keyframes for blinking cursor */
+@keyframes text-type-blink {
+  0% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 1; }
+}

@@ -2,8 +2,8 @@ import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import MainLayout from "./layouts/MainLayout";
 
-import Login from "./pages/Login";
-import Register from "./pages/Register";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
 import Properties from "./pages/Properties";
 import PropertyDetails from "./pages/PropertyDetails";
 import MyProperties from "./components/MyProperties";
@@ -20,6 +20,9 @@ import Messenger from "./pages/Messenger";
 import BlogDetail from "./pages/BlogDetail";
 import Favorites from "./pages/Favorites";
 import AdminPendingProperties from "./pages/AdminPendingProperties";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
+
 
 
 function App() {
@@ -29,6 +32,12 @@ function App() {
         {/* Auth pages: no navbar/footer */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
+
+
+
 
         {/* All other pages use MainLayout (Navbar + Footer) */}
         <Route element={<MainLayout />}>

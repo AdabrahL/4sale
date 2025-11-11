@@ -1,8 +1,7 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import API from "../api/axios";
-
 
 // Use VITE_BACKEND_URL from .env or fallback to http://backend.test
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://backend.test";
@@ -20,12 +19,49 @@ export default function Navbar() {
   const [pendingCount, setPendingCount] = useState(0);
   const location = useLocation();
 
+  // ref to manage scroll hysteresis/debounce state
+  const scrollRef = useRef({
+    timeoutId: null,
+    lastState: false,
+  });
+
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 64);
+    // Hysteresis + debounce to avoid rapid toggles near threshold
+    const ON_THRESHOLD = 80;   // switch to "scrolled" when > ON_THRESHOLD
+    const OFF_THRESHOLD = 56;  // switch to "not scrolled" when < OFF_THRESHOLD
+    const DEBOUNCE_MS = 60;
+
+    const handle = () => {
+      const y = window.scrollY || window.pageYOffset || 0;
+      const currentlyScrolled = scrollRef.current.lastState;
+      let nextScrolled = currentlyScrolled;
+
+      if (!currentlyScrolled && y > ON_THRESHOLD) nextScrolled = true;
+      else if (currentlyScrolled && y < OFF_THRESHOLD) nextScrolled = false;
+      // else keep previous state (hysteresis)
+
+      if (nextScrolled !== currentlyScrolled) {
+        // debounce the change slightly
+        if (scrollRef.current.timeoutId) {
+          clearTimeout(scrollRef.current.timeoutId);
+        }
+        scrollRef.current.timeoutId = setTimeout(() => {
+          setScrolled(nextScrolled);
+          scrollRef.current.lastState = nextScrolled;
+          scrollRef.current.timeoutId = null;
+        }, DEBOUNCE_MS);
+      }
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+
+    // initialize
+    scrollRef.current.lastState = (window.scrollY || 0) > ON_THRESHOLD;
+    setScrolled(scrollRef.current.lastState);
+
+    window.addEventListener("scroll", handle, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handle);
+      if (scrollRef.current.timeoutId) clearTimeout(scrollRef.current.timeoutId);
+    };
   }, []);
 
   // If the logged-in user is an admin, fetch pending count for approvals
@@ -34,21 +70,20 @@ export default function Navbar() {
 
     const fetchPendingCount = async () => {
       if (!user || !user.is_admin) {
-        setPendingCount(0);
+        if (!cancelled) setPendingCount(0);
         return;
       }
       try {
         const res = await API.get("/admin/properties/pending");
+        // normalize possible paginated or array responses
         const list = res.data?.data ?? res.data ?? [];
         if (!cancelled) setPendingCount(Array.isArray(list) ? list.length : 0);
       } catch (err) {
-        // Fail silently; don't block the navbar
         if (!cancelled) setPendingCount(0);
       }
     };
 
     fetchPendingCount();
-
     return () => { cancelled = true; };
   }, [user]);
 
@@ -132,9 +167,7 @@ export default function Navbar() {
                     <NavLink
                       to={tab.to}
                       className={({ isActive }) =>
-                        isActive || location.pathname === tab.to
-                          ? "active"
-                          : ""
+                        isActive || location.pathname === tab.to ? "active" : ""
                       }
                     >
                       {tab.label}
@@ -162,12 +195,21 @@ export default function Navbar() {
                     </Link>
                   </li>
 
-                  {/* Admin approvals link (visible only to admins) */}
+                  {/* Admin approvals link: admin-icon + admin-badge */}
                   {user.is_admin && (
                     <li>
                       <Link to="/admin/pending" title="Approvals" className="admin-approvals-link">
-                        <i className={`fa fa-gavel${scrolled ? " white-icon" : ""}`}></i>
-                        {pendingCount > 0 && <span className="admin-badge">{pendingCount}</span>}
+                        {/* admin-icon intentionally does NOT get white-icon when scrolled */}
+                        <i className="fa fa-gavel admin-icon" aria-hidden="true"  />
+                        {pendingCount > 0 && (
+                          <span
+                            role="status"
+                            aria-label={`${pendingCount} pending approvals`}
+                            className={`admin-badge ${scrolled ? "scrolled" : ""}`}
+                          >
+                            {pendingCount}
+                          </span>
+                        )}
                       </Link>
                     </li>
                   )}
@@ -177,6 +219,7 @@ export default function Navbar() {
                       <img
                         src={getPhotoUrl(user.photo)}
                         alt="Profile"
+                        className="profile-avatar"
                         style={{
                           width: "36px",
                           height: "36px",
@@ -239,17 +282,22 @@ export default function Navbar() {
                       <li>
                         <NavLink to="/admin/pending" onClick={() => setMobileOpen(false)}>
                           Approvals
-                          {pendingCount > 0 && <span className="mobile-admin-badge">{pendingCount}</span>}
+                          {pendingCount > 0 && (
+                            <span className={`mobile-admin-badge ${scrolled ? "scrolled" : ""}`}>
+                              {pendingCount}
+                            </span>
+                          )}
                         </NavLink>
                       </li>
                     )}
 
                     <li>
                       <NavLink to="/profile" onClick={() => setMobileOpen(false)}>
-                        <span style={{display: "inline-flex", alignItems: "center"}}>
+                        <span style={{ display: "inline-flex", alignItems: "center" }}>
                           <img
                             src={getPhotoUrl(user.photo)}
                             alt="Profile"
+                            className="mobile-profile-avatar"
                             style={{
                               width: "28px",
                               height: "28px",

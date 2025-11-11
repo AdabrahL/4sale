@@ -1,4 +1,4 @@
-/* === 4SALE Auth Green & White Minimal Style === */
+/* === 4SALE Auth Green & White Minimal Style (pop-in animation to avoid clipping) === */
 
 body.auth-page {
   margin: 0;
@@ -13,6 +13,7 @@ body.auth-page {
   position: relative;
 }
 
+/* Decorative pseudo elements behind the grid/scene */
 body.auth-page::before {
   content: "";
   position: absolute;
@@ -22,7 +23,7 @@ body.auth-page::before {
   top: -140px;
   left: -140px;
   border-radius: 50%;
-  z-index: 0;
+  z-index: -1;
   opacity: 0.16;
 }
 body.auth-page::after {
@@ -34,21 +35,54 @@ body.auth-page::after {
   bottom: -120px;
   right: -120px;
   border-radius: 50%;
-  z-index: 0;
+  z-index: -1;
   opacity: 0.15;
 }
 
 /* Auth container (Login/Register card) */
+/* NOTE: overflow left visible so children are never clipped while animating */
 .auth-container {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   width: 360px;
   padding: 38px 32px;
   border-radius: 18px;
-  background: #fff;
-  border: 1.5px solid #e3f2e8;
+  background: rgba(255,255,255,0.92);
+  border: 1.5px solid rgba(227,242,232,0.9);
   box-shadow: 0 8px 32px #228B220a;
-  animation: fadeInUp 1.1s ease;
+  /* use the new popIn animation and keep both start/end states */
+  animation: popIn 420ms cubic-bezier(0.2, 0.8, 0.25, 1) both;
+  transform-origin: 50% 50%;
+  overflow: visible;
+}
+
+/* Keep GridScan behind UI if it's placed inside the card; not required for full-viewport background */
+.auth-container > .gridscan {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+/* Ensure card content sits above the grid */
+.auth-container > *:not(.gridscan) {
+  position: relative;
+  z-index: 3;
+}
+
+/* New popIn keyframes: no vertical translate, just scale + fade */
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+  65% {
+    opacity: 1;
+    transform: scale(1.006);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* Title */
@@ -207,12 +241,6 @@ body.auth-page::after {
   background: #d7e8f8;
   color: #fff;
 }
-
-/* Animations 
-@keyframes fadeInUp {
-  0% { opacity: 0; transform: translateY(0px);}
-  100% { opacity: 1; transform: translateY(0);}
-}*/
 
 /* Responsive */
 @media (max-width: 480px) {
