@@ -90,7 +90,7 @@ export default function Footer() {
             <div className="footer__copyright d-flex justify-content-between align-items-center">
               <div className="footer__copyright__text">
                 <p>
-                  &copy; {new Date().getFullYear()} 4Sale Real Estate.  
+                  &copy; {new Date().getFullYear()} 4Sale Real Estate GHANA.
                   Built with React (Frontend) and Laravel (Backend)<i className="fa fa-heart" aria-hidden="true"></i> for property buyers & sellers.
                 </p>
               </div>
