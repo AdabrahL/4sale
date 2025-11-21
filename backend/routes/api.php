@@ -91,6 +91,14 @@ Route::get('/blogs/{id}', [BlogController::class, 'show']);
 Route::put('/blogs/{id}', [BlogController::class, 'update'])->middleware('auth:sanctum');
 Route::delete('/blogs/{id}', [BlogController::class, 'destroy'])->middleware('auth:sanctum');
 
+
+//Insights 
+Route::prefix('insights')->group(function () {
+    Route::get('/stats', [App\Http\Controllers\InsightsController::class, 'stats']);
+    Route::get('/prices-monthly', [App\Http\Controllers\InsightsController::class, 'pricesMonthly']);
+});
+
+
 // Test & utility
 Route::get('/test', fn() => response()->json(['message' => 'Backend is working fine 🚀']));
 Route::get('/', fn() => response()->json(['message' => 'Welcome to the Backend API 🚀', 'status' => 'online']));
