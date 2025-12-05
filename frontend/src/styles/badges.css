@@ -1,0 +1,79 @@
+/* ============================================
+   BADGES & TAGS
+   ============================================ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-success {
+  background: linear-gradient(135deg, #0c5904, #0f7505);
+  color: white;
+}
+
+.badge-warning {
+  background: linear-gradient(135deg, #ffc107, #ffb300);
+  color: #333;
+}
+
+.badge-danger {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+}
+
+.badge-info {
+  background: linear-gradient(135deg, #0dcaf0, #0aa2c0);
+  color: white;
+}
+
+.badge-premium {
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  color: #333;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+}
+
+.badge-new {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+  color: white;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.badge-featured {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+}
+
+/* Pill variant */
+.badge-pill {
+  padding: 8px 16px;
+  border-radius: 100px;
+  font-size: 13px;
+}
+
+/* Outline variant */
+.badge-outline {
+  background: transparent;
+  border: 2px solid currentColor;
+}
+
+.badge-outline.badge-success {
+  color: #0c5904;
+  background: rgba(34, 139, 34, 0.1);
+}
+
+.badge-outline.badge-warning {
+  color: #ffc107;
+  background: rgba(255, 193, 7, 0.1);
+}
+
+.badge-outline.badge-danger {
+  color: #dc3545;
+  background: rgba(220, 53, 69, 0.1);
+}

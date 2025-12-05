@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getPhotoUrl } from "../utils/getPhotoUrl";
 import BlogSidebar from "../components/BlogSidebar";
+import PdfViewer from "../components/PdfViewer";
+import "../styles/blog-detail.css";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://backend.test";
 function getBlogImage(image) {
@@ -113,6 +115,11 @@ export default function BlogDetail() {
   if (loading) return <div className="blog-detail-loading">Loading...</div>;
   if (!blog) return <div className="blog-detail-notfound">Blog not found.</div>;
 
+  // Check if this is a book with PDF file
+  const isBook = blog.type === "book";
+  const hasPdfFile = blog.pdf_file;
+  const pdfUrl = hasPdfFile ? getBlogImage(blog.pdf_file) : null;
+
   return (
     <div className="container py-5 blog-detail-page">
       <div className="row gx-5">
@@ -120,16 +127,42 @@ export default function BlogDetail() {
           <Link to="/blog" className="blog-detail-back mb-3 d-inline-block">
             <i className="fa fa-chevron-left"></i> Back to Blog
           </Link>
-          {/* Hero Image */}
-          <div className="blog-detail-hero-img-wrap">
-            <img
-              src={getBlogImage(blog.image)}
-              alt={blog.title}
-              className="blog-detail-hero-img"
-            />
-          </div>
+
+          {/* If book with PDF, show PDF viewer */}
+          {isBook && hasPdfFile && pdfUrl ? (
+            <PdfViewer pdfUrl={pdfUrl} title={blog.title} />
+          ) : (
+            <>
+              {/* Hero Image */}
+              <div className="blog-detail-hero-img-wrap">
+                <img
+                  src={getBlogImage(blog.image)}
+                  alt={blog.title}
+                  className="blog-detail-hero-img"
+                />
+              </div>
+            </>
+          )}
+
           {/* Title & Meta */}
           <h1 className="blog-detail-title">{blog.title}</h1>
+          
+          {/* Book-specific info */}
+          {isBook && blog.book_author && (
+            <div className="blog-detail-book-info">
+              <div className="blog-detail-book-author">
+                <i className="fa fa-user-edit"></i>
+                <span>By {blog.book_author}</span>
+              </div>
+              {blog.book_url && !hasPdfFile && (
+                <a href={blog.book_url} target="_blank" rel="noopener noreferrer" className="blog-detail-book-link">
+                  <i className="fa fa-external-link-alt"></i>
+                  <span>Read Book Online</span>
+                </a>
+              )}
+            </div>
+          )}
+          
           <div className="blog-detail-meta">
             <div className="blog-detail-meta-author">
               <img
@@ -177,13 +210,13 @@ export default function BlogDetail() {
             <div className="blog-detail-share">
               <span>Share:</span>
               <a href={`https://www.facebook.com/sharer.php?u=${window.location.href}`} target="_blank" rel="noopener noreferrer" title="Share on Facebook">
-                <i className="fa fa-facebook"></i>
+                <i className="fab fa-facebook"></i>
               </a>
               <a href={`https://wa.me/?text=${window.location.href}`} target="_blank" rel="noopener noreferrer" title="Share on WhatsApp">
-                <i className="fa fa-whatsapp"></i>
+                <i className="fab fa-whatsapp"></i>
               </a>
               <a href={`https://twitter.com/intent/tweet?url=${window.location.href}`} target="_blank" rel="noopener noreferrer" title="Share on Twitter">
-                <i className="fa fa-twitter"></i>
+                <i className="fab fa-twitter"></i>
               </a>
             </div>
           </div>

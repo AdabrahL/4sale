@@ -1,0 +1,806 @@
+/* =====================================================
+   Zillow-Style Agent Profile
+===================================================== */
+
+.zillow-agent-profile {
+  background: #fff;
+  min-height: 100vh;
+}
+
+/* Hero Section */
+.agent-profile-hero {
+  background: #f8f8f8;
+  border-bottom: 1px solid #e8e8e8;
+  padding: 100px 20px 40px;
+}
+
+.agent-hero-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+.agent-hero-left {
+  flex-shrink: 0;
+}
+
+.agent-hero-photo {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.agent-hero-right {
+  flex: 1;
+}
+
+.agent-hero-name {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2a2a33;
+  margin-bottom: 12px;
+}
+
+.agent-hero-rating {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.rating-number {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2a2a33;
+}
+
+.stars-hero {
+  display: flex;
+  gap: 4px;
+  color: #f59e0b;
+  font-size: 1rem;
+}
+
+.review-count-hero {
+  color: #71717a;
+  font-size: 0.95rem;
+}
+
+.agent-hero-company {
+  font-size: 1.1rem;
+  color: #52525b;
+  margin-bottom: 24px;
+}
+
+.agent-hero-stats {
+  display: flex;
+  gap: 40px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.hero-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hero-stat strong {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2a2a33;
+}
+
+.hero-stat span {
+  font-size: 0.9rem;
+  color: #71717a;
+}
+
+.agent-hero-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hero-btn {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.hero-btn-primary {
+  background: var(--color-primary);
+  color: white;
+}
+
+.hero-btn-primary:hover {
+  background: var(--color-primary-dark);
+  color: white;
+}
+
+.hero-btn-secondary {
+  background: white;
+  color: #2a2a33;
+  border: 1px solid #d4d4d8;
+}
+
+.hero-btn-secondary:hover {
+  background: #f8f8f8;
+  color: #2a2a33;
+}
+
+/* Recent Sales Section */
+.recent-sales-section {
+  padding: 40px 0;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.section-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #2a2a33;
+  margin-bottom: 24px;
+}
+
+.sales-carousel {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 16px;
+}
+
+.sales-carousel::-webkit-scrollbar {
+  height: 8px;
+}
+
+.sales-carousel::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.sales-carousel::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.sale-card {
+  min-width: 280px;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.sale-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.sale-card a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.sale-img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+.sale-img-placeholder {
+  width: 100%;
+  height: 180px;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+}
+
+.sale-info {
+  padding: 16px;
+}
+
+.sale-specs {
+  font-size: 0.9rem;
+  color: #2a2a33;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.sale-location {
+  font-size: 0.9rem;
+  color: #71717a;
+  margin-bottom: 4px;
+}
+
+.sale-date {
+  font-size: 0.85rem;
+  color: #a1a1aa;
+}
+
+/* About Section */
+.agent-about-section {
+  padding: 40px 0;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.agent-bio-text {
+  font-size: 1rem;
+  color: #52525b;
+  line-height: 1.7;
+  max-width: 900px;
+}
+
+/* Listings Section */
+.agent-listings-section {
+  padding: 40px 0;
+}
+
+.listings-section-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 32px;
+  margin-top: 32px;
+}
+
+.listings-main-content {
+  min-width: 0;
+}
+
+.listings-tabs {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  border-bottom: 2px solid #e8e8e8;
+  margin-bottom: 32px;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 12px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #71717a;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s ease;
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  color: #2a2a33;
+}
+
+.tab-btn.active {
+  color: var(--color-primary);
+}
+
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--color-primary);
+}
+
+/* Properties Grid - 3 columns */
+.properties-grid-zillow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.property-card-zillow {
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.property-card-zillow:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.property-image-wrapper {
+  position: relative;
+  display: block;
+  text-decoration: none;
+}
+
+.property-image-wrapper img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.property-placeholder {
+  width: 100%;
+  height: 200px;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  font-size: 0.9rem;
+}
+
+.property-price-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 700;
+  color: #2a2a33;
+  font-size: 0.95rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.sold-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #ef4444;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.property-details-zillow {
+  padding: 16px;
+}
+
+.property-title-zillow {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #2a2a33;
+  text-decoration: none;
+  display: block;
+  margin-bottom: 8px;
+  transition: color 0.2s ease;
+}
+
+.property-title-zillow:hover {
+  color: var(--color-primary);
+}
+
+.property-location-zillow {
+  font-size: 0.9rem;
+  color: #71717a;
+  margin-bottom: 8px;
+}
+
+.property-specs-zillow {
+  display: flex;
+  gap: 12px;
+  font-size: 0.9rem;
+  color: #52525b;
+  margin-bottom: 12px;
+}
+
+.property-specs-zillow span {
+  display: flex;
+  align-items: center;
+}
+
+/* Dashboard Actions for Agents */
+.property-actions-dashboard {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 12px;
+  border-top: 1px solid #e8e8e8;
+}
+
+.action-btn {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: 1px solid #d4d4d8;
+  background: white;
+  color: #52525b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+
+.action-btn:hover {
+  background: #f8f8f8;
+  border-color: #a1a1aa;
+}
+
+.edit-btn:hover {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.sold-btn:hover {
+  background: #f0fdf4;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.delete-btn:hover {
+  background: #fef2f2;
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.sold-date {
+  font-size: 0.85rem;
+  color: #71717a;
+  margin-top: 8px;
+}
+
+/* No Properties State */
+.no-properties {
+  text-align: center;
+  padding: 80px 20px;
+  color: #71717a;
+}
+
+.no-properties i {
+  font-size: 4rem;
+  color: #d4d4d8;
+  margin-bottom: 16px;
+}
+
+.no-properties p {
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+}
+
+.btn-add-listing {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-primary);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.btn-add-listing:hover {
+  background: var(--color-primary-dark);
+  color: white;
+}
+
+/* Reviews Section */
+.reviews-section {
+  padding: 40px 20px;
+  text-align: center;
+}
+
+/* Contact Section */
+.agent-contact-section {
+  padding: 40px 0;
+  background: #f8f8f8;
+  border-top: 1px solid #e8e8e8;
+}
+
+/* Sticky Contact Sidebar */
+.contact-sidebar {
+  position: sticky;
+  top: 90px;
+  align-self: start;
+}
+
+.contact-sidebar-card {
+  background: white;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.contact-sidebar-card h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2a2a33;
+  margin-bottom: 20px;
+}
+
+.contact-sidebar-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.contact-sidebar-input,
+.contact-sidebar-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d4d4d8;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.contact-sidebar-input:focus,
+.contact-sidebar-textarea:focus {
+  border-color: var(--color-primary);
+}
+
+.contact-sidebar-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.contact-sidebar-btn {
+  width: 100%;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 14px 20px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.contact-sidebar-btn:hover {
+  background: var(--color-primary-dark);
+}
+
+.contact-disclaimer-small {
+  font-size: 0.8rem;
+/* Responsive */
+@media (max-width: 991px) {
+  .agent-hero-container {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .agent-hero-stats {
+    justify-content: center;
+  }
+
+  .agent-hero-actions {
+    justify-content: center;
+  }
+
+  .agent-hero-name {
+    font-size: 2rem;
+  }
+
+  .agent-hero-stats {
+    gap: 24px;
+  }
+
+  .listings-section-wrapper {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-sidebar {
+    position: static;
+    order: 2;
+  }
+
+  .listings-main-content {
+    order: 1;
+  }
+
+  .properties-grid-zillow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .agent-hero-photo {
+    width: 100px;
+    height: 100px;
+  }
+
+  .agent-hero-name {
+    font-size: 1.75rem;
+  }
+
+  .agent-hero-stats {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .hero-stat {
+    min-width: calc(50% - 8px);
+  }
+
+  .properties-grid-zillow {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 575px) {
+  .agent-hero-stats {
+    flex-direction: column;
+  }
+
+  .hero-stat {
+    min-width: 100%;
+  }
+
+  .sales-carousel {
+    gap: 12px;
+  }
+
+  .sale-card {
+    min-width: 200px;
+  }
+
+  .listings-tabs {
+    gap: 16px;
+  }
+
+  .tab-btn {
+    font-size: 0.9rem;
+  }
+} border: 1px solid #d4d4d8;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  border-color: var(--color-primary);
+}
+
+.form-input {
+  margin-bottom: 16px;
+}
+
+.form-textarea {
+  resize: vertical;
+  margin-bottom: 16px;
+}
+
+.contact-submit-btn {
+  width: 100%;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.contact-submit-btn:hover {
+  background: var(--color-primary-dark);
+}
+
+.contact-disclaimer {
+  font-size: 0.85rem;
+  color: #71717a;
+  margin-top: 16px;
+  line-height: 1.5;
+  text-align: left;
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+  .agent-hero-container {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .agent-hero-stats {
+    justify-content: center;
+  }
+
+  .agent-hero-actions {
+    justify-content: center;
+  }
+
+  .agent-hero-name {
+    font-size: 2rem;
+  }
+
+  .agent-hero-stats {
+    gap: 24px;
+  }
+
+  .properties-grid-zillow {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .agent-profile-hero {
+    padding: 80px 20px 32px;
+  }
+
+  .agent-hero-name {
+    font-size: 1.75rem;
+  }
+
+  .sales-carousel {
+    gap: 12px;
+  }
+
+  .sale-card {
+    min-width: 240px;
+  }
+
+  .listings-tabs {
+    gap: 16px;
+    overflow-x: auto;
+  }
+
+  .properties-grid-zillow {
+    grid-template-columns: 1fr;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .property-actions-dashboard {
+    flex-direction: column;
+  }
+
+  .action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 575px) {
+  .agent-hero-stats {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .hero-stat {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e8e8e8;
+  }
+
+  .agent-hero-actions {
+    flex-direction: column;
+  }
+
+  .hero-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

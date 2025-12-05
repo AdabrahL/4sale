@@ -421,25 +421,46 @@ export const GridScan = ({
     const container = containerRef.current;
     if (!container) return;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    rendererRef.current = renderer;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    try {
-      renderer.outputColorSpace = THREE.SRGBColorSpace;
-    } catch {
-      // older three.js fallback
-      // ignore if not available
-    }
-    renderer.toneMapping = THREE.NoToneMapping;
-    renderer.autoClear = false;
-    renderer.setClearColor(0x000000, 0);
-    container.appendChild(renderer.domElement);
+    // Wait for container to have proper dimensions
+    const checkDimensions = () => {
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      
+      if (width === 0 || height === 0) {
+        // Container not ready yet, retry
+        const timeoutId = setTimeout(checkDimensions, 100);
+        return () => clearTimeout(timeoutId);
+      }
+      
+      initializeRenderer();
+    };
 
-    const uniforms = {
-      iResolution: {
-        value: new THREE.Vector3(container.clientWidth, container.clientHeight, renderer.getPixelRatio())
-      },
+    const initializeRenderer = () => {
+      const width = container.clientWidth || window.innerWidth;
+      const height = container.clientHeight || window.innerHeight;
+
+      // Ensure minimum dimensions
+      if (width === 0 || height === 0) return;
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      rendererRef.current = renderer;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setSize(width, height);
+      try {
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+      } catch {
+        // older three.js fallback
+        // ignore if not available
+      }
+      renderer.toneMapping = THREE.NoToneMapping;
+      renderer.autoClear = false;
+      renderer.setClearColor(0x000000, 0);
+      container.appendChild(renderer.domElement);
+
+      const uniforms = {
+        iResolution: {
+          value: new THREE.Vector3(width, height, renderer.getPixelRatio())
+        },
       iTime: { value: 0 },
       uSkew: { value: new THREE.Vector2(0, 0) },
       uTilt: { value: 0 },
@@ -506,9 +527,15 @@ export const GridScan = ({
     }
 
     const onResize = () => {
-      renderer.setSize(container.clientWidth, container.clientHeight);
-      material.uniforms.iResolution.value.set(container.clientWidth, container.clientHeight, renderer.getPixelRatio());
-      if (composerRef.current) composerRef.current.setSize(container.clientWidth, container.clientHeight);
+      const width = container.clientWidth || window.innerWidth;
+      const height = container.clientHeight || window.innerHeight;
+      
+      // Don't resize if dimensions are zero
+      if (width === 0 || height === 0) return;
+      
+      renderer.setSize(width, height);
+      material.uniforms.iResolution.value.set(width, height, renderer.getPixelRatio());
+      if (composerRef.current) composerRef.current.setSize(width, height);
     };
     window.addEventListener('resize', onResize);
 
@@ -573,6 +600,10 @@ export const GridScan = ({
       renderer.dispose();
       container.removeChild(renderer.domElement);
     };
+    };
+
+    // Start dimension check
+    checkDimensions();
   }, [
     sensitivity,
     lineThickness,

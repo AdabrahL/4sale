@@ -1,0 +1,1061 @@
+/* =====================================================
+   Zillow-Style Agents Page
+===================================================== */
+
+.zillow-agents-page {
+  background: #fff;
+  min-height: 100vh;
+}
+
+/* Header Section */
+.agents-header-section {
+  background: #fff;
+  border-bottom: 1px solid #e8e8e8;
+  padding: 90px 0 24px;
+}
+
+.agents-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2a2a33;
+  margin-bottom: 24px;
+}
+
+/* Zillow Search Bar */
+.zillow-search-bar {
+  display: flex;
+  gap: 0;
+  margin-bottom: 20px;
+  border: 1px solid #d4d4d8;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  max-width: 1500px;
+}
+
+.location-input-wrapper,
+.agent-name-input-wrapper {
+  flex: 1;
+  position: relative;
+}
+
+.location-input,
+.agent-name-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  padding: 14px 16px;
+  font-size: 0.95rem;
+  color: #2a2a33;
+  background: transparent;
+}
+
+.location-input {
+  border-right: 1px solid #e8e8e8;
+}
+
+.location-input::placeholder,
+.agent-name-input::placeholder {
+  color: #a1a1aa;
+}
+
+.find-agent-btn {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.find-agent-btn:hover {
+  background: var(--color-primary-dark);
+}
+
+.find-agent-btn i {
+  font-size: 0.9rem;
+}
+
+/* Filter Pills */
+.filter-pills {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.filter-pill {
+  background: #fff;
+  border: 1px solid #d4d4d8;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  color: #2a2a33;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-pill:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: #f0fdf4;
+}
+
+/* Agent Count */
+.agent-count {
+  font-size: 0.95rem;
+  color: #52525b;
+  margin-bottom: 24px;
+  padding-top: 8px;
+}
+
+.agent-count strong {
+  font-weight: 600;
+  color: #2a2a33;
+}
+
+/* Main Content Layout */
+.agents-main-content {
+  padding: 32px 0;
+  background: #fff;
+}
+
+.agents-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 32px;
+}
+
+/* Sidebar */
+.agents-sidebar {
+  position: sticky;
+  top: 90px;
+  align-self: start;
+}
+
+.sidebar-card {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.sidebar-card h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2a2a33;
+  margin-bottom: 12px;
+}
+
+.sidebar-card p {
+  font-size: 0.9rem;
+  color: #52525b;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.connect-agent-btn {
+  width: 100%;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.connect-agent-btn:hover {
+  background: var(--color-primary-dark);
+}
+
+/* Agents List */
+.agents-list-section {
+  min-height: 500px;
+}
+
+.zillow-agents-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Agent Card - Zillow Style */
+.zillow-agent-card {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.zillow-agent-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: #d4d4d8;
+}
+
+.agent-card-content {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.agent-left {
+  flex-shrink: 0;
+}
+
+.agent-photo {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e8e8e8;
+}
+
+.agent-right {
+  flex: 1;
+  min-width: 0;
+}
+
+.agent-header-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.agent-name-zillow {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin: 0;
+  transition: color 0.2s ease;
+}
+
+.agent-card-content:hover .agent-name-zillow {
+  color: var(--color-primary-dark);
+  text-decoration: underline;
+}
+
+/* Star Rating */
+.agent-rating {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.stars {
+  display: flex;
+  gap: 2px;
+  color: #f59e0b;
+}
+
+.rating-value {
+  font-weight: 600;
+  color: #2a2a33;
+}
+
+.review-count {
+  color: #71717a;
+}
+
+/* Agent Company */
+.agent-company {
+  font-size: 0.95rem;
+  color: #52525b;
+  margin-bottom: 12px;
+}
+
+/* Agent Stats - Zillow Style */
+.agent-stats-zillow {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.stat-item-zillow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #2a2a33;
+}
+
+.stat-label-zillow {
+  font-size: 0.85rem;
+  color: #71717a;
+}
+
+/* Loading & Empty States */
+.agents-loading {
+  text-align: center;
+  padding: 80px 20px;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e8e8e8;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.agents-loading p {
+  color: #71717a;
+  font-size: 1rem;
+}
+
+.agents-empty {
+  text-align: center;
+  padding: 80px 20px;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e8e8e8;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  color: #d4d4d8;
+  margin-bottom: 16px;
+}
+
+.agents-empty h3 {
+  font-size: 1.5rem;
+  color: #2a2a33;
+  margin-bottom: 8px;
+}
+
+.agents-empty p {
+  color: #71717a;
+  font-size: 1rem;
+}
+/* Responsive Styles */
+@media (max-width: 991px) {
+  .agents-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .agents-sidebar {
+    position: static;
+  }
+
+  .zillow-search-bar {
+    flex-direction: column;
+  }
+
+  .location-input {
+    border-right: none;
+    border-bottom: 1px solid #e8e8e8;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 1.75rem;
+  }
+
+  .search-filter-bar {
+    flex-direction: column;
+  }
+
+  .agent-card-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .agent-header-info {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .agent-stats-zillow {
+    justify-content: center;
+  }
+
+  .filter-pills {
+    gap: 8px;
+  }
+
+  .filter-pill {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+  }
+}
+
+@media (max-width: 575px) {
+  .agents-header-section {
+    padding: 80px 0 20px;
+  }
+
+  .agent-photo {
+    width: 100px;
+    height: 100px;
+  }
+
+  .stat-item-zillow {
+    min-width: 45%;
+  }
+}
+
+/* Hero Section */
+.agents-hero {
+  background: linear-gradient(135deg, #0c5904 0%, #084003 100%);
+  color: white;
+  padding: 100px 20px 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+.agents-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  opacity: 0.4;
+}
+
+.agents-hero-content {
+  max-width: 900px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.agents-hero-title {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 16px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.agents-hero-subtitle {
+  font-size: 1.25rem;
+  margin-bottom: 40px;
+  opacity: 0.95;
+  line-height: 1.6;
+}
+
+.agents-search-wrapper {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.agents-search-box {
+  position: relative;
+  background: white;
+  border-radius: 50px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  padding: 8px 20px;
+}
+
+.search-icon {
+  color: var(--color-primary);
+  font-size: 1.2rem;
+  margin-right: 12px;
+}
+
+.agents-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 1.05rem;
+  padding: 12px 8px;
+  background: transparent;
+}
+
+.search-clear-btn {
+  background: #f0f0f0;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #666;
+}
+
+.search-clear-btn:hover {
+  background: #e0e0e0;
+  color: #333;
+}
+
+/* Controls Section */
+.agents-controls-section {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 24px 0;
+  position: sticky;
+  top: 70px;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.agents-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.agents-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.agents-stats {
+  display: flex;
+  gap: 32px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-number {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.agents-controls-right {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.sort-select {
+  padding: 10px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.sort-select:hover {
+  border-color: var(--color-primary);
+}
+
+.sort-select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(12, 89, 4, 0.1);
+}
+
+.view-toggle {
+  display: flex;
+  gap: 4px;
+  background: #f3f4f6;
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.view-btn {
+  background: transparent;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #6b7280;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+}
+
+.view-btn:hover {
+  background: white;
+  color: var(--color-primary);
+}
+
+.view-btn.active {
+  background: white;
+  color: var(--color-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Agents Grid */
+.agents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 28px;
+  padding: 40px 0;
+}
+
+.agents-grid.list-view {
+  grid-template-columns: 1fr;
+}
+
+.agents-grid.list-view .modern-agent-card {
+  display: flex;
+  flex-direction: row;
+}
+
+.agents-grid.list-view .agent-card-header {
+  flex-direction: row;
+  width: 200px;
+  padding: 24px;
+}
+
+.agents-grid.list-view .agent-card-body {
+  flex: 1;
+}
+
+/* Agent Card */
+.modern-agent-card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid #f0f0f0;
+}
+
+.modern-agent-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+  border-color: var(--color-primary);
+}
+
+.agent-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.agent-card-header {
+  position: relative;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.agent-avatar-wrapper {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.agent-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.agent-status-badge {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 3px solid white;
+}
+
+.agent-status-badge.online {
+  background: #10b981;
+}
+
+.agent-badge {
+  background: var(--color-primary);
+  color: white;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.agent-card-body {
+  padding: 24px;
+}
+
+.agent-name {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.agent-agency {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.agent-bio {
+  color: #4b5563;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.agent-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+.meta-item i {
+  color: var(--color-primary);
+  width: 16px;
+}
+
+.agent-stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stat-box {
+  background: #f0fdf4;
+  padding: 12px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #065f46;
+  font-weight: 500;
+}
+
+.stat-box i {
+  color: var(--color-primary);
+}
+
+.agent-card-footer {
+  padding: 0 24px 24px;
+}
+
+.view-profile-btn {
+  width: 100%;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.view-profile-btn:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(12, 89, 4, 0.3);
+}
+
+/* Loading & Empty States */
+.agents-loading {
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.agents-loading p {
+  color: #6b7280;
+  font-size: 1.1rem;
+}
+
+.agents-empty {
+  text-align: center;
+  padding: 80px 20px;
+  background: white;
+  border-radius: 16px;
+  margin: 40px 0;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  color: #d1d5db;
+  margin-bottom: 16px;
+}
+
+.agents-empty h3 {
+  font-size: 1.5rem;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.agents-empty p {
+  color: #6b7280;
+  font-size: 1rem;
+}
+
+/* Responsive Styles */
+@media (max-width: 1200px) {
+  .agents-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+}
+
+@media (max-width: 991px) {
+  .agents-hero-title {
+    font-size: 2.5rem;
+  }
+
+  .agents-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .agents-stats {
+    justify-content: center;
+  }
+
+  .agents-controls-right {
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 768px) {
+  .agents-hero {
+    padding: 80px 20px 60px;
+  }
+
+  .agents-hero-title {
+    font-size: 2rem;
+  }
+
+  .agents-hero-subtitle {
+    font-size: 1rem;
+  }
+
+  .agents-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .agents-grid.list-view .modern-agent-card {
+    flex-direction: column;
+  }
+
+  .agents-grid.list-view .agent-card-header {
+    width: 100%;
+  }
+
+  .stat-number {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 575px) {
+  .agents-stats {
+    gap: 20px;
+  }
+
+  .agents-controls-section {
+    top: 60px;
+  }
+}
+
+/* FAQ Section - Zillow Style */
+.agents-faq-section {
+  background: #f9fafb;
+  padding: 60px 0 80px;
+}
+
+.faq-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 30px;
+  text-align: left;
+}
+
+.faq-list {
+  max-width: 900px;
+}
+
+.faq-item {
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.2s ease;
+}
+
+.faq-item:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+}
+
+.faq-question {
+  width: 100%;
+  padding: 18px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.2s ease;
+}
+
+.faq-question:hover {
+  background: #f9fafb;
+}
+
+.faq-question-text {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #1f2937;
+  flex: 1;
+  padding-right: 20px;
+}
+
+.faq-icon {
+  color: #0c5904;
+  font-size: 0.9rem;
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+}
+
+.faq-answer {
+  overflow: hidden;
+  background: white;
+}
+
+.faq-answer-content {
+  padding: 0 24px 20px;
+  color: #4b5563;
+  line-height: 1.7;
+}
+
+.faq-list-items {
+  margin: 0;
+  padding-left: 24px;
+}
+
+.faq-list-items li {
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+}
+
+.faq-list-items li:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .agents-faq-section {
+    padding: 40px 0 60px;
+  }
+
+  .faq-title {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+  }
+
+  .faq-question {
+    padding: 14px 18px;
+  }
+
+  .faq-question-text {
+    font-size: 0.95rem;
+  }
+
+  .faq-answer-content {
+    padding: 0 18px 16px;
+  }
+
+  .faq-list-items {
+    padding-left: 18px;
+  }
+
+  .faq-list-items li {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+  }
+}
+

@@ -2,12 +2,14 @@ import { useState, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import API from "../api/axios"; // use axios instance so baseURL and auth are consistent
+import "../styles/post-blog.css";
 
 
 export default function PostBlog() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  const pdfInputRef = useRef(null);
 
   const [type, setType] = useState("blog");
   const [title, setTitle] = useState("");
@@ -16,6 +18,7 @@ export default function PostBlog() {
   const [bookAuthor, setBookAuthor] = useState("");
   const [bookUrl, setBookUrl] = useState("");
   const [imageFile, setImageFile] = useState(null);
+  const [pdfFile, setPdfFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -24,8 +27,11 @@ export default function PostBlog() {
   // Admin guard (hooks must be defined before returns)
   if (!user || !user.is_admin) {
     return (
-      <div className="container py-5">
-        <div className="alert alert-danger mt-4">Access Denied. Only admins can post blogs/books.</div>
+      <div className="post-blog-container">
+        <div className="post-blog-access-denied">
+          <h3>🔒 Access Denied</h3>
+          <p>Only admins can post blogs/books. Please contact an administrator for access.</p>
+        </div>
       </div>
     );
   }
@@ -43,6 +49,17 @@ export default function PostBlog() {
     setError("");
   };
 
+  const handlePdfChange = (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    if (f.type !== "application/pdf") {
+      setError("Only PDF files are allowed for books.");
+      return;
+    }
+    setPdfFile(f);
+    setError("");
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -57,7 +74,8 @@ export default function PostBlog() {
       formData.append("content", content);
       if (type === "book") {
         formData.append("book_author", bookAuthor);
-        formData.append("book_url", bookUrl);
+        if (bookUrl) formData.append("book_url", bookUrl);
+        if (pdfFile) formData.append("pdf_file", pdfFile);
       }
       if (imageFile) formData.append("image", imageFile);
 
@@ -87,66 +105,223 @@ export default function PostBlog() {
   };
 
   return (
-    <div className="container py-5">
-      <h2 className="mb-4" style={{ color: "#228B22" }}>Post a Blog/Book</h2>
+    <div className="post-blog-container">
+      <div className="post-blog-wrapper">
+        {/* Left: Form */}
+        <div className="post-blog-form-section">
+          <h2 className="post-blog-title">Post Content</h2>
+          <p className="post-blog-subtitle">Share your insights or recommend a great book to the community</p>
 
-      {error && <div className="alert alert-danger">{error}</div>}
+          {error && <div className="post-blog-error">{error}</div>}
 
-      <form className="blog-post-form" onSubmit={handleSubmit} encType="multipart/form-data">
-        <div className="mb-3">
-          <label className="form-label">Type</label>
-          <select className="form-control" value={type} onChange={(e) => setType(e.target.value)}>
-            <option value="blog">Blog</option>
-            <option value="book">Book</option>
-          </select>
+          <form onSubmit={handleSubmit} encType="multipart/form-data">
+            {/* Type Toggle */}
+            <div className="post-blog-form-group">
+              <label className="post-blog-label">Content Type <span className="required">*</span></label>
+              <div className="post-blog-type-toggle">
+                <button
+                  type="button"
+                  className={`post-blog-type-btn ${type === "blog" ? "active" : ""}`}
+                  onClick={() => setType("blog")}
+                >
+                  📝 Blog Post
+                </button>
+                <button
+                  type="button"
+                  className={`post-blog-type-btn ${type === "book" ? "active" : ""}`}
+                  onClick={() => setType("book")}
+                >
+                  📚 Book
+                </button>
+              </div>
+            </div>
+
+            {/* Title */}
+            <div className="post-blog-form-group">
+              <label className="post-blog-label">Title <span className="required">*</span></label>
+              <input
+                type="text"
+                className="post-blog-input"
+                placeholder={type === "blog" ? "Enter your blog title..." : "Enter book title..."}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+                maxLength={120}
+              />
+            </div>
+
+            {/* Excerpt */}
+            <div className="post-blog-form-group">
+              <label className="post-blog-label">Excerpt <span className="required">*</span></label>
+              <textarea
+                className="post-blog-textarea"
+                placeholder="Write a compelling short summary or introduction..."
+                value={excerpt}
+                onChange={(e) => setExcerpt(e.target.value)}
+                rows={2}
+                required
+                maxLength={200}
+              />
+              <small className="post-blog-helper">{excerpt.length}/200 characters</small>
+            </div>
+
+            {/* Blog Content */}
+            {type === "blog" && (
+              <div className="post-blog-form-group">
+                <label className="post-blog-label">Content <span className="required">*</span></label>
+                <textarea
+                  className="post-blog-textarea tall"
+                  placeholder="Share your thoughts, insights, and knowledge..."
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  rows={8}
+                  required
+                />
+              </div>
+            )}
+
+            {/* Book Fields */}
+            {type === "book" && (
+              <>
+                <div className="post-blog-form-group">
+                  <label className="post-blog-label">Book Author <span className="required">*</span></label>
+                  <input
+                    type="text"
+                    className="post-blog-input"
+                    placeholder="Enter author name..."
+                    value={bookAuthor}
+                    onChange={(e) => setBookAuthor(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="post-blog-form-group">
+                  <label className="post-blog-label">Upload PDF File</label>
+                  <input
+                    ref={pdfInputRef}
+                    type="file"
+                    className="post-blog-file-input"
+                    accept="application/pdf"
+                    onChange={handlePdfChange}
+                  />
+                  {pdfFile && (
+                    <div className="post-blog-file-selected">
+                      <i className="fa fa-file-pdf"></i>
+                      <span>{pdfFile.name}</span>
+                    </div>
+                  )}
+                  <small className="post-blog-helper">Upload a PDF version of the book for online reading</small>
+                </div>
+
+                <div className="post-blog-form-group">
+                  <label className="post-blog-label">Book Link (URL) - Optional</label>
+                  <input
+                    type="url"
+                    className="post-blog-input"
+                    placeholder="https://example.com/book"
+                    value={bookUrl}
+                    onChange={(e) => setBookUrl(e.target.value)}
+                  />
+                  <small className="post-blog-helper">External link if PDF is not uploaded</small>
+                </div>
+              </>
+            )}
+
+            {/* Cover Image */}
+            <div className="post-blog-form-group">
+              <label className="post-blog-label">Cover Image</label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="post-blog-file-input"
+                accept="image/*"
+                onChange={handleImageChange}
+              />
+              {previewUrl && (
+                <img src={previewUrl} alt="preview" className="post-blog-image-preview" />
+              )}
+              <small className="post-blog-helper">Recommended: 1200x600px, JPG or PNG format</small>
+            </div>
+
+            {/* Upload Progress */}
+            {uploadProgress > 0 && (
+              <div className="post-blog-progress">
+                <span className="post-blog-progress-label">Uploading: {uploadProgress}%</span>
+                <div className="post-blog-progress-bar">
+                  <div className="post-blog-progress-fill" style={{ width: `${uploadProgress}%` }}></div>
+                </div>
+              </div>
+            )}
+
+            {/* Submit Button */}
+            <button className="post-blog-submit" disabled={loading} type="submit">
+              {loading ? (
+                <>
+                  <i className="fa fa-spinner fa-spin"></i>
+                  {uploadProgress > 0 ? `Uploading... ${uploadProgress}%` : "Posting..."}
+                </>
+              ) : (
+                <>
+                  <i className="fa fa-paper-plane"></i>
+                  Post {type === "blog" ? "Blog" : "Book"}
+                </>
+              )}
+            </button>
+          </form>
         </div>
 
-        <div className="mb-3">
-          <label className="form-label">Title</label>
-          <input type="text" className="form-control" placeholder={type === "blog" ? "Blog Title" : "Book Title"}
-            value={title} onChange={(e) => setTitle(e.target.value)} required maxLength={120} />
-        </div>
-
-        <div className="mb-3">
-          <label className="form-label">Excerpt (Short Intro)</label>
-          <textarea className="form-control" placeholder="Short summary or intro" value={excerpt}
-            onChange={(e) => setExcerpt(e.target.value)} rows={2} required maxLength={200} />
-        </div>
-
-        {type === "blog" && (
-          <div className="mb-3">
-            <label className="form-label">Content</label>
-            <textarea className="form-control" placeholder="Blog content" value={content}
-              onChange={(e) => setContent(e.target.value)} rows={8} required />
+        {/* Right: Preview */}
+        <div className="post-blog-preview">
+          <div className="post-blog-preview-header">
+            <div className="post-blog-preview-title">
+              <i className="fa fa-eye"></i>
+              Live Preview
+            </div>
+            <span className="post-blog-preview-label">{type === "blog" ? "Blog Post" : "Book"}</span>
           </div>
-        )}
 
-        {type === "book" && (
-          <>
-            <div className="mb-3">
-              <label className="form-label">Book Author</label>
-              <input type="text" className="form-control" placeholder="Author"
-                value={bookAuthor} onChange={(e) => setBookAuthor(e.target.value)} required />
-            </div>
-            <div className="mb-3">
-              <label className="form-label">Book Link (URL)</label>
-              <input type="url" className="form-control" placeholder="https://example.com/book"
-                value={bookUrl} onChange={(e) => setBookUrl(e.target.value)} required />
-            </div>
-          </>
-        )}
+          <div className="post-blog-preview-content">
+            {/* Image */}
+            {previewUrl ? (
+              <div className="post-blog-preview-image">
+                <img src={previewUrl} alt="Cover preview" />
+              </div>
+            ) : (
+              <div className="post-blog-preview-image"></div>
+            )}
 
-        <div className="mb-3">
-          <label className="form-label">Image (cover or blog image)</label>
-          <input ref={fileInputRef} type="file" className="form-control" accept="image/*" onChange={handleImageChange} />
-          {previewUrl && <img src={previewUrl} alt="preview" style={{ marginTop: 8, maxWidth: 220, borderRadius: 6 }} />}
-          {uploadProgress > 0 && <div style={{ marginTop: 8 }}>Uploading: {uploadProgress}%</div>}
+            {/* Title & Excerpt */}
+            <div className="post-blog-preview-text">
+              <h4>{title || "Your title will appear here"}</h4>
+              <p>{excerpt || "Your excerpt will appear here..."}</p>
+            </div>
+
+            {/* Content (for blogs) */}
+            {type === "blog" && (
+              <div className={`post-blog-preview-text ${!content ? "empty" : ""}`}>
+                <h4>Content</h4>
+                <p>{content || "Your blog content will appear here..."}</p>
+              </div>
+            )}
+
+            {/* Book info */}
+            {type === "book" && (
+              <>
+                <div className="post-blog-preview-text">
+                  <h4>Author</h4>
+                  <p>{bookAuthor || "Author name will appear here"}</p>
+                </div>
+                {pdfFile && (
+                  <div className="post-blog-preview-text">
+                    <h4>PDF Available</h4>
+                    <p>✓ Readers can view this book online</p>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
-
-        <button className="btn btn-green" disabled={loading} type="submit">
-          {loading ? `Posting...${uploadProgress ? ` (${uploadProgress}%)` : ""}` : `Post ${type === "blog" ? "Blog" : "Book"}`}
-        </button>
-      </form>
+      </div>
     </div>
   );
 }

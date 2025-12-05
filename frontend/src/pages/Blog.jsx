@@ -105,7 +105,7 @@ export default function Blog() {
           <h2 className="blog-main-title">Insights & Articles</h2>
           <p className="blog-subtitle">Helpful articles, guides and featured reads from our experts.</p>
         </div>
-        <div className="blog-actions">
+        <div className="blog-actions d-flex align-items-center gap-3">
           <div className="blog-search-wrap">
             <input
               className="blog-search"
@@ -126,8 +126,9 @@ export default function Blog() {
 
           {/* Admin-only Post button */}
           {isAdmin && (
-            <Link to="/blog/post" className="btn btn-green ms-3">
-              + Post Blog/Book
+            <Link to="/blog/post" className="blog-post-btn">
+              <i className="fa fa-plus"></i>
+              <span>Post Blog</span>
             </Link>
           )}
         </div>

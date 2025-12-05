@@ -1,0 +1,375 @@
+/* Interactive Map Styles */
+.interactive-map-container {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  margin-bottom: 2rem;
+}
+
+.interactive-map-header {
+  margin-bottom: 1.5rem;
+}
+
+.interactive-map-header h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.interactive-map-header h3 i {
+  color: var(--color-primary);
+}
+
+.interactive-map-header p {
+  color: #64748b;
+  font-size: 0.9375rem;
+  margin: 0;
+}
+
+.interactive-map-canvas {
+  position: relative;
+  background: #f8fafc;
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  min-height: 400px;
+}
+
+.map-svg {
+  width: 100%;
+  height: 400px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.map-location {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.location-marker {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.map-location:hover .location-marker,
+.map-location.selected .location-marker {
+  transform: scale(1.2);
+}
+
+.pulse-ring {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.3);
+  }
+}
+
+.location-label {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Tooltip */
+.map-tooltip {
+  position: absolute;
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+  z-index: 10;
+  transform: translate(-50%, calc(-100% - 20px));
+  min-width: 200px;
+  animation: tooltipFadeIn 0.2s ease;
+  border: 2px solid var(--color-primary);
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-100% - 10px));
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, calc(-100% - 20px));
+  }
+}
+
+.map-tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid var(--color-primary);
+}
+
+.tooltip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.tooltip-header strong {
+  color: #1e293b;
+  font-size: 1rem;
+}
+
+.tooltip-temp {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.tooltip-temp.hot {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+.tooltip-temp.warm {
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+}
+
+.tooltip-temp.cool {
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+}
+
+.tooltip-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tooltip-stat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+}
+
+.tooltip-stat span {
+  color: #64748b;
+}
+
+.tooltip-stat strong {
+  color: #1e293b;
+}
+
+.tooltip-stat strong.positive {
+  color: #059669;
+}
+
+/* Legend */
+.map-legend {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.legend-marker {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.legend-marker.hot {
+  background: #ef4444;
+}
+
+.legend-marker.warm {
+  background: #f59e0b;
+}
+
+.legend-marker.cool {
+  background: #3b82f6;
+}
+
+/* Selected Location Card */
+.selected-location-card {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(5, 150, 105, 0.05));
+  border: 2px solid var(--color-primary);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.selected-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.selected-header h4 {
+  color: #1e293b;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.close-btn {
+  background: rgba(100, 116, 139, 0.1);
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #64748b;
+}
+
+.close-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+.selected-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.selected-stat {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: white;
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.selected-stat i {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--color-primary), #059669);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+  flex-shrink: 0;
+}
+
+.selected-stat > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.selected-stat span {
+  font-size: 0.8125rem;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+}
+
+.selected-stat strong {
+  font-size: 1.125rem;
+  color: #1e293b;
+  font-weight: 700;
+}
+
+.selected-stat strong.positive {
+  color: #059669;
+}
+
+.selected-stat strong.hot {
+  color: #dc2626;
+  text-transform: uppercase;
+}
+
+.selected-stat strong.warm {
+  color: #d97706;
+  text-transform: uppercase;
+}
+
+.selected-stat strong.cool {
+  color: #2563eb;
+  text-transform: uppercase;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .interactive-map-container {
+    padding: 1.5rem;
+  }
+
+  .interactive-map-canvas {
+    padding: 1rem;
+    min-height: 300px;
+  }
+
+  .map-svg {
+    height: 300px;
+  }
+
+  .map-legend {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .selected-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}

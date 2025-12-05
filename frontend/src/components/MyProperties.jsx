@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import API from "../api/axios";
-
+import "../styles/my-properties.css";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://backend.test";
 function getImageUrl(img) {
@@ -31,11 +32,10 @@ export default function MyProperties() {
   const [loading, setLoading] = useState(false);
   const [loadingAction, setLoadingAction] = useState(false);
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all"); // all, approved, pending, rejected
-  const [sortBy, setSortBy] = useState("newest"); // newest, price_asc, price_desc
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
   const fileInputRef = useRef();
 
-  // Debounce search input
   useEffect(() => {
     const t = setTimeout(() => fetchProperties(1), 450);
     return () => clearTimeout(t);
@@ -57,7 +57,6 @@ export default function MyProperties() {
         sort: sortBy
       };
       const res = await API.get("/my-properties", { params });
-      // support both paginated formats
       const payload = res.data?.data || res.data;
       if (payload && payload.data && Array.isArray(payload.data)) {
         setProperties(payload.data);
@@ -175,7 +174,6 @@ export default function MyProperties() {
     setLoadingAction(true);
     try {
       await API.delete(`/properties/${selectedProperty.id}`);
-      // Optimistic remove
       setProperties(prev => prev.filter(p => p.id !== selectedProperty.id));
       closeModal();
     } catch (err) {
@@ -186,14 +184,12 @@ export default function MyProperties() {
     }
   };
 
-  // Helper: readable status
   const statusInfo = (p) => {
     if (p.is_approved) return { label: "Approved", color: "approved" };
     if (p.rejection_reason) return { label: "Rejected", color: "rejected" };
     return { label: "Pending", color: "pending" };
   };
 
-  // Pagination actions
   const goToPage = (p) => {
     const page = Math.max(1, Math.min(meta.last_page || 1, p));
     setMeta(prev => ({ ...prev, current_page: page }));
@@ -202,188 +198,617 @@ export default function MyProperties() {
 
   const skeletons = useMemo(() => new Array(6).fill(0), []);
 
+  const stats = useMemo(() => {
+    return {
+      total: properties.length,
+      approved: properties.filter(p => p.is_approved).length,
+      pending: properties.filter(p => !p.is_approved && !p.rejection_reason).length,
+      rejected: properties.filter(p => p.rejection_reason).length,
+    };
+  }, [properties]);
+
   return (
-    <div className="my-properties-container advanced">
-      <div className="mp-header">
-        <h1>My Properties</h1>
-        <div className="mp-controls">
+    <div className="my-properties-page">
+      {/* Header Section */}
+      <motion.div 
+        className="mp-header-section"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="mp-header-content">
+          <div className="mp-header-left">
+            <h1 className="mp-page-title">
+              <i className="fa fa-building"></i> My Properties
+            </h1>
+            <p className="mp-page-subtitle">Manage and track your property listings</p>
+          </div>
+          <motion.button 
+            className="mp-create-btn"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => window.location.href = "/properties/create"}
+          >
+            <i className="fa fa-plus-circle"></i> Create New Listing
+          </motion.button>
+        </div>
+
+        {/* Stats Cards */}
+        {!loading && properties.length > 0 && (
+          <motion.div 
+            className="mp-stats-grid"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+          >
+            <motion.div 
+              className="mp-stat-card total"
+              whileHover={{ y: -4, transition: { duration: 0.2 } }}
+            >
+              <div className="mp-stat-icon">
+                <i className="fa fa-home"></i>
+              </div>
+              <div className="mp-stat-info">
+                <div className="mp-stat-value">{stats.total}</div>
+                <div className="mp-stat-label">Total Listings</div>
+              </div>
+            </motion.div>
+
+            <motion.div 
+              className="mp-stat-card approved"
+              whileHover={{ y: -4, transition: { duration: 0.2 } }}
+            >
+              <div className="mp-stat-icon">
+                <i className="fa fa-check-circle"></i>
+              </div>
+              <div className="mp-stat-info">
+                <div className="mp-stat-value">{stats.approved}</div>
+                <div className="mp-stat-label">Approved</div>
+              </div>
+            </motion.div>
+
+            <motion.div 
+              className="mp-stat-card pending"
+              whileHover={{ y: -4, transition: { duration: 0.2 } }}
+            >
+              <div className="mp-stat-icon">
+                <i className="fa fa-clock"></i>
+              </div>
+              <div className="mp-stat-info">
+                <div className="mp-stat-value">{stats.pending}</div>
+                <div className="mp-stat-label">Pending</div>
+              </div>
+            </motion.div>
+
+            <motion.div 
+              className="mp-stat-card rejected"
+              whileHover={{ y: -4, transition: { duration: 0.2 } }}
+            >
+              <div className="mp-stat-icon">
+                <i className="fa fa-times-circle"></i>
+              </div>
+              <div className="mp-stat-info">
+                <div className="mp-stat-value">{stats.rejected}</div>
+                <div className="mp-stat-label">Rejected</div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </motion.div>
+
+      {/* Filters & Controls */}
+      <motion.div 
+        className="mp-controls-section"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+      >
+        <div className="mp-search-wrapper">
+          <i className="fa fa-search mp-search-icon"></i>
           <input
-            className="mp-search"
+            className="mp-search-input"
             placeholder="Search by title or location..."
             value={query}
             onChange={e => setQuery(e.target.value)}
           />
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="mp-filter">
-            <option value="all">All statuses</option>
-            <option value="approved">Approved</option>
-            <option value="pending">Pending</option>
-            <option value="rejected">Rejected</option>
-          </select>
-          <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="mp-filter">
-            <option value="newest">Newest</option>
-            <option value="price_desc">Price: High to Low</option>
-            <option value="price_asc">Price: Low to High</option>
-          </select>
         </div>
-      </div>
 
+        <div className="mp-filters-wrapper">
+          <div className="mp-filter-group">
+            <i className="fa fa-filter"></i>
+            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="mp-select">
+              <option value="all">All Statuses</option>
+              <option value="approved">✓ Approved</option>
+              <option value="pending">⏱ Pending</option>
+              <option value="rejected">✕ Rejected</option>
+            </select>
+          </div>
+
+          <div className="mp-filter-group">
+            <i className="fa fa-sort-amount-down"></i>
+            <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="mp-select">
+              <option value="newest">Newest First</option>
+              <option value="price_desc">Price: High to Low</option>
+              <option value="price_asc">Price: Low to High</option>
+            </select>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Properties Grid */}
       {loading ? (
-        <div className="mp-grid">
+        <div className="mp-properties-grid">
           {skeletons.map((_, idx) => (
-            <div key={idx} className="mp-card mp-skeleton">
-              <div className="mp-image" />
-              <div className="mp-content">
-                <div className="s-line s-title" />
-                <div className="s-line s-sub" />
-                <div className="s-line s-row" />
-                <div className="s-line s-row short" />
+            <motion.div 
+              key={idx} 
+              className="mp-property-card skeleton"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: idx * 0.05 }}
+            >
+              <div className="mp-card-image skeleton-shimmer" />
+              <div className="mp-card-content">
+                <div className="skeleton-line skeleton-title" />
+                <div className="skeleton-line skeleton-price" />
+                <div className="skeleton-line skeleton-location" />
+                <div className="skeleton-stats">
+                  <div className="skeleton-line" />
+                  <div className="skeleton-line" />
+                  <div className="skeleton-line" />
+                </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       ) : properties.length === 0 ? (
-        <div className="mp-empty">You haven’t created any properties yet. <button className="mp-btn" onClick={() => window.location.href = "/properties/create"}>Create Listing</button></div>
+        <motion.div 
+          className="mp-empty-state"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="mp-empty-icon">
+            <i className="fa fa-home"></i>
+          </div>
+          <h2 className="mp-empty-title">No Properties Yet</h2>
+          <p className="mp-empty-text">Start building your property portfolio by creating your first listing</p>
+          <motion.button 
+            className="mp-empty-btn"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => window.location.href = "/properties/create"}
+          >
+            <i className="fa fa-plus-circle"></i> Create Your First Listing
+          </motion.button>
+        </motion.div>
       ) : (
         <>
-          <div className="mp-grid">
-            {properties.map(property => {
+          <motion.div 
+            className="mp-properties-grid"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+          >
+            {properties.map((property, index) => {
               let images = [];
               try {
                 images = property.images ? (Array.isArray(property.images) ? property.images : JSON.parse(property.images)) : [];
               } catch { images = []; }
               const stat = statusInfo(property);
+              
               return (
-                <article key={property.id} className="mp-card">
-                  <div className="mp-image">
+                <motion.article 
+                  key={property.id} 
+                  className="mp-property-card"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05, duration: 0.4 }}
+                  whileHover={{ y: -8, transition: { duration: 0.3 } }}
+                >
+                  {/* Image Section */}
+                  <div className="mp-card-image">
                     {images.length > 0 ? (
-                      <img src={getImageUrl(images[0])} alt={property.title} className="mp-img-main" />
+                      <img src={getImageUrl(images[0])} alt={property.title} />
                     ) : (
-                      <div className="mp-no-image">No Image</div>
+                      <div className="mp-no-image">
+                        <i className="fa fa-image"></i>
+                        <span>No Image</span>
+                      </div>
                     )}
-                    <span className={`mp-badge ${stat.color}`}>{stat.label}</span>
+                    
+                    {/* Status Badge */}
+                    <div className={`mp-status-badge ${stat.color}`}>
+                      <i className={`fa fa-${stat.color === 'approved' ? 'check-circle' : stat.color === 'pending' ? 'clock' : 'times-circle'}`}></i>
+                      {stat.label}
+                    </div>
+
+                    {/* Views Badge */}
+                    <div className="mp-views-badge">
+                      <i className="fa fa-eye"></i> {property.views || 0}
+                    </div>
+
+                    {/* Image Count Badge */}
+                    {images.length > 1 && (
+                      <div className="mp-image-count-badge">
+                        <i className="fa fa-images"></i> {images.length}
+                      </div>
+                    )}
                   </div>
 
-                  <div className="mp-content">
-                    <div className="mp-toprow">
-                      <h2 className="mp-card-title">{property.title}</h2>
-                      <div className="mp-meta">
-                        <div className="mp-price">₵{Number(property.price).toLocaleString()}</div>
-                        <div className="mp-type">{property.property_type}</div>
+                  {/* Content Section */}
+                  <div className="mp-card-content">
+                    <div className="mp-card-header">
+                      <h3 className="mp-card-title">{property.title}</h3>
+                    </div>
+
+                    <div className="mp-card-location">
+                      <i className="fa fa-map-marker-alt"></i>
+                      <span>{property.location}</span>
+                    </div>
+
+                    <div className="mp-card-type-price">
+                      <div className="mp-card-type">
+                        <span>{property.property_type}</span>
+                      </div>
+                      <div className="mp-card-price">₵{Number(property.price).toLocaleString()}</div>
+                    </div>
+
+                    {/* Property Stats */}
+                    <div className="mp-card-stats">
+                      <div className="mp-stat-item">
+                        <i className="fa fa-bed"></i>
+                        <span>{property.bedrooms || "-"} Beds</span>
+                      </div>
+                      <div className="mp-stat-item">
+                        <i className="fa fa-bath"></i>
+                        <span>{property.bathrooms || "-"} Baths</span>
+                      </div>
+                      <div className="mp-stat-item">
+                        <i className="fa fa-expand-arrows-alt"></i>
+                        <span>{property.size || "-"} sqm</span>
                       </div>
                     </div>
 
-                    <p className="mp-location">{property.location}</p>
+                    {/* Rejection Reason Alert */}
+                    {property.rejection_reason && (
+                      <motion.div 
+                        className="mp-rejection-alert"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                      >
+                        <i className="fa fa-exclamation-triangle"></i>
+                        <span>Rejected - Click "View Reason" for details</span>
+                      </motion.div>
+                    )}
 
-                    <div className="mp-details">
-                      <div>{property.bedrooms ? `${property.bedrooms} Beds` : "-"}</div>
-                      <div>{property.bathrooms ? `${property.bathrooms} Baths` : "-"}</div>
-                      <div>{property.size ? `${property.size} sqm` : "-"}</div>
-                    </div>
+                    {/* Action Buttons */}
+                    <div className="mp-card-actions">
+                      <motion.button 
+                        className="mp-action-btn view"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => window.location.href = `/properties/${property.id}`}
+                      >
+                        <i className="fa fa-eye"></i> View
+                      </motion.button>
 
-                    <div className="mp-actions">
-                      <button className="mp-btn mp-view" onClick={() => window.location.href = `/properties/${property.id}`}>View</button>
+                      <motion.button 
+                        className="mp-action-btn edit"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => openModal(property, true)}
+                      >
+                        <i className="fa fa-edit"></i> Edit
+                      </motion.button>
 
-                      <button className="mp-btn mp-edit" onClick={() => openModal(property, true)}>Edit</button>
+                      <motion.button 
+                        className="mp-action-btn delete"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => openModal(property, false)}
+                      >
+                        <i className="fa fa-trash-alt"></i> Delete
+                      </motion.button>
 
-                      <button className="mp-btn mp-delete" onClick={() => openModal(property, false)}>Delete</button>
-
-                      {/* If rejected, show reason / resubmit */}
                       {property.rejection_reason && (
-                        <button className="mp-btn mp-reason" onClick={() => alert(`Rejection reason:\n\n${property.rejection_reason}`)}>
-                          View Reason
-                        </button>
-                      )}
-
-                      {/* If pending, allow "Resubmit" to re-open edit */}
-                      {!property.is_approved && !property.rejection_reason && (
-                        <button className="mp-btn mp-resubmit" onClick={() => openModal(property, true)}>Resubmit</button>
+                        <motion.button 
+                          className="mp-action-btn reason"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => alert(`Rejection reason:\n\n${property.rejection_reason}`)}
+                        >
+                          <i className="fa fa-info-circle"></i> View Reason
+                        </motion.button>
                       )}
                     </div>
 
-                    <div className="mp-footer">
-                      <small className="mp-updated">Updated: {new Date(property.updated_at).toLocaleString()}</small>
-                      <small className="mp-views">{property.views || 0} views</small>
+                    {/* Footer Info */}
+                    <div className="mp-card-footer">
+                      <span className="mp-updated">
+                        <i className="fa fa-calendar-alt"></i>
+                        Updated {new Date(property.updated_at).toLocaleDateString()}
+                      </span>
                     </div>
                   </div>
-                </article>
+                </motion.article>
               );
             })}
-          </div>
+          </motion.div>
 
           {/* Pagination */}
-          <div className="mp-pagination">
-            <button className="mp-page" onClick={() => goToPage(meta.current_page - 1)} disabled={meta.current_page <= 1}>Prev</button>
-            <div className="mp-page-info">Page {meta.current_page} of {meta.last_page} • {meta.total} listings</div>
-            <button className="mp-page" onClick={() => goToPage(meta.current_page + 1)} disabled={meta.current_page >= meta.last_page}>Next</button>
-          </div>
+          <motion.div 
+            className="mp-pagination"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            <motion.button 
+              className="mp-page-btn"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => goToPage(meta.current_page - 1)} 
+              disabled={meta.current_page <= 1}
+            >
+              <i className="fa fa-chevron-left"></i> Previous
+            </motion.button>
+            
+            <div className="mp-page-info">
+              <span className="mp-page-current">Page {meta.current_page} of {meta.last_page}</span>
+              <span className="mp-page-total">• {meta.total} listings</span>
+            </div>
+            
+            <motion.button 
+              className="mp-page-btn"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => goToPage(meta.current_page + 1)} 
+              disabled={meta.current_page >= meta.last_page}
+            >
+              Next <i className="fa fa-chevron-right"></i>
+            </motion.button>
+          </motion.div>
         </>
       )}
 
-      {/* Popup Modal */}
-      {showModal && selectedProperty && (
-        <div className="mp-modal-overlay" onClick={closeModal}>
-          <div className="mp-modal mp-modal-scroll" onClick={e => e.stopPropagation()}>
-            {editMode ? (
-              <>
-                <h3 className="mp-modal-title">Edit Property</h3>
-                <form className="mp-edit-form" onSubmit={handleEditSubmit} encType="multipart/form-data">
-                  <label>Current Images</label>
-                  <div className="mp-edit-images">
-                    {form.images.length === 0 && <div className="mp-no-image">No Image</div>}
-                    {form.images.map((img, idx) => (
-                      <div key={img + idx} className="mp-img-wrap">
-                        <img src={getImageUrl(img)} alt={`property-img-${idx}`} className="mp-img-preview" />
-                        <button type="button" className="mp-btn mp-delete mp-img-remove" onClick={() => handleRemoveImage(img, "existing")}>✕</button>
+      {/* Modal */}
+      <AnimatePresence>
+        {showModal && selectedProperty && (
+          <motion.div 
+            className="mp-modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={closeModal}
+          >
+            <motion.div 
+              className="mp-modal"
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              onClick={e => e.stopPropagation()}
+            >
+              {editMode ? (
+                <>
+                  <div className="mp-modal-header">
+                    <h3><i className="fa fa-edit"></i> Edit Property</h3>
+                    <button className="mp-modal-close" onClick={closeModal}>
+                      <i className="fa fa-times"></i>
+                    </button>
+                  </div>
+                  
+                  <form className="mp-edit-form" onSubmit={handleEditSubmit}>
+                    <div className="mp-form-section">
+                      <label className="mp-form-label">Current Images</label>
+                      <div className="mp-images-grid">
+                        {form.images.length === 0 && <div className="mp-no-images">No images uploaded</div>}
+                        {form.images.map((img, idx) => (
+                          <div key={img + idx} className="mp-image-item">
+                            <img src={getImageUrl(img)} alt={`property-${idx}`} />
+                            <button 
+                              type="button" 
+                              className="mp-image-remove" 
+                              onClick={() => handleRemoveImage(img, "existing")}
+                            >
+                              <i className="fa fa-times"></i>
+                            </button>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    </div>
 
-                  <label>Add Images</label>
-                  <input type="file" multiple ref={fileInputRef} accept="image/*" onChange={handleImageChange} />
-                  <div className="mp-edit-images">
-                    {form.newImages.map((file, idx) => (
-                      <div key={file.name + idx} className="mp-img-wrap">
-                        <img src={URL.createObjectURL(file)} alt={`new-img-${idx}`} className="mp-img-preview" />
-                        <button type="button" className="mp-btn mp-delete mp-img-remove" onClick={() => handleRemoveImage(file, "new")}>✕</button>
+                    <div className="mp-form-section">
+                      <label className="mp-form-label">Add New Images</label>
+                      <input 
+                        type="file" 
+                        multiple 
+                        ref={fileInputRef} 
+                        accept="image/*" 
+                        onChange={handleImageChange}
+                        className="mp-file-input"
+                      />
+                      <div className="mp-images-grid">
+                        {form.newImages.map((file, idx) => (
+                          <div key={file.name + idx} className="mp-image-item">
+                            <img src={URL.createObjectURL(file)} alt={`new-${idx}`} />
+                            <button 
+                              type="button" 
+                              className="mp-image-remove" 
+                              onClick={() => handleRemoveImage(file, "new")}
+                            >
+                              <i className="fa fa-times"></i>
+                            </button>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    </div>
+
+                    <div className="mp-form-row">
+                      <div className="mp-form-group">
+                        <label className="mp-form-label">Title *</label>
+                        <input 
+                          type="text" 
+                          name="title" 
+                          value={form.title} 
+                          onChange={handleChange} 
+                          required 
+                          className="mp-form-input"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mp-form-row">
+                      <div className="mp-form-group">
+                        <label className="mp-form-label">Location *</label>
+                        <input 
+                          type="text" 
+                          name="location" 
+                          value={form.location} 
+                          onChange={handleChange} 
+                          required 
+                          className="mp-form-input"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mp-form-row mp-form-row-2">
+                      <div className="mp-form-group">
+                        <label className="mp-form-label">Price (₵) *</label>
+                        <input 
+                          type="number" 
+                          name="price" 
+                          value={form.price} 
+                          onChange={handleChange} 
+                          required 
+                          className="mp-form-input"
+                        />
+                      </div>
+                      <div className="mp-form-group">
+                        <label className="mp-form-label">Property Type *</label>
+                        <input 
+                          type="text" 
+                          name="property_type" 
+                          value={form.property_type} 
+                          onChange={handleChange} 
+                          required 
+                          className="mp-form-input"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mp-form-row mp-form-row-3">
+                      <div className="mp-form-group">
+                        <label className="mp-form-label">Bedrooms</label>
+                        <input 
+                          type="number" 
+                          name="bedrooms" 
+                          value={form.bedrooms} 
+                          onChange={handleChange} 
+                          className="mp-form-input"
+                        />
+                      </div>
+                      <div className="mp-form-group">
+                        <label className="mp-form-label">Bathrooms</label>
+                        <input 
+                          type="number" 
+                          name="bathrooms" 
+                          value={form.bathrooms} 
+                          onChange={handleChange} 
+                          className="mp-form-input"
+                        />
+                      </div>
+                      <div className="mp-form-group">
+                        <label className="mp-form-label">Size (sqm)</label>
+                        <input 
+                          type="number" 
+                          name="size" 
+                          value={form.size} 
+                          onChange={handleChange} 
+                          className="mp-form-input"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mp-form-row">
+                      <div className="mp-form-group">
+                        <label className="mp-form-label">Description</label>
+                        <textarea 
+                          name="description" 
+                          value={form.description} 
+                          onChange={handleChange} 
+                          rows={4}
+                          className="mp-form-textarea"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mp-modal-footer">
+                      <motion.button 
+                        className="mp-modal-btn save"
+                        type="submit" 
+                        disabled={loadingAction}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <i className="fa fa-save"></i> {loadingAction ? "Saving..." : "Save Changes"}
+                      </motion.button>
+                      <motion.button 
+                        className="mp-modal-btn cancel"
+                        type="button" 
+                        onClick={closeModal}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <i className="fa fa-times"></i> Cancel
+                      </motion.button>
+                    </div>
+                  </form>
+                </>
+              ) : (
+                <>
+                  <div className="mp-modal-header">
+                    <h3><i className="fa fa-trash-alt"></i> Delete Property</h3>
+                    <button className="mp-modal-close" onClick={closeModal}>
+                      <i className="fa fa-times"></i>
+                    </button>
+                  </div>
+                  
+                  <div className="mp-delete-content">
+                    <div className="mp-delete-icon">
+                      <i className="fa fa-exclamation-triangle"></i>
+                    </div>
+                    <p className="mp-delete-text">
+                      Are you sure you want to delete <strong>"{selectedProperty.title}"</strong>?
+                    </p>
+                    <p className="mp-delete-warning">
+                      This action cannot be undone. All data associated with this property will be permanently removed.
+                    </p>
                   </div>
 
-                  <label>Title<input type="text" name="title" value={form.title} onChange={handleChange} required /></label>
-                  <label>Location<input type="text" name="location" value={form.location} onChange={handleChange} required /></label>
-
-                  <div className="mp-grid-2">
-                    <label>Price<input type="number" name="price" value={form.price} onChange={handleChange} required /></label>
-                    <label>Type<input type="text" name="property_type" value={form.property_type} onChange={handleChange} required /></label>
+                  <div className="mp-modal-footer">
+                    <motion.button 
+                      className="mp-modal-btn delete"
+                      onClick={handleDelete} 
+                      disabled={loadingAction}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <i className="fa fa-trash-alt"></i> {loadingAction ? "Deleting..." : "Yes, Delete"}
+                    </motion.button>
+                    <motion.button 
+                      className="mp-modal-btn cancel"
+                      onClick={closeModal}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <i className="fa fa-times"></i> Cancel
+                    </motion.button>
                   </div>
-
-                  <div className="mp-grid-2">
-                    <label>Bedrooms<input type="number" name="bedrooms" value={form.bedrooms} onChange={handleChange} /></label>
-                    <label>Bathrooms<input type="number" name="bathrooms" value={form.bathrooms} onChange={handleChange} /></label>
-                  </div>
-
-                  <label>Size (sqm)<input type="number" name="size" value={form.size} onChange={handleChange} /></label>
-                  <label>Description<textarea name="description" value={form.description} onChange={handleChange} rows={4} /></label>
-
-                  <div className="mp-modal-btns">
-                    <button className="mp-btn mp-edit" type="submit" disabled={loadingAction}>{loadingAction ? "Saving..." : "Save changes"}</button>
-                    <button className="mp-btn" type="button" onClick={closeModal}>Cancel</button>
-                  </div>
-                </form>
-              </>
-            ) : (
-              <>
-                <h3 className="mp-modal-title">Delete Property</h3>
-                <p>Are you sure you want to delete <strong>{selectedProperty.title}</strong>?</p>
-                <div className="mp-modal-btns">
-                  <button className="mp-btn mp-delete" onClick={handleDelete} disabled={loadingAction}>{loadingAction ? "Deleting..." : "Yes, delete"}</button>
-                  <button className="mp-btn" onClick={closeModal}>Cancel</button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+                </>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

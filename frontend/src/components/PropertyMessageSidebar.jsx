@@ -77,7 +77,7 @@ export default function PropertyMessageSidebar({
             height: 56,
             borderRadius: "50%",
             objectFit: "cover",
-            border: "2px solid #228B22",
+            border: "2px solid #0c5904",
             background: "#fff"
           }}
         />
@@ -85,12 +85,12 @@ export default function PropertyMessageSidebar({
         <div className="marketplace-details-agentavatar-fallback"
           style={{
             width: 56, height: 56, fontSize: 30, display: "flex", alignItems: "center", justifyContent: "center",
-            background: "#e2efe4", color: "#228B22", borderRadius: "50%", border: "2px solid #228B22"
+            background: "#e2efe4", color: "#0c5904", borderRadius: "50%", border: "2px solid #0c5904"
           }}>
           {getInitials(sellerProfile?.name)}
         </div>
       )}
-      <div className="marketplace-details-agentname" style={{marginTop: 8, fontWeight: 600, color: "#228B22", fontSize: "1.13em"}}>
+      <div className="marketplace-details-agentname" style={{marginTop: 8, fontWeight: 600, color: "#0c5904", fontSize: "1.13em"}}>
         {sellerProfile?.name || "Agent"}
       </div>
       {/* Show contact button */}
@@ -110,7 +110,7 @@ export default function PropertyMessageSidebar({
               className="marketplace-details-agent-contact"
               style={{
                 marginTop: 5,
-                color: "#228B22",
+                color: "#0c5904",
                 fontWeight: "bold",
                 fontSize: "1.05em",
                 background: "#e2efe4",
@@ -135,7 +135,7 @@ export default function PropertyMessageSidebar({
         <div className="marketplace-details-agentwrap">
           {agentInfo}
           <div className="marketplace-details-owner-msg" style={{marginTop: 14}}>
-            <i className="fa fa-info-circle" style={{ color: "#228B22", marginRight: 6 }}></i>
+            <i className="fa fa-info-circle" style={{ color: "#0c5904", marginRight: 6 }}></i>
             <span>
               This is your property listing. You cannot send messages to yourself.
             </span>

@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { ToastProvider } from "./contexts/ToastContext";
 import MainLayout from "./layouts/MainLayout";
 
 import Login from "./pages/auth/Login";
@@ -12,6 +13,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import Blog from "./pages/Blog";
 import PostBlog from "./pages/PostBlog";
+import EditBlog from "./pages/EditBlog";
 import Insights from "./pages/Insights";
 import Agents from "./pages/Agents";
 import AgentProfile from "./pages/AgentProfile";
@@ -20,15 +22,19 @@ import Messenger from "./pages/Messenger";
 import BlogDetail from "./pages/BlogDetail";
 import Favorites from "./pages/Favorites";
 import AdminPendingProperties from "./pages/AdminPendingProperties";
+import ManageUsers from "./pages/ManageUsers";
+import Notifications from "./pages/Notifications";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import ResetPassword from "./pages/auth/ResetPassword";
+import DesignShowcase from "./pages/DesignShowcase";
 
 
 
 function App() {
   return (
     <AuthProvider>
-      <Routes>
+      <ToastProvider>
+        <Routes>
         {/* Auth pages: no navbar/footer */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -50,11 +56,17 @@ function App() {
           <Route path="properties/:id" element={<PropertyDetails />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/post" element={<PostBlog />} />
+          <Route path="/blog/edit/:id" element={<EditBlog />} />
           <Route path="/insights" element={<Insights />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/blog/:id" element={<BlogDetail />} />
-<Route path="/admin/pending" element={<AdminPendingProperties />} />
+          
+          {/* Admin routes */}
+          <Route path="/admin/pending" element={<AdminPendingProperties />} />
+          <Route path="/admin/users" element={<ManageUsers />} />
 
+          {/* Notifications */}
+          <Route path="/notifications" element={<Notifications />} />
 
           {/* user pages */}
           <Route path="my-properties" element={<MyProperties />} />
@@ -66,6 +78,9 @@ function App() {
           {/* Messages pages */}
           <Route path="/messenger" element={<Messenger />} />
           <Route path="/saved" element={<Favorites />} />
+          
+          {/* Design Showcase - Remove this in production */}
+          <Route path="/design-showcase" element={<DesignShowcase />} />
 
 
 
@@ -84,6 +99,7 @@ function App() {
         {/* Optional: 404 fallback (keeps layout) */}
         {/* <Route path="*" element={<MainLayout><NotFound /></MainLayout>} /> */}
       </Routes>
+      </ToastProvider>
     </AuthProvider>
   );
 }

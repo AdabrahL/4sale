@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import InsightsSidebar from "../components/InsightsSidebar";
 import MarketTrendsChart from "../components/MarketTrendsChart";
+import InteractiveMapInsight from "../components/InteractiveMapInsight";
+import MarketTemperatureGauge from "../components/MarketTemperatureGauge";
+import InvestmentScoreCard from "../components/InvestmentScoreCard";
 import { getPhotoUrl } from "../utils/getPhotoUrl";
 import API from "../api/axios";
 
@@ -26,7 +29,8 @@ export default function Insights() {
     topLocation: "—",
     topType: "—",
     listedToday: 0,
-    demandTrend: "N/A",
+    totalListings: 0,
+    demandTrend: "stable",
   });
 
   // Chart data
@@ -37,6 +41,11 @@ export default function Insights() {
   // Featured articles
   const [featured, setFeatured] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // Interactive filters
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [priceRange, setPriceRange] = useState('all');
+  const [propertyType, setPropertyType] = useState('all');
 
   useEffect(() => {
     let mounted = true;
@@ -66,6 +75,7 @@ export default function Insights() {
               topLocation: payload.topLocation ?? stats.topLocation,
               topType: payload.topType ?? stats.topType,
               listedToday: payload.listedToday ?? stats.listedToday,
+              totalListings: payload.totalListings ?? propData.length ?? 0,
               demandTrend: payload.demandTrend ?? stats.demandTrend,
             });
           }
@@ -95,7 +105,8 @@ export default function Insights() {
               topLocation,
               topType,
               listedToday,
-              demandTrend: "N/A",
+              totalListings: propData.length,
+              demandTrend: listedToday > 5 ? "up" : listedToday > 2 ? "stable" : "down",
             });
           }
 
@@ -195,82 +206,244 @@ export default function Insights() {
   }, []); // only on mount
 
   return (
-    <div className="container py-5 insights-page">
-      <div className="row gx-5">
-        <div className="col-lg-8 col-12">
-          <h1 className="insights-title mb-4">Real Estate Insights & Trends</h1>
-          {/* Market Stats */}
-          <div className="insights-stats-row mb-4">
-            <div className="insight-stat-card">
-              <div className="insight-stat-label">Avg. Price</div>
-              <div className="insight-stat-value">{stats.avgPrice}</div>
-            </div>
-            <div className="insight-stat-card">
-              <div className="insight-stat-label">Top Location</div>
-              <div className="insight-stat-value">{stats.topLocation}</div>
-            </div>
-            <div className="insight-stat-card">
-              <div className="insight-stat-label">Top Property Type</div>
-              <div className="insight-stat-value">{stats.topType}</div>
-            </div>
-            <div className="insight-stat-card">
-              <div className="insight-stat-label">Listed Today</div>
-              <div className="insight-stat-value">{stats.listedToday}</div>
-            </div>
-            <div className="insight-stat-card">
-              <div className="insight-stat-label">Demand Trend</div>
-              <div className="insight-stat-value">{stats.demandTrend}</div>
-            </div>
-          </div>
+    <div className="insights-page">
+      <div className="container">
+        <div className="row gx-5">
+          <div className="col-lg-8 col-12">
+            {/* Hero Header */}
+            <h1 className="insights-title">Real Estate Market Insights</h1>
+            <p className="insights-subtitle">
+              Discover trends, analyze data, and make informed property decisions with our comprehensive market intelligence.
+            </p>
 
-          {/* Market Trends Chart */}
-          <div className="insights-market-charts mb-5">
-            <MarketTrendsChart
-              pricesData={pricesData}
-              typesData={typesData}
-              locationsData={locationsData}
-            />
-          </div>
+            {/* Interactive Map */}
+            <InteractiveMapInsight onLocationClick={setSelectedLocation} />
 
-          {/* Featured Articles */}
-          <h3 className="insights-section-title mt-5">Featured Market Articles</h3>
-          {loading ? (
-            <div>Loading articles...</div>
-          ) : (
-            <div className="insights-featured-articles">
-              {featured.map(blog => (
-                <div key={blog.id} className="insights-featured-article">
-                  <Link to={`/blog/${blog.id}`}>
-                    <img
-                      src={getBlogImage(blog.image)}
-                      alt={blog.title}
-                      className="insights-featured-img"
-                    />
-                  </Link>
-                  <div className="insights-featured-body">
-                    <Link to={`/blog/${blog.id}`} className="insights-featured-title">
-                      {blog.title}
-                    </Link>
-                    <div className="insights-featured-excerpt">{(blog.excerpt ?? blog.description ?? "").slice(0, 140)}{(blog.excerpt ?? blog.description ?? "").length > 140 && "..."}</div>
-                    <div className="insights-featured-meta">
-                      <img
-                        src={getPhotoUrl(blog.user?.photo)}
-                        alt={blog.user?.name}
-                        className="insights-featured-author-avatar"
-                      />
-                      <span>{blog.user?.name || blog.author || "Author"}</span>
-                      <span className="insights-featured-date">{blog.created_at?.slice(0,10)}</span>
-                    </div>
+            {/* Market Temperature & Investment Score Row */}
+            <div className="row g-4 mb-4">
+              <div className="col-md-6">
+                <MarketTemperatureGauge temperature="warm" score={75} />
+              </div>
+              <div className="col-md-6">
+                <InvestmentScoreCard score={4.2} roi={15.5} risk="medium" />
+              </div>
+            </div>
+
+            {/* Quick Stats Cards */}
+            <div className="insights-stats-row mb-4">
+              <div className="insight-stat-card">
+                <div className="insight-stat-icon">
+                  <i className="fa fa-dollar-sign"></i>
+                </div>
+                <div className="insight-stat-label">Average Price</div>
+                <div className="insight-stat-value">{stats.avgPrice}</div>
+              </div>
+              <div className="insight-stat-card">
+                <div className="insight-stat-icon">
+                  <i className="fa fa-map-marker-alt"></i>
+                </div>
+                <div className="insight-stat-label">Top Location</div>
+                <div className="insight-stat-value" style={{ fontSize: '1.25rem' }}>{stats.topLocation}</div>
+              </div>
+              <div className="insight-stat-card">
+                <div className="insight-stat-icon">
+                  <i className="fa fa-home"></i>
+                </div>
+                <div className="insight-stat-label">Most Popular</div>
+                <div className="insight-stat-value" style={{ fontSize: '1.25rem' }}>{stats.topType}</div>
+              </div>
+              <div className="insight-stat-card">
+                <div className="insight-stat-icon">
+                  <i className="fa fa-calendar-day"></i>
+                </div>
+                <div className="insight-stat-label">Listed Today</div>
+                <div className="insight-stat-value">{stats.listedToday}</div>
+              </div>
+            </div>
+
+            {/* Interactive Filters */}
+            <div className="insights-filters mb-4">
+              <div className="filters-header">
+                <h4>
+                  <i className="fa fa-filter"></i>
+                  Filter Market Data
+                </h4>
+              </div>
+              <div className="filters-grid">
+                <div className="filter-group">
+                  <label>Price Range</label>
+                  <select 
+                    value={priceRange} 
+                    onChange={(e) => setPriceRange(e.target.value)}
+                    className="filter-select"
+                  >
+                    <option value="all">All Prices</option>
+                    <option value="0-200k">Under ₵200K</option>
+                    <option value="200k-400k">₵200K - ₵400K</option>
+                    <option value="400k-600k">₵400K - ₵600K</option>
+                    <option value="600k+">Above ₵600K</option>
+                  </select>
+                </div>
+                <div className="filter-group">
+                  <label>Property Type</label>
+                  <select 
+                    value={propertyType} 
+                    onChange={(e) => setPropertyType(e.target.value)}
+                    className="filter-select"
+                  >
+                    <option value="all">All Types</option>
+                    <option value="house">Houses</option>
+                    <option value="apartment">Apartments</option>
+                    <option value="land">Land</option>
+                    <option value="commercial">Commercial</option>
+                  </select>
+                </div>
+                <div className="filter-group">
+                  <label>Location</label>
+                  <select 
+                    value={selectedLocation?.name || ''} 
+                    onChange={(e) => setSelectedLocation(e.target.value ? { name: e.target.value } : null)}
+                    className="filter-select"
+                  >
+                    <option value="">All Locations</option>
+                    <option value="East Legon">East Legon</option>
+                    <option value="Airport Residential">Airport Residential</option>
+                    <option value="Cantonments">Cantonments</option>
+                    <option value="Osu">Osu</option>
+                  </select>
+                </div>
+                <button className="filter-reset-btn" onClick={() => {
+                  setPriceRange('all');
+                  setPropertyType('all');
+                  setSelectedLocation(null);
+                }}>
+                  <i className="fa fa-redo"></i>
+                  Reset Filters
+                </button>
+              </div>
+            </div>
+
+            {/* Key Metrics */}
+            <div className="insights-key-metrics">
+              <div className="insights-metric-card">
+                <div className="insights-metric-header">
+                  <div className="insights-metric-label">Market Activity</div>
+                  <div className="insights-metric-change positive">
+                    <i className="fa fa-arrow-up"></i>
+                    <span>12%</span>
                   </div>
                 </div>
-              ))}
-              {featured.length === 0 && <div className="empty">No featured market articles yet.</div>}
+                <div className="insights-metric-value">{stats.listedToday * 7}</div>
+                <div className="insights-metric-description">Properties listed this week</div>
+              </div>
+              <div className="insights-metric-card">
+                <div className="insights-metric-header">
+                  <div className="insights-metric-label">Demand Trend</div>
+                  <div className="insights-metric-change positive">
+                    <i className="fa fa-arrow-up"></i>
+                    <span>8%</span>
+                  </div>
+                </div>
+                <div className="insights-metric-value">{stats.demandTrend}</div>
+                <div className="insights-metric-description">Compared to last month</div>
+              </div>
             </div>
-          )}
-        </div>
 
-        <div className="col-lg-4 col-12">
-          <InsightsSidebar stats={stats} pricesData={pricesData} />
+            {/* Market Trends Chart */}
+            <div className="insights-market-charts mb-5">
+              <div className="insights-chart-header">
+                <h3 className="insights-chart-title">
+                  <i className="fa fa-chart-line"></i>
+                  Market Trends Analysis
+                </h3>
+              </div>
+              <MarketTrendsChart
+                pricesData={pricesData}
+                typesData={typesData}
+                locationsData={locationsData}
+              />
+            </div>
+
+            {/* Quick Actions */}
+            <div className="insights-quick-actions">
+              <h3>Explore More</h3>
+              <p>Dive deeper into market data and discover investment opportunities</p>
+              <div className="insights-actions-grid">
+                <Link to="/properties" className="insights-action-btn">
+                  <i className="fa fa-search"></i>
+                  Browse Properties
+                </Link>
+                <Link to="/agents" className="insights-action-btn">
+                  <i className="fa fa-users"></i>
+                  Find Agents
+                </Link>
+                <Link to="/blog" className="insights-action-btn">
+                  <i className="fa fa-newspaper"></i>
+                  Market News
+                </Link>
+                <Link to="/properties?type=investment" className="insights-action-btn">
+                  <i className="fa fa-chart-pie"></i>
+                  Investments
+                </Link>
+              </div>
+            </div>
+
+            {/* Featured Articles */}
+            <h3 className="insights-section-title mt-5">Featured Market Reports</h3>
+            {loading ? (
+              <div className="empty">
+                <i className="fa fa-spinner fa-spin" style={{ fontSize: '2rem', marginBottom: '1rem' }}></i>
+                <div>Loading market insights...</div>
+              </div>
+            ) : (
+              <div className="insights-featured-articles">
+                {featured.map(blog => (
+                  <div key={blog.id} className="insights-featured-article">
+                    <Link to={`/blog/${blog.id}`}>
+                      <img
+                        src={getBlogImage(blog.image)}
+                        alt={blog.title}
+                        className="insights-featured-img"
+                      />
+                    </Link>
+                    <div className="insights-featured-body">
+                      <div>
+                        <Link to={`/blog/${blog.id}`} className="insights-featured-title">
+                          {blog.title}
+                        </Link>
+                        <div className="insights-featured-excerpt">
+                          {(blog.excerpt ?? blog.description ?? "").slice(0, 140)}
+                          {(blog.excerpt ?? blog.description ?? "").length > 140 && "..."}
+                        </div>
+                      </div>
+                      <div className="insights-featured-meta">
+                        <img
+                          src={getPhotoUrl(blog.user?.photo)}
+                          alt={blog.user?.name}
+                          className="insights-featured-author-avatar"
+                        />
+                        <span>{blog.user?.name || blog.author || "Author"}</span>
+                        <span className="insights-featured-date">
+                          <i className="fa fa-calendar" style={{ marginRight: '0.25rem' }}></i>
+                          {blog.created_at?.slice(0,10)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {featured.length === 0 && (
+                  <div className="empty">
+                    <i className="fa fa-newspaper" style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.3 }}></i>
+                    <div>No featured market articles yet.</div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="col-lg-4 col-12">
+            <InsightsSidebar stats={stats} pricesData={pricesData} />
+          </div>
         </div>
       </div>
     </div>

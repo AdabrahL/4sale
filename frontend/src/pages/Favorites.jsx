@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import API from "../api/axios";
 import { Link } from "react-router-dom";
+import "../styles/favorites.css";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://backend.test";
 function getImageUrl(img) {

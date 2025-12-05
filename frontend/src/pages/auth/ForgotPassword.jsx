@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import API from "../../api/axios";
 import { Link } from "react-router-dom";
 import GridScan from "../../components/React-Bits-UI/GridScan";
+import "../../styles/auth.css";
 
 /**
  * Page: /forgot-password

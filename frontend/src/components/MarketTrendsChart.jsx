@@ -1,6 +1,6 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, PieChart, Pie, Cell } from "recharts";
 
-const COLORS = ["#228B22", "#196f1a", "#cdebc4", "#f6fbf4", "#ffc658"];
+const COLORS = ["#0c5904", "#084003", "#cdebc4", "#f6fbf4", "#ffc658"];
 
 export default function MarketTrendsChart({ pricesData, typesData, locationsData }) {
   return (
@@ -13,7 +13,7 @@ export default function MarketTrendsChart({ pricesData, typesData, locationsData
           <XAxis dataKey="month" />
           <YAxis tickFormatter={v => `₵${(+v/1000).toFixed(0)}k`} />
           <Tooltip formatter={v => `₵${(+v).toLocaleString()}`} />
-          <Line type="monotone" dataKey="price" stroke="#228B22" strokeWidth={3} dot={{ r: 3 }} />
+          <Line type="monotone" dataKey="price" stroke="#0c5904" strokeWidth={3} dot={{ r: 3 }} />
         </LineChart>
       </ResponsiveContainer>
 
@@ -21,7 +21,7 @@ export default function MarketTrendsChart({ pricesData, typesData, locationsData
       <h5 className="mt-4 mb-2">Property Type Distribution</h5>
       <ResponsiveContainer width="100%" height={200}>
         <PieChart>
-          <Pie data={typesData} dataKey="count" nameKey="type" cx="50%" cy="50%" outerRadius={65} fill="#228B22" label>
+          <Pie data={typesData} dataKey="count" nameKey="type" cx="50%" cy="50%" outerRadius={65} fill="#0c5904" label>
             {typesData.map((entry, idx) => (
               <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
             ))}
@@ -38,7 +38,7 @@ export default function MarketTrendsChart({ pricesData, typesData, locationsData
           <XAxis dataKey="location" />
           <YAxis />
           <Tooltip />
-          <Bar dataKey="count" fill="#228B22" />
+          <Bar dataKey="count" fill="#0c5904" />
         </BarChart>
       </ResponsiveContainer>
     </div>

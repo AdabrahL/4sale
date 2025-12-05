@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { Link } from "react-router-dom";
 import API from "../api/axios";
 import MyProperties from "../components/MyProperties";
+import MyBlogs from "../components/MyBlogs";
+import "../styles/profile-dashboard.css";
 
 
 // Helper: get backend url from .env (VITE_BACKEND_URL), fallback to http://backend.test
@@ -31,6 +34,13 @@ export default function Profile() {
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [editMode, setEditMode] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview"); // overview, properties, blogs, boost, admin
+  const [pendingCount, setPendingCount] = useState(0);
+  const [myProperties, setMyProperties] = useState([]);
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [boosting, setBoosting] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('mobile_money');
   const fileRef = useRef(null); // single shared ref used by all file inputs
 
   useEffect(() => {
@@ -47,7 +57,7 @@ export default function Profile() {
     setRemovePhoto(false);
     fetchStats();
     // eslint-disable-next-line
-  }, [user]);
+  }, [user, activeTab]);
 
   async function fetchStats() {
     try {
@@ -62,11 +72,87 @@ export default function Profile() {
       } catch {
         favCount = 0;
       }
+      
+      // Fetch pending count if admin
+      if (user?.is_admin) {
+        try {
+          const pendingRes = await API.get("/admin/properties/pending");
+          const pendingData = pendingRes.data?.data || pendingRes.data || [];
+          setPendingCount(Array.isArray(pendingData) ? pendingData.length : 0);
+        } catch {
+          setPendingCount(0);
+        }
+      }
+      
       setStats({ listings: Number(total || 0), favorites: Number(favCount || 0) });
     } catch {
       setStats({ listings: 0, favorites: 0 });
     }
   }
+
+  const handleSelectPlan = (plan) => {
+    setSelectedPlan(plan);
+    setShowPaymentModal(true);
+  };
+
+  const handlePayment = async () => {
+    if (!selectedPlan) return;
+    
+    try {
+      setBoosting(true);
+      setErrorMsg(''); // Clear any previous errors
+      
+      console.log('Sending boost request:', {
+        plan: selectedPlan.duration,
+        price: selectedPlan.price,
+        payment_method: paymentMethod
+      });
+      
+      // Boost all user properties with the selected plan
+      const response = await API.post('/boost-all-properties', {
+        plan: selectedPlan.duration,
+        price: selectedPlan.price,
+        payment_method: paymentMethod
+      });
+      
+      console.log('Boost response:', response.data);
+      
+      const message = response.data.message || `All your properties have been boosted for ${selectedPlan.duration} days!`;
+      
+      // Close modal first
+      setShowPaymentModal(false);
+      setSelectedPlan(null);
+      setPaymentMethod('mobile_money');
+      
+      // Show success message
+      setSuccessMsg(message);
+      
+      // Refresh stats
+      fetchStats();
+      
+      // Auto-hide success message after 5 seconds
+      setTimeout(() => setSuccessMsg(''), 5000);
+    } catch (error) {
+      console.error("Error boosting properties:", error);
+      console.error("Error response:", error.response?.data);
+      
+      const errorMessage = error.response?.data?.message || "Failed to process payment. Please try again.";
+      setErrorMsg(errorMessage);
+      
+      // Don't close modal on error so user can see the message
+      
+      // Auto-hide error message after 5 seconds
+      setTimeout(() => setErrorMsg(''), 5000);
+    } finally {
+      setBoosting(false);
+    }
+  };
+
+  const closePaymentModal = () => {
+    setShowPaymentModal(false);
+    setSelectedPlan(null);
+    setPaymentMethod('mobile_money');
+  };
 
   if (!user) {
     return (
@@ -201,163 +287,583 @@ export default function Profile() {
   };
 
   return (
-    <div className="profile-wrap">
-      <div className="profile-hero">
-        <div className="profile-hero-bg" />
-        <div className="profile-hero-inner container">
-          <div className="profile-avatar-col">
-            <div className="avatar-stack">
-              <img src={previewUrl} alt="avatar" className="profile-avatar-large" />
-             
-            </div>
-            <div className="profile-basic">
-              <h2 className="profile-name">{localUser?.name}</h2>
-              <div className="profile-role">
-                {localUser?.is_admin ? <span className="role-badge admin">Admin</span> : <span className="role-badge user">User</span>}
-                {localUser?.agency && <span className="role-tag">{localUser.agency}</span>}
-              </div>
-            </div>
+    <div className="dashboard-wrap">
+      {/* Dashboard Sidebar */}
+      <aside className="dashboard-sidebar">
+        <div className="dashboard-brand">
+          <div className="brand-icon">
+            <img src={previewUrl} alt="avatar" className="sidebar-avatar" />
           </div>
-
-          <div className="profile-summary-col">
-            <div className="profile-actions-top">
-              <div className="profile-stats">
-                <div className="stat">
-                  <div className="stat-num">{stats.listings}</div>
-                  <div className="stat-label">Listings</div>
-                </div>
-                <div className="stat">
-                  <div className="stat-num">{stats.favorites}</div>
-                  <div className="stat-label">Favorites</div>
-                </div>
-                <div className="stat">
-                  <div className="stat-num">{localUser?.reviews_count ?? "—"}</div>
-                  <div className="stat-label">Reviews</div>
-                </div>
-              </div>
-
-              <div className="profile-controls">
-                <button className="profile-btn profile-btn-green" onClick={() => setEditMode(true)}>Edit Profile</button>
-                <a className="profile-btn profile-btn-outline" href="/properties/create">Post Listing</a>
-              </div>
-            </div>
-
-            <div className="profile-about">
-              <p className="profile-bio-hero">{localUser?.bio || "Tell people about yourself. Add a short bio so potential clients know who you are."}</p>
-
-              <div className="profile-contact-row">
-                <div><strong>Email:</strong> <a href={`mailto:${localUser?.email}`}>{localUser?.email}</a></div>
-                <div><strong>Phone:</strong> <a href={`tel:${localUser?.phone}`}>{localUser?.phone || "—"}</a></div>
-              </div>
-
-              <div className="profile-socials">
-                {localUser?.socials?.facebook && (
-                  <a href={localUser.socials.facebook} target="_blank" rel="noreferrer" className="social-pill">
-                    <i className="fab fa-facebook"></i> Facebook
-                  </a>
-                )}
-                {localUser?.socials?.whatsapp && (
-                  <a href={`https://wa.me/${localUser.socials.whatsapp.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer" className="social-pill">
-                    <i className="fab fa-whatsapp"></i> WhatsApp
-                  </a>
-                )}
-                {localUser?.socials?.linkedin && (
-                  <a href={localUser.socials.linkedin} target="_blank" rel="noreferrer" className="social-pill">
-                    <i className="fab fa-linkedin"></i> LinkedIn
-                  </a>
-                )}
-                {localUser?.socials?.instagram && (
-                  <a href={localUser.socials.instagram} target="_blank" rel="noreferrer" className="social-pill">
-                    <i className="fab fa-instagram"></i> Instagram
-                  </a>
-                )}
-              </div>
-            </div>
+          <div className="brand-info">
+            <h3>{localUser?.name}</h3>
+            <p>{localUser?.is_admin ? "Administrator" : "Agent"}</p>
           </div>
         </div>
-      </div>
 
-      {successMsg && <div className="profile-toast success">{successMsg}</div>}
-      {errorMsg && <div className="profile-toast error">{errorMsg}</div>}
+        <nav className="dashboard-nav">
+          <button 
+            className={`nav-item ${activeTab === "overview" ? "active" : ""}`}
+            onClick={() => setActiveTab("overview")}
+          >
+            <i className="fa fa-home"></i>
+            <span>Overview</span>
+          </button>
+          
+          <button 
+            className={`nav-item ${activeTab === "properties" ? "active" : ""}`}
+            onClick={() => setActiveTab("properties")}
+          >
+            <i className="fa fa-building"></i>
+            <span>My Properties</span>
+          </button>
 
-      {/* Edit area: appears below hero */}
-      {editMode && (
-        <div className="profile-edit-panel container">
-          <form className="profile-edit-grid" onSubmit={handleSave} encType="multipart/form-data">
-            <div className="profile-edit-left">
-              <label className="field">
-                <div className="field-label">Full name</div>
-                <input name="name" value={form.name} onChange={handleChange} required />
-              </label>
+          <button 
+            className={`nav-item ${activeTab === "blogs" ? "active" : ""}`}
+            onClick={() => setActiveTab("blogs")}
+          >
+            <i className="fa fa-newspaper"></i>
+            <span>My Blogs</span>
+          </button>
 
-              <label className="field">
-                <div className="field-label">Email</div>
-                <input name="email" type="email" value={form.email} onChange={handleChange} required />
-              </label>
+          <button 
+            className={`nav-item ${activeTab === "boost" ? "active" : ""}`}
+            onClick={() => setActiveTab("boost")}
+          >
+            <i className="fa fa-rocket"></i>
+            <span>Boost Listings</span>
+          </button>
 
-              <label className="field">
-                <div className="field-label">Phone</div>
-                <input name="phone" value={form.phone} onChange={handleChange} />
-              </label>
+          <Link to="/saved" className="nav-item">
+            <i className="fa fa-bookmark"></i>
+            <span>Saved</span>
+          </Link>
 
-              <label className="field">
-                <div className="field-label">Short bio</div>
-                <textarea name="bio" value={form.bio} onChange={handleChange} rows="4" />
-              </label>
+          <Link to="/messenger" className="nav-item">
+            <i className="fa fa-envelope"></i>
+            <span>Messages</span>
+          </Link>
 
-              <div className="field group">
-                <div className="field-label">Social links</div>
-                <input name="facebook" placeholder="Facebook URL" value={form.socials.facebook || ""} onChange={handleChange} />
-                <input name="whatsapp" placeholder="WhatsApp (number)" value={form.socials.whatsapp || ""} onChange={handleChange} />
-                <input name="linkedin" placeholder="LinkedIn URL" value={form.socials.linkedin || ""} onChange={handleChange} />
-                <input name="instagram" placeholder="Instagram URL" value={form.socials.instagram || ""} onChange={handleChange} />
+          {localUser?.is_admin && (
+            <>
+              <div className="nav-divider">Admin Controls</div>
+              
+              <button 
+                className={`nav-item ${activeTab === "admin" ? "active" : ""}`}
+                onClick={() => setActiveTab("admin")}
+              >
+                <i className="fa fa-shield-alt"></i>
+                <span>Dashboard</span>
+              </button>
+
+              <Link to="/admin/pending" className="nav-item">
+                <i className="fa fa-gavel"></i>
+                <span>Pending Approvals</span>
+                {pendingCount > 0 && <span className="nav-badge">{pendingCount}</span>}
+              </Link>
+
+              <Link to="/blog/post" className="nav-item">
+                <i className="fa fa-edit"></i>
+                <span>Post Blog</span>
+              </Link>
+
+              <Link to="/admin/users" className="nav-item">
+                <i className="fa fa-users"></i>
+                <span>Manage Users</span>
+              </Link>
+            </>
+          )}
+        </nav>
+      </aside>
+
+      {/* Dashboard Content */}
+      <main className="dashboard-content">
+        {successMsg && <div className="dashboard-toast success">{successMsg}</div>}
+        {errorMsg && <div className="dashboard-toast error">{errorMsg}</div>}
+
+        {/* Overview Tab */}
+        {activeTab === "overview" && (
+          <div className="dashboard-section">
+            <div className="section-header">
+              <h1>Dashboard Overview</h1>
+              <button className="btn-primary" onClick={() => setEditMode(!editMode)}>
+                <i className="fa fa-edit"></i> Edit Profile
+              </button>
+            </div>
+
+            {/* Stats Grid */}
+            <div className="stats-grid">
+              <div className="stat-card">
+                <div className="stat-icon blue">
+                  <i className="fa fa-building"></i>
+                </div>
+                <div className="stat-info">
+                  <h3>{stats.listings}</h3>
+                  <p>Total Listings</p>
+                </div>
               </div>
 
-              <div className="edit-actions">
-                <button type="submit" className="profile-btn profile-btn-green" disabled={saving}>
-                  {saving ? `Saving...${uploadProgress ? ` (${uploadProgress}%)` : ""}` : "Save profile"}
+              <div className="stat-card">
+                <div className="stat-icon green">
+                  <i className="fa fa-bookmark"></i>
+                </div>
+                <div className="stat-info">
+                  <h3>{stats.favorites}</h3>
+                  <p>Saved Properties</p>
+                </div>
+              </div>
+
+              <div className="stat-card">
+                <div className="stat-icon orange">
+                  <i className="fa fa-eye"></i>
+                </div>
+                <div className="stat-info">
+                  <h3>1,234</h3>
+                  <p>Total Views</p>
+                </div>
+              </div>
+
+              <div className="stat-card">
+                <div className="stat-icon purple">
+                  <i className="fa fa-star"></i>
+                </div>
+                <div className="stat-info">
+                  <h3>{localUser?.reviews_count ?? 0}</h3>
+                  <p>Reviews</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Edit Profile Form */}
+            {editMode && (
+              <div className="profile-edit-card">
+                <h2>Edit Profile Information</h2>
+                <form onSubmit={handleSave} encType="multipart/form-data">
+                  <div className="form-grid">
+                    <div className="form-col">
+                      <div className="form-group">
+                        <label>Full Name</label>
+                        <input name="name" value={form.name} onChange={handleChange} required />
+                      </div>
+
+                      <div className="form-group">
+                        <label>Email</label>
+                        <input name="email" type="email" value={form.email} onChange={handleChange} required />
+                      </div>
+
+                      <div className="form-group">
+                        <label>Phone</label>
+                        <input name="phone" value={form.phone} onChange={handleChange} />
+                      </div>
+
+                      <div className="form-group">
+                        <label>Bio</label>
+                        <textarea name="bio" value={form.bio} onChange={handleChange} rows="4" />
+                      </div>
+                    </div>
+
+                    <div className="form-col">
+                      <div className="form-group">
+                        <label>Profile Photo</label>
+                        <div className="photo-upload">
+                          <img src={previewUrl} alt="preview" className="photo-preview" />
+                          <div className="photo-actions">
+                            <label className="btn-upload">
+                              <input ref={fileRef} type="file" accept="image/*" onChange={handleImageChange} hidden />
+                              <i className="fa fa-upload"></i> Upload Photo
+                            </label>
+                            <button type="button" className="btn-remove" onClick={handleRemovePhoto}>
+                              <i className="fa fa-trash"></i>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="form-group">
+                        <label>Social Links</label>
+                        <input name="facebook" placeholder="Facebook URL" value={form.socials.facebook || ""} onChange={handleChange} />
+                        <input name="whatsapp" placeholder="WhatsApp Number" value={form.socials.whatsapp || ""} onChange={handleChange} />
+                        <input name="linkedin" placeholder="LinkedIn URL" value={form.socials.linkedin || ""} onChange={handleChange} />
+                        <input name="instagram" placeholder="Instagram URL" value={form.socials.instagram || ""} onChange={handleChange} />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="form-actions">
+                    <button type="submit" className="btn-primary" disabled={saving}>
+                      {saving ? `Saving... ${uploadProgress}%` : "Save Changes"}
+                    </button>
+                    <button type="button" className="btn-secondary" onClick={handleCancel} disabled={saving}>
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {/* Quick Actions */}
+            <div className="quick-actions">
+              <h2>Quick Actions</h2>
+              <div className="actions-grid">
+                <Link to="/properties/create" className="action-card green">
+                  <i className="fa fa-plus-circle"></i>
+                  <span>Add New Property</span>
+                </Link>
+                <button className="action-card blue" onClick={() => setActiveTab("boost")}>
+                  <i className="fa fa-rocket"></i>
+                  <span>Boost Visibility</span>
                 </button>
-                <button type="button" className="profile-btn profile-btn-gray" onClick={handleCancel} disabled={saving}>
+                <Link to="/messenger" className="action-card purple">
+                  <i className="fa fa-envelope"></i>
+                  <span>View Messages</span>
+                </Link>
+                <Link to="/saved" className="action-card orange">
+                  <i className="fa fa-bookmark"></i>
+                  <span>Saved Properties</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Properties Tab */}
+        {activeTab === "properties" && (
+          <div className="dashboard-section">
+            <div className="section-header">
+              <h1>My Properties</h1>
+              <Link to="/properties/create" className="btn-primary">
+                <i className="fa fa-plus"></i> Add Property
+              </Link>
+            </div>
+            <MyProperties />
+          </div>
+        )}
+
+        {/* Blogs Tab */}
+        {activeTab === "blogs" && (
+          <div className="dashboard-section">
+            <div className="section-header">
+              <h1>My Blogs & Books</h1>
+              <Link to="/blog/post" className="btn-primary">
+                <i className="fa fa-plus"></i> Create Post
+              </Link>
+            </div>
+            <MyBlogs />
+          </div>
+        )}
+
+        {/* Boost Tab */}
+        {activeTab === "boost" && (
+          <div className="dashboard-section">
+            <div className="section-header">
+              <h1>Boost Your Listings</h1>
+              <p className="section-subtitle">Choose a boost plan to increase your property visibility</p>
+            </div>
+
+            <div className="boost-plans-grid">
+                  <div className="boost-plan-card basic">
+                    <div className="boost-plan-header">
+                      <i className="fa fa-rocket"></i>
+                      <h3>7-Day Boost</h3>
+                    </div>
+                    <div className="boost-plan-price">
+                      <span className="currency">₵</span>
+                      <span className="amount">50</span>
+                    </div>
+                    <ul className="boost-plan-features">
+                      <li><i className="fa fa-check"></i> 7 days visibility</li>
+                      <li><i className="fa fa-check"></i> Top listing placement</li>
+                      <li><i className="fa fa-check"></i> 3x more views</li>
+                      <li><i className="fa fa-check"></i> Featured badge</li>
+                    </ul>
+                    <button 
+                      className="boost-plan-select-btn"
+                      onClick={() => handleSelectPlan({ duration: 7, price: 50, name: '7-Day Boost' })}
+                    >
+                      Select Plan
+                    </button>
+                  </div>
+
+                  <div className="boost-plan-card popular">
+                    <div className="boost-plan-badge">Most Popular</div>
+                    <div className="boost-plan-header">
+                      <i className="fa fa-star"></i>
+                      <h3>14-Day Boost</h3>
+                    </div>
+                    <div className="boost-plan-price">
+                      <span className="currency">₵</span>
+                      <span className="amount">90</span>
+                    </div>
+                    <ul className="boost-plan-features">
+                      <li><i className="fa fa-check"></i> 14 days visibility</li>
+                      <li><i className="fa fa-check"></i> Top listing placement</li>
+                      <li><i className="fa fa-check"></i> 5x more views</li>
+                      <li><i className="fa fa-check"></i> Featured badge</li>
+                      <li><i className="fa fa-check"></i> Priority support</li>
+                    </ul>
+                    <button 
+                      className="boost-plan-select-btn"
+                      onClick={() => handleSelectPlan({ duration: 14, price: 90, name: '14-Day Boost' })}
+                    >
+                      Select Plan
+                    </button>
+                  </div>
+
+                  <div className="boost-plan-card premium">
+                    <div className="boost-plan-header">
+                      <i className="fa fa-crown"></i>
+                      <h3>30-Day Boost</h3>
+                    </div>
+                    <div className="boost-plan-price">
+                      <span className="currency">₵</span>
+                      <span className="amount">150</span>
+                    </div>
+                    <ul className="boost-plan-features">
+                      <li><i className="fa fa-check"></i> 30 days visibility</li>
+                      <li><i className="fa fa-check"></i> Top listing placement</li>
+                      <li><i className="fa fa-check"></i> 10x more views</li>
+                      <li><i className="fa fa-check"></i> Featured badge</li>
+                      <li><i className="fa fa-check"></i> Priority support</li>
+                      <li><i className="fa fa-check"></i> Social media promotion</li>
+                    </ul>
+                    <button 
+                      className="boost-plan-select-btn"
+                      onClick={() => handleSelectPlan({ duration: 30, price: 150, name: '30-Day Boost' })}
+                    >
+                      Select Plan
+                    </button>
+                  </div>
+                </div>
+
+                <div className="boost-info">
+                  <h4><i className="fa fa-info-circle"></i> How Boosting Works</h4>
+                  <div className="boost-info-grid">
+                    <div className="boost-info-item">
+                      <i className="fa fa-chart-line"></i>
+                      <h5>Increased Visibility</h5>
+                      <p>Your property appears at the top of search results</p>
+                    </div>
+                    <div className="boost-info-item">
+                      <i className="fa fa-eye"></i>
+                      <h5>More Views</h5>
+                      <p>Get significantly more views from potential buyers</p>
+                    </div>
+                    <div className="boost-info-item">
+                      <i className="fa fa-bolt"></i>
+                      <h5>Instant Activation</h5>
+                      <p>Boost starts immediately after confirmation</p>
+                    </div>
+                  </div>
+                </div>
+          </div>
+        )}
+
+        {/* Payment Modal */}
+        {showPaymentModal && (
+          <div className="modal-overlay" onClick={closePaymentModal}>
+            <div className="modal-content payment-modal" onClick={(e) => e.stopPropagation()}>
+              <button className="modal-close" onClick={closePaymentModal}>
+                <i className="fa fa-times"></i>
+              </button>
+              
+              <div className="modal-header">
+                <i className="fa fa-credit-card modal-icon"></i>
+                <h2>Complete Payment</h2>
+              </div>
+
+              <div className="modal-body">
+                {errorMsg && (
+                  <div style={{ 
+                    padding: '12px', 
+                    background: '#fee2e2', 
+                    border: '1px solid #ef4444', 
+                    borderRadius: '8px', 
+                    color: '#dc2626', 
+                    marginBottom: '1rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px'
+                  }}>
+                    <i className="fa fa-exclamation-circle"></i>
+                    <span>{errorMsg}</span>
+                  </div>
+                )}
+                
+                <div className="payment-summary">
+                  <div className="payment-plan-info">
+                    <h4>Selected Plan</h4>
+                    <p className="plan-name">{selectedPlan?.name}</p>
+                    <p className="plan-duration">{selectedPlan?.duration} days of boosted visibility</p>
+                  </div>
+                  <div className="payment-total">
+                    <h4>Total Amount</h4>
+                    <p className="price">₵{selectedPlan?.price}</p>
+                  </div>
+                </div>
+
+                <div className="payment-details">
+                  <h4><i className="fa fa-info-circle"></i> What's Included:</h4>
+                  <ul className="payment-features">
+                    <li><i className="fa fa-check"></i> All your properties will be boosted</li>
+                    <li><i className="fa fa-check"></i> Top placement in search results</li>
+                    <li><i className="fa fa-check"></i> Featured badge on all listings</li>
+                    <li><i className="fa fa-check"></i> {selectedPlan?.duration >= 14 ? '5-10x' : '3x'} more visibility</li>
+                    {selectedPlan?.duration >= 14 && (
+                      <li><i className="fa fa-check"></i> Priority support</li>
+                    )}
+                    {selectedPlan?.duration >= 30 && (
+                      <li><i className="fa fa-check"></i> Social media promotion</li>
+                    )}
+                  </ul>
+                </div>
+
+                <div className="payment-method-section">
+                  <h4><i className="fa fa-wallet"></i> Select Payment Method</h4>
+                  <div className="payment-methods">
+                    <label className={`payment-method-option ${paymentMethod === 'mobile_money' ? 'active' : ''}`}>
+                      <input 
+                        type="radio" 
+                        name="payment" 
+                        value="mobile_money"
+                        checked={paymentMethod === 'mobile_money'}
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                      />
+                      <div className="payment-option-content">
+                        <i className="fa fa-mobile-alt"></i>
+                        <span>Mobile Money</span>
+                      </div>
+                    </label>
+
+                    <label className={`payment-method-option ${paymentMethod === 'card' ? 'active' : ''}`}>
+                      <input 
+                        type="radio" 
+                        name="payment" 
+                        value="card"
+                        checked={paymentMethod === 'card'}
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                      />
+                      <div className="payment-option-content">
+                        <i className="fa fa-credit-card"></i>
+                        <span>Credit/Debit Card</span>
+                      </div>
+                    </label>
+
+                    <label className={`payment-method-option ${paymentMethod === 'bank_transfer' ? 'active' : ''}`}>
+                      <input 
+                        type="radio" 
+                        name="payment" 
+                        value="bank_transfer"
+                        checked={paymentMethod === 'bank_transfer'}
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                      />
+                      <div className="payment-option-content">
+                        <i className="fa fa-university"></i>
+                        <span>Bank Transfer</span>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="modal-footer">
+                <button className="btn-secondary" onClick={closePaymentModal} disabled={boosting}>
                   Cancel
                 </button>
+                <button className="btn-primary" onClick={handlePayment} disabled={boosting}>
+                  {boosting ? (
+                    <>
+                      <i className="fa fa-spinner fa-spin"></i> Processing...
+                    </>
+                  ) : (
+                    <>
+                      <i className="fa fa-lock"></i> Pay ₵{selectedPlan?.price}
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Admin Tab */}
+        {activeTab === "admin" && localUser?.is_admin && (
+          <div className="dashboard-section">
+            <div className="section-header">
+              <h1>Admin Dashboard</h1>
+              <p className="section-subtitle">Manage your platform</p>
+            </div>
+
+            <div className="admin-stats-grid">
+              <div className="admin-stat">
+                <i className="fa fa-users"></i>
+                <div>
+                  <h3>Total Users</h3>
+                  <p className="stat-number">1,234</p>
+                </div>
+              </div>
+              <div className="admin-stat">
+                <i className="fa fa-building"></i>
+                <div>
+                  <h3>Total Properties</h3>
+                  <p className="stat-number">456</p>
+                </div>
+              </div>
+              <div className="admin-stat pending">
+                <i className="fa fa-clock"></i>
+                <div>
+                  <h3>Pending Approvals</h3>
+                  <p className="stat-number">{pendingCount}</p>
+                </div>
+              </div>
+              <div className="admin-stat">
+                <i className="fa fa-eye"></i>
+                <div>
+                  <h3>Total Views</h3>
+                  <p className="stat-number">45,678</p>
+                </div>
               </div>
             </div>
 
-            <aside className="profile-edit-right">
-              <div className="preview-card">
-                <div className="preview-title">Profile preview</div>
-                <div className="preview-avatar">
-                  <img src={previewUrl} alt="preview" />
-                </div>
-                <div className="preview-name">{form.name || localUser?.name}</div>
-                <div className="preview-role">{localUser?.is_admin ? "Administrator" : "Agent / User"}</div>
-                <div className="preview-actions">
-                  {/* This upload uses the same shared ref + handler so both upload buttons work */}
-                  <label className="upload-btn" title="Upload photo">
-                    <input ref={fileRef} type="file" accept="image/*" onChange={handleImageChange} hidden />
-                    <i className="fa fa-upload" /> Upload photo
-                  </label>
+            <div className="admin-actions-grid">
+              <Link to="/admin/pending" className="admin-action-card">
+                <i className="fa fa-gavel"></i>
+                <h3>Pending Approvals</h3>
+                <p>Review and approve property listings</p>
+                {pendingCount > 0 && <span className="action-badge">{pendingCount} pending</span>}
+              </Link>
 
-                  <button type="button" className="profile-btn profile-btn-outline" onClick={() => { handleRemovePhoto(); }}>
-                    Reset
-                  </button>
-                </div>
-                <div className="preview-stats">
-                  <div><strong>{stats.listings}</strong><span>Listings</span></div>
-                  <div><strong>{stats.favorites}</strong><span>Favorites</span></div>
-                </div>
-              </div>
+              <Link to="/blog/post" className="admin-action-card">
+                <i className="fa fa-pencil-alt"></i>
+                <h3>Create Blog Post</h3>
+                <p>Share insights and property news</p>
+              </Link>
 
-              <div className="hint-box">
-                <strong>Tip</strong>
-                <p>Use a square photo, 400x400 or higher for best results. Social links should be full URLs (https://...)</p>
-              </div>
-            </aside>
-          </form>
-        </div>
-      )}
+              <Link to="/admin/users" className="admin-action-card">
+                <i className="fa fa-users-cog"></i>
+                <h3>Manage Users</h3>
+                <p>View and manage user accounts</p>
+              </Link>
 
-      <MyProperties />
+              <Link to="/blog" className="admin-action-card">
+                <i className="fa fa-newspaper"></i>
+                <h3>Manage Content</h3>
+                <p>Edit blogs and manage platform content</p>
+              </Link>
+
+              <button className="admin-action-card">
+                <i className="fa fa-chart-bar"></i>
+                <h3>Analytics</h3>
+                <p>View platform statistics and insights</p>
+              </button>
+
+              <button className="admin-action-card">
+                <i className="fa fa-cog"></i>
+                <h3>Settings</h3>
+                <p>Configure platform settings</p>
+              </button>
+            </div>
+          </div>
+        )}
+      </main>
     </div>
   );
 }

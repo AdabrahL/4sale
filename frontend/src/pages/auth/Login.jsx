@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import GridScan from "../../components/React-Bits-UI/GridScan";
+import "../../styles/auth.css";
 
 // Make sure you have FontAwesome loaded in your HTML or in your main JS file
 // For example, in public/index.html: <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
@@ -41,18 +42,21 @@ export default function Login() {
 
   return (
     <>
-      <GridScan
-      sensitivity={0.55}
-    lineThickness={1}
-    linesColor="#e1ff00"
-    gridScale={0.05}
-    scanColor="#40ad05"
-    scanOpacity={0.4}
-    enablePost
-    bloomIntensity={0.6}
-    chromaticAberration={0.002}
-    noiseIntensity={0.01}
-      />
+      {/* Only render GridScan in development or when window has proper dimensions */}
+      {typeof window !== 'undefined' && window.innerWidth > 0 && window.innerHeight > 0 && (
+        <GridScan
+          sensitivity={0.55}
+          lineThickness={1}
+          linesColor="#e1ff00"
+          gridScale={0.05}
+          scanColor="#40ad05"
+          scanOpacity={0.4}
+          enablePost
+          bloomIntensity={0.6}
+          chromaticAberration={0.002}
+          noiseIntensity={0.01}
+        />
+      )}
       <div className="auth-container">
         <h2>Login</h2>
 
@@ -88,7 +92,7 @@ export default function Login() {
               <input type="checkbox" style={{ marginRight: 6 }} /> Remember me
             </label>
             {/* Forgot password link */}
-            <Link to="/forgot-password" style={{ fontSize: 14, color: "#196f1a" }}>
+            <Link to="/forgot-password" style={{ fontSize: 14, color: "#084003" }}>
               Forgot your password?
             </Link>
           </div>
@@ -108,9 +112,14 @@ export default function Login() {
           </button>
         </div>
 
-        <p>
-          Don&apos;t have an account? <Link to="/register">Register</Link>
-        </p>
+        <div className="auth-divider">
+          <span>New to 4SALE?</span>
+        </div>
+
+        <Link to="/register" className="auth-cta-btn">
+          Create New Account
+        </Link>
+
         <p>© {new Date().getFullYear()} 4SALE</p>
       </div>
     </>

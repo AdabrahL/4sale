@@ -1,0 +1,272 @@
+/* Trending Properties Carousel */
+
+.trending-carousel-section {
+  position: relative;
+  padding-bottom: 4rem;
+}
+
+.trending-carousel-wrapper {
+  position: relative;
+  padding: 2rem 0;
+  margin: 0 auto;
+  max-width: 100%;
+}
+
+/* Swiper Container */
+.trending-swiper {
+  width: 100%;
+  padding: 2rem 0 3rem 0 !important;
+  overflow: visible !important;
+}
+
+/* Swiper Slide */
+.trending-swiper .swiper-slide {
+  width: 380px;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.4s ease;
+}
+
+/* Center slide effect */
+.trending-swiper .swiper-slide-active .trending-card {
+  transform: scale(1.05);
+  z-index: 10;
+  box-shadow: 0 20px 60px rgba(12, 89, 4, 0.25);
+}
+
+/* Non-active slides slightly faded */
+.trending-swiper .swiper-slide:not(.swiper-slide-active) .trending-card {
+  opacity: 0.7;
+  transform: scale(0.95);
+}
+
+/* Trending Card in Carousel */
+.trending-card {
+  width: 100%;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+/* Trending Badge */
+.trending-badge {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+  z-index: 5;
+  animation: pulse-trending 2s ease-in-out infinite;
+}
+
+.trending-badge i {
+  animation: fire-flicker 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-trending {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(239, 68, 68, 0.6);
+  }
+}
+
+@keyframes fire-flicker {
+  0%, 100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.1);
+  }
+  75% {
+    transform: scale(0.95);
+  }
+}
+
+/* Custom Navigation Buttons */
+.swiper-button-prev-custom,
+.swiper-button-next-custom {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #0c5904 0%, #084003 100%);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 100;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 3px solid white;
+  box-shadow: 0 8px 24px rgba(12, 89, 4, 0.3);
+}
+
+.swiper-button-prev-custom {
+  left: -30px;
+}
+
+.swiper-button-next-custom {
+  right: -30px;
+}
+
+.swiper-button-prev-custom:hover,
+.swiper-button-next-custom:hover {
+  background: linear-gradient(135deg, #084003 0%, #0c5904 100%);
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 12px 32px rgba(12, 89, 4, 0.4);
+}
+
+.swiper-button-prev-custom:active,
+.swiper-button-next-custom:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.swiper-button-prev-custom i,
+.swiper-button-next-custom i {
+  font-size: 1.5rem;
+}
+
+/* Disabled state */
+.swiper-button-prev-custom.swiper-button-disabled,
+.swiper-button-next-custom.swiper-button-disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Custom Pagination */
+.swiper-pagination-custom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+/* Override default Swiper pagination */
+.swiper-pagination-custom .swiper-pagination-bullet {
+  width: 12px;
+  height: 12px;
+  background: #d1d5db;
+  opacity: 1;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.swiper-pagination-custom .swiper-pagination-bullet-active {
+  background: linear-gradient(135deg, #0c5904 0%, #084003 100%);
+  width: 32px;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(12, 89, 4, 0.4);
+}
+
+.swiper-pagination-custom .swiper-pagination-bullet:hover {
+  background: #9ca3af;
+  transform: scale(1.2);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1200px) {
+  .swiper-button-prev-custom {
+    left: 0;
+  }
+  
+  .swiper-button-next-custom {
+    right: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .trending-swiper .swiper-slide {
+    width: 320px;
+  }
+
+  .swiper-button-prev-custom,
+  .swiper-button-next-custom {
+    width: 50px;
+    height: 50px;
+  }
+
+  .swiper-button-prev-custom i,
+  .swiper-button-next-custom i {
+    font-size: 1.25rem;
+  }
+
+  .swiper-button-prev-custom {
+    left: 10px;
+  }
+  
+  .swiper-button-next-custom {
+    right: 10px;
+  }
+
+  /* Hide center slide scaling on mobile */
+  .trending-swiper .swiper-slide-active .trending-card {
+    transform: scale(1);
+  }
+
+  .trending-swiper .swiper-slide:not(.swiper-slide-active) .trending-card {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 480px) {
+  .trending-swiper .swiper-slide {
+    width: 280px;
+  }
+
+  .trending-carousel-wrapper {
+    padding: 1rem 0;
+  }
+
+  .swiper-button-prev-custom,
+  .swiper-button-next-custom {
+    width: 40px;
+    height: 40px;
+  }
+
+  .swiper-button-prev-custom i,
+  .swiper-button-next-custom i {
+    font-size: 1rem;
+  }
+}
+
+/* Loading state */
+.trending-carousel-section .cards-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 2rem;
+}
+
+/* Smooth transitions */
+.trending-card * {
+  transition: inherit;
+}
+
+/* Ensure card interactions work in carousel */
+.trending-swiper .swiper-slide-active .trending-card:hover {
+  transform: scale(1.08) translateY(-8px);
+}
+
+.trending-swiper .swiper-slide:not(.swiper-slide-active) .trending-card:hover {
+  transform: scale(1) translateY(-4px);
+  opacity: 0.9;
+}

@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
 import { useAuth } from "../contexts/AuthContext";
+import { GHANA_LOCATIONS } from "../components/GhanaMap";
+import "../styles/create-property.css";
 
 
 export default function CreateProperty() {
@@ -18,6 +20,7 @@ export default function CreateProperty() {
     category_id: "",
     status: "for_sale",
     location: "",
+    region: "",
     bedrooms: "",
     bathrooms: "",
     size: "",
@@ -29,6 +32,10 @@ export default function CreateProperty() {
   const [carouselIdx, setCarouselIdx] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
+  const [locationSearch, setLocationSearch] = useState("");
+  const [availableCities, setAvailableCities] = useState([]);
+  const locationDropdownRef = useRef(null);
 
   useEffect(() => {
     async function fetchCategories() {
@@ -45,6 +52,17 @@ export default function CreateProperty() {
       }
     }
     fetchCategories();
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (locationDropdownRef.current && !locationDropdownRef.current.contains(event.target)) {
+        setShowLocationDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Drag & drop logic
@@ -99,7 +117,33 @@ export default function CreateProperty() {
       ...prev,
       [name]: value,
     }));
+
+    // When region changes, update available cities
+    if (name === "region") {
+      setAvailableCities(GHANA_LOCATIONS[value] || []);
+      setForm((prev) => ({
+        ...prev,
+        region: value,
+        location: "", // Reset location when region changes
+      }));
+    }
   };
+
+  const handleLocationSelect = (city) => {
+    setForm((prev) => ({
+      ...prev,
+      location: city,
+    }));
+    setLocationSearch(city);
+    setShowLocationDropdown(false);
+  };
+
+  const filteredCities = availableCities.filter(city =>
+    city.toLowerCase().includes(locationSearch.toLowerCase())
+  );
+
+  // Get all cities from all regions for search
+  const allCities = Object.values(GHANA_LOCATIONS).flat();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -281,17 +325,64 @@ export default function CreateProperty() {
           {/* Group 3: Location & Status */}
           <div className="cp-section cp-flex">
             <div className="cp-flex-item">
-              <label className="cp-label">Location</label>
-              <input
-                type="text"
-                name="location"
-                placeholder="e.g. East Legon, Accra"
-                value={form.location}
+              <label className="cp-label">Region</label>
+              <select
+                name="region"
+                value={form.region}
                 onChange={handleChange}
                 className="cp-input"
                 required
-              />
+              >
+                <option value="">Select Region</option>
+                {Object.keys(GHANA_LOCATIONS).map((region) => (
+                  <option key={region} value={region}>
+                    {region}
+                  </option>
+                ))}
+              </select>
             </div>
+            <div className="cp-flex-item">
+              <label className="cp-label">City/Town</label>
+              <div style={{ position: "relative" }} ref={locationDropdownRef}>
+                <input
+                  type="text"
+                  name="location"
+                  placeholder={form.region ? "Select city/town" : "Select region first"}
+                  value={locationSearch || form.location}
+                  onChange={(e) => {
+                    setLocationSearch(e.target.value);
+                    setShowLocationDropdown(true);
+                  }}
+                  onFocus={() => setShowLocationDropdown(true)}
+                  className="cp-input"
+                  required
+                  disabled={!form.region}
+                />
+                {showLocationDropdown && form.region && (
+                  <div className="location-dropdown">
+                    {filteredCities.length > 0 ? (
+                      filteredCities.map((city) => (
+                        <div
+                          key={city}
+                          className="location-option"
+                          onClick={() => handleLocationSelect(city)}
+                        >
+                          <i className="fa fa-map-marker"></i> {city}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="location-option disabled">
+                        No cities found
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Status */}
+          <div className="cp-section cp-flex">
             <div className="cp-flex-item">
               <label className="cp-label">Status</label>
               <select

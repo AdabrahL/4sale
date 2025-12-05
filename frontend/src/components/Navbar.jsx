@@ -1,5 +1,6 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { useSocket } from "../contexts/SocketContext";
 import { useState, useEffect, useRef } from "react";
 import API from "../api/axios";
 
@@ -14,54 +15,30 @@ function getPhotoUrl(photo) {
 
 export default function Navbar() {
   const { user, logout } = useAuth();
+  const { socket } = useSocket();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [recentNotifications, setRecentNotifications] = useState([]);
+  const notificationRef = useRef(null);
   const location = useLocation();
 
-  // ref to manage scroll hysteresis/debounce state
-  const scrollRef = useRef({
-    timeoutId: null,
-    lastState: false,
-  });
-
   useEffect(() => {
-    // Hysteresis + debounce to avoid rapid toggles near threshold
-    const ON_THRESHOLD = 80;   // switch to "scrolled" when > ON_THRESHOLD
-    const OFF_THRESHOLD = 56;  // switch to "not scrolled" when < OFF_THRESHOLD
-    const DEBOUNCE_MS = 60;
+    const SCROLL_THRESHOLD = 50;
 
-    const handle = () => {
-      const y = window.scrollY || window.pageYOffset || 0;
-      const currentlyScrolled = scrollRef.current.lastState;
-      let nextScrolled = currentlyScrolled;
-
-      if (!currentlyScrolled && y > ON_THRESHOLD) nextScrolled = true;
-      else if (currentlyScrolled && y < OFF_THRESHOLD) nextScrolled = false;
-      // else keep previous state (hysteresis)
-
-      if (nextScrolled !== currentlyScrolled) {
-        // debounce the change slightly
-        if (scrollRef.current.timeoutId) {
-          clearTimeout(scrollRef.current.timeoutId);
-        }
-        scrollRef.current.timeoutId = setTimeout(() => {
-          setScrolled(nextScrolled);
-          scrollRef.current.lastState = nextScrolled;
-          scrollRef.current.timeoutId = null;
-        }, DEBOUNCE_MS);
-      }
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY || window.pageYOffset || 0;
+      setScrolled(scrollPosition > SCROLL_THRESHOLD);
     };
 
-    // initialize
-    scrollRef.current.lastState = (window.scrollY || 0) > ON_THRESHOLD;
-    setScrolled(scrollRef.current.lastState);
+    // Initialize on mount
+    handleScroll();
 
-    window.addEventListener("scroll", handle, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", handle);
-      if (scrollRef.current.timeoutId) clearTimeout(scrollRef.current.timeoutId);
-    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // If the logged-in user is an admin, fetch pending count for approvals
@@ -86,6 +63,141 @@ export default function Navbar() {
     fetchPendingCount();
     return () => { cancelled = true; };
   }, [user]);
+
+  // Fetch unread message count
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchUnreadCount = async () => {
+      if (!user) {
+        if (!cancelled) setUnreadCount(0);
+        return;
+      }
+      try {
+        const res = await API.get("/messages/unread-count");
+        if (!cancelled) setUnreadCount(res.data?.count || 0);
+      } catch (err) {
+        if (!cancelled) setUnreadCount(0);
+      }
+    };
+
+    fetchUnreadCount();
+
+    // Custom event listener to refresh count when messages are read
+    const handleRefreshCount = () => fetchUnreadCount();
+    window.addEventListener('refreshUnreadCount', handleRefreshCount);
+
+    // Listen for real-time message notifications via WebSocket
+    if (socket) {
+      const handleNewMessage = (data) => {
+        // Increment unread count when receiving a new message
+        if (data.receiver_id === user?.id) {
+          setUnreadCount(prev => prev + 1);
+        }
+      };
+
+      socket.on('newMessage', handleNewMessage);
+
+      return () => {
+        socket.off('newMessage', handleNewMessage);
+        window.removeEventListener('refreshUnreadCount', handleRefreshCount);
+        cancelled = true;
+      };
+    }
+
+    return () => { 
+      window.removeEventListener('refreshUnreadCount', handleRefreshCount);
+      cancelled = true; 
+    };
+  }, [user, socket]);
+
+  // Fetch notification count
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchNotificationCount = async () => {
+      if (!user) {
+        if (!cancelled) setNotificationCount(0);
+        return;
+      }
+      try {
+        const res = await API.get("/notifications/unread-count");
+        if (!cancelled) setNotificationCount(res.data?.count || 0);
+      } catch (err) {
+        if (!cancelled) setNotificationCount(0);
+      }
+    };
+
+    fetchNotificationCount();
+
+    // Custom event listener to refresh notification count
+    const handleRefreshNotifications = () => fetchNotificationCount();
+    window.addEventListener('refreshNotifications', handleRefreshNotifications);
+
+    return () => {
+      window.removeEventListener('refreshNotifications', handleRefreshNotifications);
+      cancelled = true;
+    };
+  }, [user]);
+
+  // Fetch recent notifications for dropdown
+  const fetchRecentNotifications = async () => {
+    if (!user) return;
+    try {
+      const res = await API.get("/notifications/recent");
+      setRecentNotifications(res.data);
+    } catch (err) {
+      console.error("Failed to fetch recent notifications:", err);
+    }
+  };
+
+  const handleNotificationClick = () => {
+    setShowNotifications(!showNotifications);
+    if (!showNotifications) {
+      fetchRecentNotifications();
+    }
+  };
+
+  const markNotificationAsRead = async (id) => {
+    try {
+      await API.post(`/notifications/${id}/read`);
+      setNotificationCount(prev => Math.max(0, prev - 1));
+      setRecentNotifications(prev =>
+        prev.map(n => n.id === id ? { ...n, read_at: new Date().toISOString() } : n)
+      );
+      window.dispatchEvent(new Event('refreshNotifications'));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const formatNotificationTime = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+
+    if (diffInSeconds < 60) return "Just now";
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+    return `${Math.floor(diffInSeconds / 86400)}d ago`;
+  };
+
+  // Close notification dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    };
+
+    if (showNotifications) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showNotifications]);
 
   const navTabs = [
     { to: "/home", label: "Home" },
@@ -128,9 +240,14 @@ export default function Navbar() {
                       <i className="fa fa-sign-out"></i> Logout
                     </button>
                   ) : (
-                    <Link to="/login">
-                      <i className="fa fa-user"></i> Login / Register
-                    </Link>
+                    <>
+                      <Link to="/login" className="me-3">
+                        <i className="fa fa-sign-in-alt"></i> Login
+                      </Link>
+                      <Link to="/register">
+                        <i className="fa fa-user-plus"></i> Register
+                      </Link>
+                    </>
                   )}
                 </div>
               </div>
@@ -150,7 +267,7 @@ export default function Navbar() {
                   src="/img/Untitled design.png"
                   alt="Estate Logo"
                   style={{
-                    maxHeight: "200px",
+                    maxHeight: "70px",
                     filter: scrolled ? "brightness(0) invert(1)" : "none",
                   }}
                 />
@@ -183,10 +300,109 @@ export default function Navbar() {
             <div className="col-lg-3 d-none d-lg-block">
               <div className="header__cart d-flex justify-content-end">
                 <ul className="d-flex align-items-center gap-4">
-                  <li>
+                  <li style={{ position: 'relative' }}>
                     <Link to="/messenger" className="nav-messages-link" title="Messenger">
-                      <i className="fa fa-envelope nav-messages-icon"></i>
+                      <i className={`fa fa-envelope${scrolled ? " white-icon" : ""}`}></i>
+                      {unreadCount > 0 && (
+                        <span
+                          role="status"
+                          aria-label={`${unreadCount} unread messages`}
+                          className={`admin-badge ${scrolled ? "scrolled" : ""}`}
+                          style={{
+                            position: 'absolute',
+                            top: '-8px',
+                            right: '-10px',
+                            minWidth: '20px',
+                            height: '20px',
+                            padding: '2px 6px',
+                            fontSize: '11px',
+                            fontWeight: '700'
+                          }}
+                        >
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </span>
+                      )}
                     </Link>
+                  </li>
+
+                  <li style={{ position: 'relative' }} ref={notificationRef}>
+                    <button
+                      onClick={handleNotificationClick}
+                      className="notification-bell-btn"
+                      title="Notifications"
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: 0
+                      }}
+                    >
+                      <i className={`fa fa-bell${scrolled ? " white-icon" : ""}`}></i>
+                      {notificationCount > 0 && (
+                        <span
+                          className={`admin-badge ${scrolled ? "scrolled" : ""}`}
+                          style={{
+                            position: 'absolute',
+                            top: '-8px',
+                            right: '-10px',
+                            minWidth: '20px',
+                            height: '20px',
+                            padding: '2px 6px',
+                            fontSize: '11px',
+                            fontWeight: '700'
+                          }}
+                        >
+                          {notificationCount > 99 ? '99+' : notificationCount}
+                        </span>
+                      )}
+                    </button>
+
+                    {/* Notification Dropdown */}
+                    {showNotifications && (
+                      <div className="notification-dropdown">
+                        <div className="notification-dropdown-header">
+                          <h4>Notifications</h4>
+                          <Link
+                            to="/notifications"
+                            onClick={() => setShowNotifications(false)}
+                          >
+                            View All
+                          </Link>
+                        </div>
+                        <div className="notification-dropdown-body">
+                          {recentNotifications.length === 0 ? (
+                            <div className="notification-empty">
+                              <i className="fa fa-bell-slash"></i>
+                              <p>No new notifications</p>
+                            </div>
+                          ) : (
+                            recentNotifications.map((notif) => (
+                              <Link
+                                key={notif.id}
+                                to="/notifications"
+                                className={`notification-dropdown-item ${!notif.read_at ? 'unread' : ''}`}
+                                onClick={() => {
+                                  setShowNotifications(false);
+                                  markNotificationAsRead(notif.id);
+                                }}
+                              >
+                                <div className="notif-icon">
+                                  <i className="fa fa-bell"></i>
+                                </div>
+                                <div className="notif-content">
+                                  <h5>{notif.title}</h5>
+                                  <p>{notif.message}</p>
+                                  <span className="notif-time">
+                                    {formatNotificationTime(notif.created_at)}
+                                  </span>
+                                </div>
+                                {!notif.read_at && <div className="notif-dot"></div>}
+                              </Link>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </li>
 
                   <li>
@@ -196,20 +412,18 @@ export default function Navbar() {
                   </li>
 
                   {/* Admin approvals link: admin-icon + admin-badge */}
-                  {user.is_admin && (
+                  {(user?.is_admin === true && pendingCount > 0) && (
                     <li>
                       <Link to="/admin/pending" title="Approvals" className="admin-approvals-link">
                         {/* admin-icon intentionally does NOT get white-icon when scrolled */}
                         <i className="fa fa-gavel admin-icon" aria-hidden="true"  />
-                        {pendingCount > 0 && (
-                          <span
-                            role="status"
-                            aria-label={`${pendingCount} pending approvals`}
-                            className={`admin-badge ${scrolled ? "scrolled" : ""}`}
-                          >
-                            {pendingCount}
-                          </span>
-                        )}
+                        <span
+                          role="status"
+                          aria-label={`${pendingCount} pending approvals`}
+                          className={`admin-badge ${scrolled ? "scrolled" : ""}`}
+                        >
+                          {pendingCount}
+                        </span>
                       </Link>
                     </li>
                   )}
@@ -225,7 +439,7 @@ export default function Navbar() {
                           height: "36px",
                           borderRadius: "50%",
                           objectFit: "cover",
-                          border: "2px solid #228B22"
+                          border: "2px solid #0c5904"
                         }}
                       />
                     </Link>
@@ -265,9 +479,25 @@ export default function Navbar() {
 
                 {user && (
                   <>
-                    <li>
-                      <NavLink to="/mymessages" className="nav-messages-link" title="My Messages">
-                        <i className="fa fa-envelope nav-messages-icon"></i>
+                    <li style={{ position: 'relative' }}>
+                      <NavLink to="/messenger" onClick={() => setMobileOpen(false)}>
+                        <i className="fa fa-envelope" style={{ marginRight: '8px' }}></i>
+                        Messages
+                        {unreadCount > 0 && (
+                          <span className="mobile-admin-badge" style={{
+                            marginLeft: '8px',
+                            display: 'inline-block',
+                            minWidth: '20px',
+                            height: '20px',
+                            padding: '2px 6px',
+                            fontSize: '11px',
+                            fontWeight: '700',
+                            lineHeight: '16px',
+                            textAlign: 'center'
+                          }}>
+                            {unreadCount > 99 ? '99+' : unreadCount}
+                          </span>
+                        )}
                       </NavLink>
                     </li>
 
@@ -278,15 +508,13 @@ export default function Navbar() {
                     </li>
 
                     {/* Admin link in mobile drawer */}
-                    {user.is_admin && (
+                    {(user?.is_admin === true && pendingCount > 0) && (
                       <li>
                         <NavLink to="/admin/pending" onClick={() => setMobileOpen(false)}>
                           Approvals
-                          {pendingCount > 0 && (
-                            <span className={`mobile-admin-badge ${scrolled ? "scrolled" : ""}`}>
-                              {pendingCount}
-                            </span>
-                          )}
+                          <span className={`mobile-admin-badge ${scrolled ? "scrolled" : ""}`}>
+                            {pendingCount}
+                          </span>
                         </NavLink>
                       </li>
                     )}
@@ -303,7 +531,7 @@ export default function Navbar() {
                               height: "28px",
                               borderRadius: "50%",
                               objectFit: "cover",
-                              border: "2px solid #228B22",
+                              border: "2px solid #0c5904",
                               marginRight: "0.5rem"
                             }}
                           /> Profile
@@ -312,8 +540,8 @@ export default function Navbar() {
                     </li>
                   </>
                 )}
-                <li>
-                  {user ? (
+                {user ? (
+                  <li>
                     <button
                       onClick={() => {
                         logout();
@@ -323,12 +551,21 @@ export default function Navbar() {
                     >
                       <i className="fa fa-sign-out"></i> Logout
                     </button>
-                  ) : (
-                    <Link to="/login" onClick={() => setMobileOpen(false)}>
-                      <i className="fa fa-user"></i> Login / Register
-                    </Link>
-                  )}
-                </li>
+                  </li>
+                ) : (
+                  <>
+                    <li>
+                      <Link to="/login" onClick={() => setMobileOpen(false)}>
+                        <i className="fa fa-sign-in-alt"></i> Login
+                      </Link>
+                    </li>
+                    <li>
+                      <Link to="/register" onClick={() => setMobileOpen(false)}>
+                        <i className="fa fa-user-plus"></i> Register
+                      </Link>
+                    </li>
+                  </>
+                )}
               </ul>
             </nav>
           </div>

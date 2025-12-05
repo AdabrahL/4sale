@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import GridScan from "../../components/React-Bits-UI/GridScan";
+import "../../styles/auth.css";
 
 // FontAwesome icons required (see Login.jsx for note)
 
@@ -113,10 +114,15 @@ export default function Register() {
           </button>
         </div>
 
-        <p>
-          Already have an account? <Link to="/login">Login</Link>
-        </p>
-        <p>© {new Date().getFullYear()} EstateRealtor</p>
+        <div className="auth-divider">
+          <span>Already have an account?</span>
+        </div>
+
+        <Link to="/login" className="auth-cta-btn auth-cta-secondary">
+          Log In
+        </Link>
+
+        <p>© {new Date().getFullYear()} 4SALE</p>
       </div>
     </>
   );

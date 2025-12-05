@@ -1,0 +1,291 @@
+/* ============================================
+   GLASSMORPHISM & MODERN EFFECTS
+   ============================================ */
+
+/* Glass Card Variants */
+.glass {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.glass-green {
+  background: rgba(34, 139, 34, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(34, 139, 34, 0.2);
+  box-shadow: 0 8px 32px rgba(34, 139, 34, 0.15);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Gradient Overlays */
+.gradient-overlay {
+  position: relative;
+  overflow: hidden;
+}
+
+.gradient-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(34, 139, 34, 0.8) 0%,
+    rgba(44, 96, 56, 0.85) 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+
+.gradient-overlay-light {
+  position: relative;
+  overflow: hidden;
+}
+
+.gradient-overlay-light::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(240, 255, 240, 0.95) 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+
+.gradient-overlay > * {
+  position: relative;
+  z-index: 2;
+}
+
+.gradient-overlay-light > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Animated Gradients */
+.gradient-animated {
+  background: linear-gradient(
+    -45deg,
+    #0c5904,
+    #0f7505,
+    #27ae60,
+    #1f7e2a
+  );
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+
+.gradient-border {
+  position: relative;
+  background: linear-gradient(white, white) padding-box,
+              linear-gradient(135deg, #0c5904, #0f7505) border-box;
+  border: 2px solid transparent;
+  border-radius: 16px;
+}
+
+/* Neumorphism Effects */
+.neuro {
+  background: #f0f0f0;
+  border-radius: 16px;
+  box-shadow: 8px 8px 16px #d1d1d1, -8px -8px 16px #ffffff;
+}
+
+.neuro-inset {
+  background: #f0f0f0;
+  border-radius: 16px;
+  box-shadow: inset 8px 8px 16px #d1d1d1, inset -8px -8px 16px #ffffff;
+}
+
+.neuro-green {
+  background: #e8f5e9;
+  border-radius: 16px;
+  box-shadow: 8px 8px 16px #c8dfc9, -8px -8px 16px #ffffff;
+}
+
+/* Frosted Glass Effects */
+.frosted {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.frosted-dark {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+/* Floating Card Effect */
+.floating-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.floating-card:hover {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.15);
+}
+
+/* Glow Effects */
+.glow-green {
+  box-shadow: 0 0 20px rgba(34, 139, 34, 0.5);
+}
+
+.glow-green-strong {
+  box-shadow: 0 0 30px rgba(34, 139, 34, 0.7),
+              0 0 60px rgba(34, 139, 34, 0.4);
+}
+
+.glow-on-hover {
+  transition: box-shadow 0.3s ease;
+}
+
+.glow-on-hover:hover {
+  box-shadow: 0 0 25px rgba(34, 139, 34, 0.6);
+}
+
+/* Text Effects */
+.text-gradient {
+  background: linear-gradient(135deg, #0c5904, #0f7505);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-glow {
+  text-shadow: 0 0 10px rgba(34, 139, 34, 0.5),
+               0 0 20px rgba(34, 139, 34, 0.3);
+}
+
+/* Modern Shadows */
+.shadow-sm {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.shadow-md {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.shadow-lg {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.shadow-xl {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.shadow-green {
+  box-shadow: 0 8px 32px rgba(34, 139, 34, 0.15);
+}
+
+.shadow-green-lg {
+  box-shadow: 0 20px 60px rgba(34, 139, 34, 0.2);
+}
+
+/* Overlay Effects */
+.overlay {
+  position: relative;
+}
+
+.overlay::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.overlay:hover::after {
+  opacity: 1;
+}
+
+/* Border Glow */
+.border-glow {
+  border: 2px solid transparent;
+  background-image: linear-gradient(white, white),
+                    linear-gradient(135deg, #0c5904, #0f7505);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  transition: all 0.3s ease;
+}
+
+.border-glow:hover {
+  box-shadow: 0 0 20px rgba(34, 139, 34, 0.4);
+}
+
+/* Spotlight Effect */
+.spotlight {
+  position: relative;
+  overflow: hidden;
+}
+
+.spotlight::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.3) 0%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.spotlight:hover::before {
+  opacity: 1;
+}
+
+/* Morphing Borders */
+@keyframes borderMorph {
+  0%, 100% {
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+  }
+  50% {
+    border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+  }
+}
+
+.morph-border {
+  animation: borderMorph 8s ease-in-out infinite;
+}
