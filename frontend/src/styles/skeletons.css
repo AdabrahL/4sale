@@ -1,31 +1,121 @@
 /* ============================================
-   MODERN SKELETON LOADERS
+   MODERN SKELETON LOADERS WITH SHIMMER EFFECTS
    ============================================ */
 
-/* Property Card Skeleton */
+/* Base Shimmer Animation */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Skeleton Base */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 0%,
+    #f8f8f8 20%,
+    #f0f0f0 40%,
+    #f0f0f0 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite linear;
+  border-radius: 8px;
+}
+
+.dark .skeleton {
+  background: linear-gradient(
+    90deg,
+    #1e293b 0%,
+    #334155 20%,
+    #1e293b 40%,
+    #1e293b 100%
+  );
+  background-size: 1000px 100%;
+}
+
+/* Property Card Skeleton - Enhanced */
 .skeleton-property-card {
   background: white;
   border-radius: 16px;
   padding: 0;
   overflow: hidden;
-  box-shadow: 0 6px 24px rgba(34, 139, 34, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.dark .skeleton-property-card {
+  background: var(--color-bg-secondary);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .skeleton-property-image {
   width: 100%;
-  height: 210px;
+  height: 240px;
   background: linear-gradient(
     90deg,
-    #eef7ee 25%,
-    #d8f0d8 50%,
-    #eef7ee 75%
+    #e5e7eb 0%,
+    #f3f4f6 20%,
+    #e5e7eb 40%,
+    #e5e7eb 100%
   );
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite linear;
+  position: relative;
+  overflow: hidden;
+}
+
+.dark .skeleton-property-image {
+  background: linear-gradient(
+    90deg,
+    #1e293b 0%,
+    #334155 20%,
+    #1e293b 40%,
+    #1e293b 100%
+  );
+  background-size: 1000px 100%;
+}
+
+/* Add sparkle effect */
+.skeleton-property-image::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    transparent 100%
+  );
+  animation: sparkle 3s infinite;
+}
+
+@keyframes sparkle {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
 }
 
 .skeleton-property-content {
-  padding: 16px;
+  padding: 1.5rem;
 }
 
 .skeleton-property-title {
@@ -33,64 +123,118 @@
   width: 80%;
   background: linear-gradient(
     90deg,
-    #eef7ee 25%,
-    #d8f0d8 50%,
-    #eef7ee 75%
+    #e5e7eb 0%,
+    #f3f4f6 20%,
+    #e5e7eb 40%,
+    #e5e7eb 100%
   );
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
-  border-radius: 4px;
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite linear;
+  border-radius: 6px;
   margin-bottom: 12px;
+}
+
+.dark .skeleton-property-title {
+  background: linear-gradient(
+    90deg,
+    #1e293b 0%,
+    #334155 20%,
+    #1e293b 40%,
+    #1e293b 100%
+  );
+  background-size: 1000px 100%;
 }
 
 .skeleton-property-price {
-  height: 20px;
-  width: 40%;
+  height: 28px;
+  width: 45%;
   background: linear-gradient(
     90deg,
-    #eef7ee 25%,
-    #d8f0d8 50%,
-    #eef7ee 75%
+    #eef7ee 0%,
+    #d8f0d8 20%,
+    #eef7ee 40%,
+    #eef7ee 100%
   );
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
-  border-radius: 4px;
-  margin-bottom: 10px;
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite linear;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.dark .skeleton-property-price {
+  background: linear-gradient(
+    90deg,
+    #084003 0%,
+    #0c5904 20%,
+    #084003 40%,
+    #084003 100%
+  );
+  background-size: 1000px 100%;
 }
 
 .skeleton-property-location {
-  height: 16px;
+  height: 18px;
   width: 60%;
   background: linear-gradient(
     90deg,
-    #eef7ee 25%,
-    #d8f0d8 50%,
-    #eef7ee 75%
+    #e5e7eb 0%,
+    #f3f4f6 20%,
+    #e5e7eb 40%,
+    #e5e7eb 100%
   );
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
-  border-radius: 4px;
-  margin-bottom: 12px;
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite linear;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+.dark .skeleton-property-location {
+  background: linear-gradient(
+    90deg,
+    #1e293b 0%,
+    #334155 20%,
+    #1e293b 40%,
+    #1e293b 100%
+  );
+  background-size: 1000px 100%;
 }
 
 .skeleton-property-meta {
   display: flex;
   gap: 12px;
-  margin-top: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.dark .skeleton-property-meta {
+  border-top-color: var(--color-border);
 }
 
 .skeleton-property-meta-item {
-  height: 16px;
-  width: 50px;
+  height: 20px;
+  width: 60px;
   background: linear-gradient(
     90deg,
-    #eef7ee 25%,
-    #d8f0d8 50%,
-    #eef7ee 75%
+    #e5e7eb 0%,
+    #f3f4f6 20%,
+    #e5e7eb 40%,
+    #e5e7eb 100%
   );
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
-  border-radius: 4px;
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite linear;
+  border-radius: 6px;
+}
+
+.dark .skeleton-property-meta-item {
+  background: linear-gradient(
+    90deg,
+    #1e293b 0%,
+    #334155 20%,
+    #1e293b 40%,
+    #1e293b 100%
+  );
+  background-size: 1000px 100%;
 }
 
 /* Blog Card Skeleton */

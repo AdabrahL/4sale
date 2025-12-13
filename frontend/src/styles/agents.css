@@ -9,22 +9,40 @@
 
 /* Header Section */
 .agents-header-section {
-  background: #fff;
+  background: linear-gradient(135deg, rgba(12, 89, 4, 0.75) 0%, rgba(15, 117, 5, 0.75) 100%), 
+              url('https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&h=400&fit=crop') center/cover no-repeat;
   border-bottom: 1px solid #e8e8e8;
   padding: 90px 0 24px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.agents-header-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: none;
+  pointer-events: none;
 }
 
 .agents-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
+  position: relative;
+  z-index: 1;
 }
 
 .page-title {
   font-size: 2rem;
   font-weight: 700;
-  color: #2a2a33;
+  color: white;
   margin-bottom: 24px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Zillow Search Bar */
@@ -32,11 +50,12 @@
   display: flex;
   gap: 0;
   margin-bottom: 20px;
-  border: 1px solid #d4d4d8;
-  border-radius: 8px;
+  border: 2px solid white;
+  border-radius: 12px;
   overflow: hidden;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.95);
   max-width: 1500px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
 .location-input-wrapper,

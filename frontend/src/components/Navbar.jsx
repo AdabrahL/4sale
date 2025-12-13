@@ -25,20 +25,36 @@ export default function Navbar() {
   const [recentNotifications, setRecentNotifications] = useState([]);
   const notificationRef = useRef(null);
   const location = useLocation();
+  const scrollTimeoutRef = useRef(null);
 
   useEffect(() => {
-    const SCROLL_THRESHOLD = 50;
+    const SCROLL_THRESHOLD = 80;
 
     const handleScroll = () => {
       const scrollPosition = window.scrollY || window.pageYOffset || 0;
-      setScrolled(scrollPosition > SCROLL_THRESHOLD);
+      const isScrolled = scrollPosition > SCROLL_THRESHOLD;
+      
+      // Only update state if the scroll status changed
+      setScrolled(prev => {
+        if (prev !== isScrolled) {
+          return isScrolled;
+        }
+        return prev;
+      });
     };
 
     // Initialize on mount
     handleScroll();
 
+    // Use passive listener for better scroll performance
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
   }, []);
 
   // If the logged-in user is an admin, fetch pending count for approvals

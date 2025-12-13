@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
 import { useAuth } from "../contexts/AuthContext";
-import { GHANA_LOCATIONS } from "../components/GhanaMap";
+import { GHANA_REGIONS, GHANA_CITIES, getCityData, GHANA_LOCATIONS_ORGANIZED } from "../data/ghanaLocations";
 import "../styles/create-property.css";
 
 
@@ -20,7 +20,10 @@ export default function CreateProperty() {
     category_id: "",
     status: "for_sale",
     location: "",
+    city: "",
     region: "",
+    latitude: "",
+    longitude: "",
     bedrooms: "",
     bathrooms: "",
     size: "",
@@ -120,22 +123,33 @@ export default function CreateProperty() {
 
     // When region changes, update available cities
     if (name === "region") {
-      setAvailableCities(GHANA_LOCATIONS[value] || []);
+      const regionData = GHANA_LOCATIONS_ORGANIZED[value];
+      setAvailableCities(regionData ? regionData.cities : []);
       setForm((prev) => ({
         ...prev,
         region: value,
+        city: "", // Reset city when region changes
         location: "", // Reset location when region changes
+        latitude: "",
+        longitude: "",
       }));
     }
   };
 
-  const handleLocationSelect = (city) => {
-    setForm((prev) => ({
-      ...prev,
-      location: city,
-    }));
-    setLocationSearch(city);
-    setShowLocationDropdown(false);
+  const handleLocationSelect = (cityName) => {
+    const cityData = getCityData(cityName);
+    if (cityData) {
+      setForm((prev) => ({
+        ...prev,
+        city: cityName,
+        location: cityName, // Keep for backward compatibility
+        region: cityData.region,
+        latitude: cityData.coordinates[0],
+        longitude: cityData.coordinates[1],
+      }));
+      setLocationSearch(cityName);
+      setShowLocationDropdown(false);
+    }
   };
 
   const filteredCities = availableCities.filter(city =>
@@ -143,7 +157,7 @@ export default function CreateProperty() {
   );
 
   // Get all cities from all regions for search
-  const allCities = Object.values(GHANA_LOCATIONS).flat();
+  const allCities = Object.keys(GHANA_CITIES);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -334,7 +348,7 @@ export default function CreateProperty() {
                 required
               >
                 <option value="">Select Region</option>
-                {Object.keys(GHANA_LOCATIONS).map((region) => (
+                {Object.keys(GHANA_LOCATIONS_ORGANIZED).map((region) => (
                   <option key={region} value={region}>
                     {region}
                   </option>

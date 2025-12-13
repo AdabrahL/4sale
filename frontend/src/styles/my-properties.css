@@ -852,6 +852,38 @@
   min-height: 100px;
 }
 
+/* ========== LOCATION DROPDOWN ========== */
+.mp-location-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-height: 250px;
+  overflow-y: auto;
+  z-index: 1000;
+  margin-top: 4px;
+}
+
+.mp-location-item {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid #f1f3f5;
+}
+
+.mp-location-item:last-child {
+  border-bottom: none;
+}
+
+.mp-location-item:hover {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
 /* ========== DELETE CONTENT ========== */
 .mp-delete-content {
   padding: 2rem;

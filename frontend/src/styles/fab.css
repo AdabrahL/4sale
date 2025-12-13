@@ -1,0 +1,272 @@
+/* ============================================
+   FLOATING ACTION BUTTON (FAB)
+   ============================================ */
+
+.fab-container {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 9998;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.fab-button {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(12, 89, 4, 0.4);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fabSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+@keyframes fabSlideIn {
+  0% {
+    transform: translateY(100px) scale(0);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.fab-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  transform: scale(0);
+  transition: transform 0.5s ease;
+}
+
+.fab-button:hover::before {
+  transform: scale(1.5);
+}
+
+.fab-button:hover {
+  transform: scale(1.1) rotate(90deg);
+  box-shadow: 0 12px 32px rgba(12, 89, 4, 0.5);
+}
+
+.fab-button.open {
+  transform: rotate(45deg);
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4);
+}
+
+.fab-button.open:hover {
+  transform: scale(1.1) rotate(45deg);
+}
+
+.fab-button i {
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+/* FAB Menu */
+.fab-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  animation: fabMenuSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fabMenuSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fab-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  background: white;
+  border: none;
+  border-radius: 28px;
+  color: var(--color-text-primary);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 140px;
+  white-space: nowrap;
+  animation: fabItemPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.dark .fab-menu-item {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+}
+
+@keyframes fabItemPop {
+  0% {
+    transform: scale(0) translateX(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1) translateX(0);
+    opacity: 1;
+  }
+}
+
+.fab-menu-item:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.fab-menu-item:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.fab-menu-item:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+.fab-menu-item:nth-child(4) {
+  animation-delay: 0.2s;
+}
+
+.fab-menu-item:hover {
+  transform: translateX(-4px) scale(1.05);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+  background: var(--color-primary);
+  color: white;
+}
+
+.dark .fab-menu-item:hover {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.fab-menu-item i {
+  font-size: 1.125rem;
+  color: var(--color-primary);
+  transition: color 0.3s ease;
+}
+
+.fab-menu-item:hover i {
+  color: white;
+}
+
+.fab-menu-item span {
+  transition: all 0.3s ease;
+}
+
+/* Backdrop when menu is open */
+.fab-container::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.fab-button.open ~ .fab-container::before {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Pulse animation for attention */
+@keyframes fabPulse {
+  0% {
+    box-shadow: 0 8px 24px rgba(12, 89, 4, 0.4);
+  }
+  50% {
+    box-shadow: 0 8px 24px rgba(12, 89, 4, 0.4), 0 0 0 10px rgba(12, 89, 4, 0.1);
+  }
+  100% {
+    box-shadow: 0 8px 24px rgba(12, 89, 4, 0.4);
+  }
+}
+
+.fab-button:not(.open) {
+  animation: fabPulse 2s ease-in-out infinite 3s;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .fab-container {
+    bottom: 1.5rem;
+    right: 1.5rem;
+  }
+
+  .fab-button {
+    width: 56px;
+    height: 56px;
+    font-size: 1.25rem;
+  }
+
+  .fab-menu-item {
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+    min-width: 120px;
+  }
+
+  .fab-menu-item i {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .fab-container {
+    bottom: 1rem;
+    right: 1rem;
+  }
+
+  .fab-button {
+    width: 52px;
+    height: 52px;
+    font-size: 1.125rem;
+  }
+}
+
+/* Accessibility */
+.fab-button:focus {
+  outline: 3px solid rgba(12, 89, 4, 0.5);
+  outline-offset: 2px;
+}
+
+.fab-menu-item:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Print - hide FAB */
+@media print {
+  .fab-container {
+    display: none;
+  }
+}

@@ -1,4 +1,4 @@
-// src/api/axios.jsx
+// src/api/axios.js
 import axios from "axios";
 
 const backendBase = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";

@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import InsightsSidebar from "../components/InsightsSidebar";
 import MarketTrendsChart from "../components/MarketTrendsChart";
-import InteractiveMapInsight from "../components/InteractiveMapInsight";
+import LeafletPropertyMap from "../components/LeafletPropertyMap";
 import MarketTemperatureGauge from "../components/MarketTemperatureGauge";
 import InvestmentScoreCard from "../components/InvestmentScoreCard";
 import { getPhotoUrl } from "../utils/getPhotoUrl";
+import { GHANA_LOCATIONS_ORGANIZED } from "../data/ghanaLocations";
 import API from "../api/axios";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://backend.test";
@@ -33,6 +34,17 @@ export default function Insights() {
     demandTrend: "stable",
   });
 
+  // Market metrics
+  const [marketMetrics, setMarketMetrics] = useState({
+    temperature: "warm",
+    temperatureScore: 75,
+    investmentScore: 4.2,
+    roi: 15.5,
+    risk: "medium",
+    marketActivity: 0,
+    priceGrowth: 0,
+  });
+
   // Chart data
   const [pricesData, setPricesData] = useState([]);
   const [typesData, setTypesData] = useState([]);
@@ -42,8 +54,13 @@ export default function Insights() {
   const [featured, setFeatured] = useState([]);
   const [loading, setLoading] = useState(true);
   
+  // Properties for map
+  const [properties, setProperties] = useState([]);
+  const [filteredProperties, setFilteredProperties] = useState([]);
+  
   // Interactive filters
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [selectedRegion, setSelectedRegion] = useState(null);
   const [priceRange, setPriceRange] = useState('all');
   const [propertyType, setPropertyType] = useState('all');
 
@@ -65,6 +82,71 @@ export default function Insights() {
         const propData = propsRes.status === "fulfilled" ? normalizePayload(propsRes.value) : [];
         // Normalize blogs list
         const blogData = blogsRes.status === "fulfilled" ? normalizePayload(blogsRes.value) : [];
+
+        // Store properties for map
+        if (mounted) {
+          setProperties(propData);
+          setFilteredProperties(propData);
+        }
+
+        // Calculate market metrics
+        if (mounted && propData.length > 0) {
+          // Calculate temperature based on listing velocity and price trends
+          const today = new Date();
+          const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+          const lastMonth = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+          
+          const recentListings = propData.filter(p => {
+            const created = new Date(p.created_at);
+            return created >= lastWeek;
+          }).length;
+          
+          const monthlyListings = propData.filter(p => {
+            const created = new Date(p.created_at);
+            return created >= lastMonth;
+          }).length;
+
+          // Calculate average price trend
+          const prices = propData.map(p => Number(p.price || 0)).filter(Boolean);
+          const avgPrice = prices.length > 0 ? prices.reduce((a, b) => a + b, 0) / prices.length : 0;
+          
+          // Calculate temperature (hot: >20 weekly, warm: 10-20, cool: <10)
+          let temperature = "cool";
+          let temperatureScore = 50;
+          if (recentListings > 20) {
+            temperature = "hot";
+            temperatureScore = 85 + Math.min(recentListings - 20, 15);
+          } else if (recentListings > 10) {
+            temperature = "warm";
+            temperatureScore = 65 + (recentListings - 10);
+          } else {
+            temperatureScore = 40 + (recentListings * 2);
+          }
+
+          // Calculate investment score (1-5 based on various factors)
+          const activityScore = Math.min((monthlyListings / propData.length) * 100, 100);
+          const priceScore = avgPrice > 0 ? Math.min((avgPrice / 500000) * 100, 100) : 50;
+          const investmentScore = ((activityScore + priceScore) / 2) / 20; // Convert to 1-5 scale
+          
+          // Calculate ROI estimate (simplified)
+          const estimatedROI = temperature === "hot" ? 18.5 : temperature === "warm" ? 15.5 : 12.0;
+          
+          // Determine risk level
+          const risk = investmentScore > 4 ? "low" : investmentScore > 3 ? "medium" : "high";
+
+          // Calculate price growth percentage
+          const priceGrowth = temperature === "hot" ? 12 : temperature === "warm" ? 8 : 5;
+
+          setMarketMetrics({
+            temperature,
+            temperatureScore: Math.round(temperatureScore),
+            investmentScore: Number(investmentScore.toFixed(1)),
+            roi: estimatedROI,
+            risk,
+            marketActivity: recentListings * 7, // Extrapolate weekly to approximate monthly
+            priceGrowth,
+          });
+        }
 
         // 1) Stats: prefer insights/stats endpoint if present
         if (statsRes.status === "fulfilled" && statsRes.value && statsRes.value.data) {
@@ -205,6 +287,57 @@ export default function Insights() {
     return () => { mounted = false; };
   }, []); // only on mount
 
+  // Filter properties based on selected region and other filters
+  useEffect(() => {
+    let filtered = [...properties];
+
+    // Filter by region
+    if (selectedRegion) {
+      filtered = filtered.filter(p => {
+        // Get property location (only field that exists in most properties)
+        const propertyLocation = (p.location || '').toLowerCase().trim();
+        
+        if (!propertyLocation) return false;
+        
+        // Check if property's location matches any city in the selected region
+        if (GHANA_LOCATIONS_ORGANIZED[selectedRegion]) {
+          const regionCities = GHANA_LOCATIONS_ORGANIZED[selectedRegion].cities || [];
+          return regionCities.some(city => {
+            const cityLower = city.toLowerCase();
+            // Check both ways: location contains city name OR city name contains location
+            return propertyLocation.includes(cityLower) || cityLower.includes(propertyLocation);
+          });
+        }
+        
+        return false;
+      });
+    }
+
+    // Filter by price range
+    if (priceRange !== 'all') {
+      filtered = filtered.filter(p => {
+        const price = Number(p.price || 0);
+        switch(priceRange) {
+          case '0-200k': return price < 200000;
+          case '200k-400k': return price >= 200000 && price < 400000;
+          case '400k-600k': return price >= 400000 && price < 600000;
+          case '600k+': return price >= 600000;
+          default: return true;
+        }
+      });
+    }
+
+    // Filter by property type
+    if (propertyType !== 'all') {
+      filtered = filtered.filter(p => {
+        const type = (p.type || '').toLowerCase();
+        return type.includes(propertyType.toLowerCase());
+      });
+    }
+
+    setFilteredProperties(filtered);
+  }, [selectedRegion, priceRange, propertyType, properties]);
+
   return (
     <div className="insights-page">
       <div className="container">
@@ -216,16 +349,42 @@ export default function Insights() {
               Discover trends, analyze data, and make informed property decisions with our comprehensive market intelligence.
             </p>
 
-            {/* Interactive Map */}
-            <InteractiveMapInsight onLocationClick={setSelectedLocation} />
+            {/* Interactive Ghana Map */}
+            <div className="insights-map-section mb-4">
+              <div className="insights-map-header">
+                <h3>
+                  <i className="fa fa-map-marked-alt"></i>
+                  Explore Ghana Real Estate Market
+                </h3>
+                <p>Click on any region to see properties and market insights for that area</p>
+              </div>
+              <LeafletPropertyMap
+                properties={filteredProperties}
+                onRegionSelect={(regionName) => {
+                  setSelectedRegion(regionName);
+                  setSelectedLocation(null);
+                }}
+                showRegionBoundaries={true}
+                showControls={false}
+                height="500px"
+                className="insights-map"
+              />
+            </div>
 
             {/* Market Temperature & Investment Score Row */}
             <div className="row g-4 mb-4">
               <div className="col-md-6">
-                <MarketTemperatureGauge temperature="warm" score={75} />
+                <MarketTemperatureGauge 
+                  temperature={marketMetrics.temperature} 
+                  score={marketMetrics.temperatureScore} 
+                />
               </div>
               <div className="col-md-6">
-                <InvestmentScoreCard score={4.2} roi={15.5} risk="medium" />
+                <InvestmentScoreCard 
+                  score={marketMetrics.investmentScore} 
+                  roi={marketMetrics.roi} 
+                  risk={marketMetrics.risk} 
+                />
               </div>
             </div>
 
@@ -299,23 +458,39 @@ export default function Insights() {
                   </select>
                 </div>
                 <div className="filter-group">
-                  <label>Location</label>
+                  <label>Region</label>
                   <select 
-                    value={selectedLocation?.name || ''} 
-                    onChange={(e) => setSelectedLocation(e.target.value ? { name: e.target.value } : null)}
+                    value={selectedRegion || ''} 
+                    onChange={(e) => {
+                      setSelectedRegion(e.target.value || null);
+                      setSelectedLocation(null);
+                    }}
                     className="filter-select"
                   >
-                    <option value="">All Locations</option>
-                    <option value="East Legon">East Legon</option>
-                    <option value="Airport Residential">Airport Residential</option>
-                    <option value="Cantonments">Cantonments</option>
-                    <option value="Osu">Osu</option>
+                    <option value="">All Regions</option>
+                    <option value="Greater Accra">Greater Accra</option>
+                    <option value="Ashanti">Ashanti</option>
+                    <option value="Western">Western</option>
+                    <option value="Eastern">Eastern</option>
+                    <option value="Central">Central</option>
+                    <option value="Volta">Volta</option>
+                    <option value="Northern">Northern</option>
+                    <option value="Upper East">Upper East</option>
+                    <option value="Upper West">Upper West</option>
+                    <option value="Bono">Bono</option>
+                    <option value="Bono East">Bono East</option>
+                    <option value="Ahafo">Ahafo</option>
+                    <option value="Savannah">Savannah</option>
+                    <option value="North East">North East</option>
+                    <option value="Western North">Western North</option>
+                    <option value="Oti">Oti</option>
                   </select>
                 </div>
                 <button className="filter-reset-btn" onClick={() => {
                   setPriceRange('all');
                   setPropertyType('all');
                   setSelectedLocation(null);
+                  setSelectedRegion(null);
                 }}>
                   <i className="fa fa-redo"></i>
                   Reset Filters
@@ -328,26 +503,107 @@ export default function Insights() {
               <div className="insights-metric-card">
                 <div className="insights-metric-header">
                   <div className="insights-metric-label">Market Activity</div>
-                  <div className="insights-metric-change positive">
-                    <i className="fa fa-arrow-up"></i>
-                    <span>12%</span>
+                  <div className={`insights-metric-change ${marketMetrics.priceGrowth > 0 ? 'positive' : 'negative'}`}>
+                    <i className={`fa fa-arrow-${marketMetrics.priceGrowth > 0 ? 'up' : 'down'}`}></i>
+                    <span>{marketMetrics.priceGrowth}%</span>
                   </div>
                 </div>
-                <div className="insights-metric-value">{stats.listedToday * 7}</div>
-                <div className="insights-metric-description">Properties listed this week</div>
+                <div className="insights-metric-value">{marketMetrics.marketActivity || stats.listedToday * 7}</div>
+                <div className="insights-metric-description">Properties listed this month</div>
               </div>
               <div className="insights-metric-card">
                 <div className="insights-metric-header">
-                  <div className="insights-metric-label">Demand Trend</div>
+                  <div className="insights-metric-label">Average ROI</div>
                   <div className="insights-metric-change positive">
                     <i className="fa fa-arrow-up"></i>
-                    <span>8%</span>
+                    <span>{marketMetrics.roi}%</span>
                   </div>
                 </div>
-                <div className="insights-metric-value">{stats.demandTrend}</div>
-                <div className="insights-metric-description">Compared to last month</div>
+                <div className="insights-metric-value">{marketMetrics.temperature}</div>
+                <div className="insights-metric-description">Market temperature status</div>
+              </div>
+              <div className="insights-metric-card">
+                <div className="insights-metric-header">
+                  <div className="insights-metric-label">Investment Grade</div>
+                  <div className={`insights-metric-change ${marketMetrics.risk === 'low' ? 'positive' : marketMetrics.risk === 'medium' ? 'neutral' : 'negative'}`}>
+                    <i className="fa fa-shield-alt"></i>
+                    <span>{marketMetrics.risk}</span>
+                  </div>
+                </div>
+                <div className="insights-metric-value">{marketMetrics.investmentScore.toFixed(1)}/5</div>
+                <div className="insights-metric-description">Overall investment score</div>
               </div>
             </div>
+
+            {/* Regional Market Insights */}
+            {selectedRegion && (
+              <div className="insights-regional-highlight mb-5">
+                <div className="regional-highlight-header">
+                  <h3>
+                    <i className="fa fa-map-pin"></i>
+                    {selectedRegion} Region Market Overview
+                  </h3>
+                  <button 
+                    className="clear-region-btn"
+                    onClick={() => {
+                      setSelectedRegion(null);
+                      setPriceRange('all');
+                      setPropertyType('all');
+                    }}
+                  >
+                    <i className="fa fa-times"></i>
+                    View All Regions
+                  </button>
+                </div>
+                <div className="regional-stats-grid">
+                  <div className="regional-stat">
+                    <div className="regional-stat-icon">
+                      <i className="fa fa-home"></i>
+                    </div>
+                    <div className="regional-stat-content">
+                      <div className="regional-stat-label">Properties Available</div>
+                      <div className="regional-stat-value">{filteredProperties.length}</div>
+                    </div>
+                  </div>
+                  <div className="regional-stat">
+                    <div className="regional-stat-icon">
+                      <i className="fa fa-coins"></i>
+                    </div>
+                    <div className="regional-stat-content">
+                      <div className="regional-stat-label">Avg Price</div>
+                      <div className="regional-stat-value">
+                        {filteredProperties.length > 0 
+                          ? `₵${Math.round(filteredProperties.reduce((sum, p) => sum + (Number(p.price) || 0), 0) / filteredProperties.length).toLocaleString()}`
+                          : '₵0'
+                        }
+                      </div>
+                    </div>
+                  </div>
+                  <div className="regional-stat">
+                    <div className="regional-stat-icon">
+                      <i className="fa fa-fire"></i>
+                    </div>
+                    <div className="regional-stat-content">
+                      <div className="regional-stat-label">Market Status</div>
+                      <div className="regional-stat-value" style={{ fontSize: '1.25rem', textTransform: 'capitalize' }}>
+                        {filteredProperties.length > 30 ? 'Hot' : filteredProperties.length > 15 ? 'Warm' : 'Cool'}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="regional-stat">
+                    <div className="regional-stat-icon">
+                      <i className="fa fa-percentage"></i>
+                    </div>
+                    <div className="regional-stat-content">
+                      <div className="regional-stat-label">Market Share</div>
+                      <div className="regional-stat-value">
+                        {properties.length > 0 ? ((filteredProperties.length / properties.length) * 100).toFixed(1) : 0}%
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Market Trends Chart */}
             <div className="insights-market-charts mb-5">

@@ -12,10 +12,23 @@ export const AuthProvider = ({ children }) => {
   // Fetch logged-in user on app load
   useEffect(() => {
     const checkUser = async () => {
+      const token = localStorage.getItem("AUTH_TOKEN");
+      
+      // Only check user if token exists
+      if (!token) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
       try {
         const { data } = await API.get("/user");
         setUser(data.user || data); // handle both formats
       } catch (err) {
+        // If unauthorized, clear invalid token
+        if (err.response?.status === 401) {
+          localStorage.removeItem("AUTH_TOKEN");
+        }
         setUser(null);
       } finally {
         setLoading(false);

@@ -4,20 +4,23 @@
 
 /* Header Container */
 .header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 1000;
   background: white;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
+  width: 100%;
 }
 
 /* Scrolled State - Green Background */
 .header.nav-scrolled {
-  background: rgba(12, 89, 4, 0.97) !important;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 4px 20px rgba(12, 89, 4, 0.3);
+  background: rgba(12, 89, 4, 0.95) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(12, 89, 4, 0.25);
 }
 
 /* Top Bar */
@@ -304,6 +307,63 @@
   transform: scale(1.1);
   box-shadow: 0 0 0 3px rgba(12, 89, 4, 0.4),
               0 0 15px rgba(12, 89, 4, 0.3);
+}
+
+/* Theme Toggle in Navbar */
+.header__cart .theme-toggle {
+  position: relative;
+  width: 52px;
+  height: 26px;
+  background: var(--color-gray-300);
+  border-radius: 30px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.header.nav-scrolled .theme-toggle {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.dark .theme-toggle {
+  background: var(--color-primary);
+}
+
+.theme-toggle-slider {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 22px;
+  height: 22px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.dark .theme-toggle-slider {
+  transform: translateX(26px);
+}
+
+.theme-toggle-icon {
+  font-size: 0.75rem;
+  color: #f59e0b;
+  transition: all 0.3s ease;
+}
+
+.dark .theme-toggle-icon {
+  color: #fbbf24;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.05);
 }
 
 /* Mobile Hamburger Button */

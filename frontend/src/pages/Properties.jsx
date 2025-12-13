@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import API from "../api/axios";
 import { useAuth } from "../contexts/AuthContext";
 import { PropertyCardSkeleton } from "../components/Skeletons";
-import GhanaMap from "../components/GhanaMap";
+import LeafletPropertyMap from "../components/LeafletPropertyMap";
+import { GHANA_CITIES, getCityData, GHANA_LOCATIONS_ORGANIZED } from "../data/ghanaLocations";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://backend.test";
 function getImageUrl(img) {
@@ -37,6 +38,7 @@ const Properties = () => {
   const [favorites, setFavorites] = useState([]);
   const [showMap, setShowMap] = useState(true);
   const [selectedRegion, setSelectedRegion] = useState(null);
+  const [filteredProperties, setFilteredProperties] = useState([]);
   const [regionCounts, setRegionCounts] = useState({});
   const [activeFilters, setActiveFilters] = useState([]);
   const navigate = useNavigate();
@@ -70,12 +72,14 @@ const Properties = () => {
       });
       const data = response.data.data || [];
       setProperties(data);
+      setFilteredProperties(data);
       
       // Calculate region counts
       const counts = {};
       data.forEach(prop => {
-        if (prop.location) {
-          counts[prop.location] = (counts[prop.location] || 0) + 1;
+        const region = prop.region || prop.state || '';
+        if (region) {
+          counts[region] = (counts[region] || 0) + 1;
         }
       });
       setRegionCounts(counts);
@@ -97,11 +101,43 @@ const Properties = () => {
     // eslint-disable-next-line
   }, [user]);
 
+  // Filter properties by selected region
+  useEffect(() => {
+    if (selectedRegion) {
+      const filtered = properties.filter(p => {
+        // Get property location (this is the only field that exists)
+        const propertyLocation = (p.location || '').toLowerCase().trim();
+        
+        if (!propertyLocation) return false;
+        
+        // Check if property's location matches any city in the selected region
+        if (GHANA_LOCATIONS_ORGANIZED[selectedRegion]) {
+          const regionCities = GHANA_LOCATIONS_ORGANIZED[selectedRegion].cities || [];
+          return regionCities.some(city => {
+            const cityLower = city.toLowerCase();
+            // Check both ways: location contains city name OR city name contains location
+            return propertyLocation.includes(cityLower) || cityLower.includes(propertyLocation);
+          });
+        }
+        
+        return false;
+      });
+      
+      setFilteredProperties(filtered);
+    } else {
+      setFilteredProperties(properties);
+    }
+  }, [selectedRegion, properties]);
+
   const handleFilterChange = (name, value) => {
     setFilters(prev => ({
       ...prev,
       [name]: value,
     }));
+    // Clear region selection when user types in location filter
+    if (name === 'location') {
+      setSelectedRegion(null);
+    }
   };
 
   const handleRegionClick = (regionId, regionName, cities) => {
@@ -111,6 +147,10 @@ const Properties = () => {
       ...prev,
       location: regionName,
     }));
+  };
+
+  const handleRegionSelect = (regionName) => {
+    setSelectedRegion(regionName);
   };
 
   const removeFilter = (filterName) => {
@@ -318,10 +358,14 @@ const Properties = () => {
               transition={{ duration: 0.3 }}
               className="map-section"
             >
-              <GhanaMap
-                selectedRegion={selectedRegion}
-                onRegionClick={handleRegionClick}
-                regionCounts={regionCounts}
+              <LeafletPropertyMap
+                properties={filteredProperties}
+                selectedProperty={null}
+                onPropertyClick={(property) => navigate(`/properties/${property.id}`)}
+                onRegionSelect={handleRegionSelect}
+                showRegionBoundaries={true}
+                showControls={true}
+                height="calc(100vh - 200px)"
               />
             </motion.div>
           )}
@@ -331,7 +375,9 @@ const Properties = () => {
         <div className={`listings-section ${!showMap ? "full-width" : ""}`}>
           <div className="listings-header">
             <h1 className="listings-title">
-              🏘️ {properties.length} {properties.length === 1 ? "Property" : "Properties"} {filters.location && `in ${filters.location}`}
+              🏘️ {filteredProperties.length} {filteredProperties.length === 1 ? "Property" : "Properties"} 
+              {selectedRegion && ` in ${selectedRegion}`}
+              {!selectedRegion && filters.location && ` in ${filters.location}`}
             </h1>
             <div className="listings-controls">
               <select className="sort-select">
@@ -350,14 +396,23 @@ const Properties = () => {
                   <PropertyCardSkeleton key={i} />
                 ))}
               </>
-            ) : properties.length === 0 ? (
+            ) : filteredProperties.length === 0 ? (
               <div className="no-results">
                 <i className="fa fa-search" style={{ fontSize: "3rem", color: "#cbd5e0", marginBottom: "1rem" }}></i>
                 <h3>No properties found</h3>
-                <p>Try adjusting your filters or search criteria</p>
+                <p>Try adjusting your filters or selecting a different region</p>
+                {selectedRegion && (
+                  <button 
+                    className="btn btn-primary mt-3"
+                    onClick={() => setSelectedRegion(null)}
+                    style={{ marginTop: '1rem', padding: '0.75rem 1.5rem', borderRadius: '8px' }}
+                  >
+                    View All Properties
+                  </button>
+                )}
               </div>
             ) : (
-              properties.map((property) => {
+              filteredProperties.map((property) => {
                 const isFavorite = favorites.includes(property.id);
                 const images = parseImages(property.images);
                 

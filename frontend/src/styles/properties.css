@@ -39,6 +39,35 @@
   grid-template-columns: 280px 1fr;
   gap: 2rem;
   align-items: start;
+  position: relative;
+}
+
+/* Sidebar Overlay for Mobile */
+.filters-sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.filters-sidebar-overlay.active {
+  opacity: 1;
+}
+
+@media (max-width: 1023px) {
+  .filters-sidebar-overlay {
+    display: block;
+  }
+
+  .filters-sidebar-overlay.active {
+    display: block;
+  }
 }
 
 /* Filters Sidebar */
@@ -250,8 +279,35 @@
 /* Properties Grid */
 .properties-grid-view {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 2rem;
+}
+
+/* Responsive grid adjustments */
+@media (min-width: 1400px) {
+  .properties-grid-view {
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1399px) {
+  .properties-grid-view {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .properties-grid-view {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .properties-grid-view {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
 }
 
 .properties-list-view {
@@ -336,7 +392,7 @@
 }
 
 /* Responsive */
-@media (max-width: 992px) {
+@media (max-width: 1023px) {
   .properties-layout {
     grid-template-columns: 1fr;
   }
@@ -352,6 +408,9 @@
     transition: transform 0.3s ease;
     border-radius: 0;
     overflow-y: auto;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
   }
 
   .filters-sidebar.active {
@@ -367,17 +426,35 @@
   }
 }
 
-@media (max-width: 640px) {
-  .properties-grid-view {
-    grid-template-columns: 1fr;
+@media (max-width: 767px) {
+  .properties-page-container {
+    padding: 0 1rem;
+  }
+
+  .properties-page-header {
+    padding: 2rem 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .properties-page-title {
+    font-size: 1.75rem;
   }
 
   .properties-toolbar {
     flex-direction: column;
     align-items: stretch;
+    gap: 1rem;
   }
 
   .toolbar-right {
     justify-content: space-between;
+  }
+
+  .properties-grid-view {
+    grid-template-columns: 1fr;
+  }
+
+  .filters-sidebar {
+    max-width: 100%;
   }
 }

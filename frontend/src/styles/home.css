@@ -424,9 +424,29 @@
 /* Property Cards Grid */
 .properties-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 2rem;
   margin-bottom: 2rem;
+}
+
+/* Responsive grid for different screen sizes */
+@media (min-width: 1400px) {
+  .properties-grid {
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1399px) {
+  .properties-grid {
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .properties-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
 }
 
 .property-card {
@@ -981,7 +1001,19 @@
 }
 
 /* Responsive */
-@media (max-width: 1200px) {
+@media (max-width: 1399px) {
+  .home-row-wrapper {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 1199px) {
   .home-row-wrapper {
     grid-template-columns: 1fr;
     gap: 2rem;
@@ -993,7 +1025,7 @@
   }
 }
 
-@media (max-width: 991px) {
+@media (max-width: 1023px) {
   .hero-section {
     min-height: 70vh;
     padding: 6rem 0 4rem;
@@ -1015,9 +1047,13 @@
   .agents-row {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   }
+
+  .properties-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .hero-section {
     min-height: 60vh;
     padding: 5rem 0 3rem;

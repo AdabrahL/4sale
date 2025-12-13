@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import API from "../api/axios";
+import { GHANA_REGIONS, GHANA_CITIES, getCityData, GHANA_LOCATIONS_ORGANIZED } from "../data/ghanaLocations";
 import "../styles/my-properties.css";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://backend.test";
@@ -12,6 +13,10 @@ function getImageUrl(img) {
 const DEFAULT_FORM = {
   title: "",
   location: "",
+  city: "",
+  region: "",
+  latitude: "",
+  longitude: "",
   price: "",
   property_type: "",
   bedrooms: "",
@@ -35,6 +40,22 @@ export default function MyProperties() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const fileInputRef = useRef();
+  
+  // Location dropdown states
+  const [locationSearch, setLocationSearch] = useState("");
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
+  const locationDropdownRef = useRef();
+
+  // Close location dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (locationDropdownRef.current && !locationDropdownRef.current.contains(event.target)) {
+        setShowLocationDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const t = setTimeout(() => fetchProperties(1), 450);
@@ -98,6 +119,10 @@ export default function MyProperties() {
       ? {
           title: property.title || "",
           location: property.location || "",
+          city: property.city || "",
+          region: property.region || property.state || "",
+          latitude: property.latitude || "",
+          longitude: property.longitude || "",
           price: property.price || "",
           property_type: property.property_type || "",
           bedrooms: property.bedrooms || "",
@@ -145,6 +170,10 @@ export default function MyProperties() {
       const formData = new FormData();
       formData.append("title", form.title);
       formData.append("location", form.location);
+      formData.append("city", form.city || "");
+      formData.append("region", form.region || "");
+      formData.append("latitude", form.latitude || "");
+      formData.append("longitude", form.longitude || "");
       formData.append("price", form.price);
       formData.append("property_type", form.property_type);
       formData.append("bedrooms", form.bedrooms);
@@ -642,31 +671,145 @@ export default function MyProperties() {
                       </div>
                     </div>
 
-                    <div className="mp-form-row">
+                    <div className="mp-form-row mp-form-row-2">
                       <div className="mp-form-group">
-                        <label className="mp-form-label">Title *</label>
-                        <input 
-                          type="text" 
-                          name="title" 
-                          value={form.title} 
-                          onChange={handleChange} 
-                          required 
+                        <label className="mp-form-label">Region *</label>
+                        <select
+                          name="region"
+                          value={form.region}
+                          onChange={(e) => {
+                            handleChange(e);
+                            setForm(prev => ({ ...prev, city: "", location: "" }));
+                          }}
+                          required
                           className="mp-form-input"
-                        />
+                        >
+                          <option value="">Select Region</option>
+                          {Object.keys(GHANA_LOCATIONS_ORGANIZED).map((region) => (
+                            <option key={region} value={region}>
+                              {region}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="mp-form-group">
+                        <label className="mp-form-label">City/Town *</label>
+                        <div style={{ position: "relative" }} ref={locationDropdownRef}>
+                          <input
+                            type="text"
+                            name="location"
+                            placeholder={form.region ? "Select city/town" : "Select region first"}
+                            value={locationSearch || form.location}
+                            onChange={(e) => {
+                              setLocationSearch(e.target.value);
+                              setShowLocationDropdown(true);
+                            }}
+                            onFocus={() => setShowLocationDropdown(true)}
+                            className="mp-form-input"
+                            required
+                            disabled={!form.region}
+                          />
+                          {showLocationDropdown && form.region && (
+                            <div className="mp-location-dropdown">
+                              {GHANA_LOCATIONS_ORGANIZED[form.region]?.cities
+                                .filter((city) =>
+                                  city.toLowerCase().includes((locationSearch || "").toLowerCase())
+                                )
+                                .slice(0, 8)
+                                .map((city) => (
+                                  <div
+                                    key={city}
+                                    className="mp-location-item"
+                                    onClick={() => {
+                                      const cityData = getCityData(city);
+                                      setForm((prev) => ({
+                                        ...prev,
+                                        location: city,
+                                        city: city,
+                                        latitude: cityData?.coordinates?.[0] || "",
+                                        longitude: cityData?.coordinates?.[1] || "",
+                                      }));
+                                      setLocationSearch("");
+                                      setShowLocationDropdown(false);
+                                    }}
+                                  >
+                                    {city}
+                                  </div>
+                                ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
 
-                    <div className="mp-form-row">
+                    <div className="mp-form-row mp-form-row-2">
                       <div className="mp-form-group">
-                        <label className="mp-form-label">Location *</label>
-                        <input 
-                          type="text" 
-                          name="location" 
-                          value={form.location} 
-                          onChange={handleChange} 
-                          required 
+                        <label className="mp-form-label">Region *</label>
+                        <select
+                          name="region"
+                          value={form.region}
+                          onChange={(e) => {
+                            handleChange(e);
+                            setForm(prev => ({ ...prev, city: "", location: "" }));
+                          }}
+                          required
                           className="mp-form-input"
-                        />
+                        >
+                          <option value="">Select Region</option>
+                          {Object.keys(GHANA_LOCATIONS_ORGANIZED).map((region) => (
+                            <option key={region} value={region}>
+                              {region}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="mp-form-group">
+                        <label className="mp-form-label">City/Town *</label>
+                        <div style={{ position: "relative" }} ref={locationDropdownRef}>
+                          <input
+                            type="text"
+                            name="location"
+                            placeholder={form.region ? "Select city/town" : "Select region first"}
+                            value={locationSearch || form.location}
+                            onChange={(e) => {
+                              setLocationSearch(e.target.value);
+                              setShowLocationDropdown(true);
+                            }}
+                            onFocus={() => setShowLocationDropdown(true)}
+                            className="mp-form-input"
+                            required
+                            disabled={!form.region}
+                          />
+                          {showLocationDropdown && form.region && (
+                            <div className="mp-location-dropdown">
+                              {GHANA_LOCATIONS_ORGANIZED[form.region]?.cities
+                                .filter((city) =>
+                                  city.toLowerCase().includes((locationSearch || "").toLowerCase())
+                                )
+                                .slice(0, 8)
+                                .map((city) => (
+                                  <div
+                                    key={city}
+                                    className="mp-location-item"
+                                    onClick={() => {
+                                      const cityData = getCityData(city);
+                                      setForm((prev) => ({
+                                        ...prev,
+                                        location: city,
+                                        city: city,
+                                        latitude: cityData?.coordinates?.[0] || "",
+                                        longitude: cityData?.coordinates?.[1] || "",
+                                      }));
+                                      setLocationSearch("");
+                                      setShowLocationDropdown(false);
+                                    }}
+                                  >
+                                    {city}
+                                  </div>
+                                ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
 
@@ -684,14 +827,19 @@ export default function MyProperties() {
                       </div>
                       <div className="mp-form-group">
                         <label className="mp-form-label">Property Type *</label>
-                        <input 
-                          type="text" 
-                          name="property_type" 
-                          value={form.property_type} 
-                          onChange={handleChange} 
-                          required 
+                        <select
+                          name="property_type"
+                          value={form.property_type}
+                          onChange={handleChange}
+                          required
                           className="mp-form-input"
-                        />
+                        >
+                          <option value="">Select Type</option>
+                          <option value="house">House</option>
+                          <option value="apartment">Apartment</option>
+                          <option value="land">Land</option>
+                          <option value="commercial">Commercial</option>
+                        </select>
                       </div>
                     </div>
 
